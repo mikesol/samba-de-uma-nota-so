@@ -21,7 +21,7 @@ import Data.List as L
 import Data.Map (Map, insert, lookup, update)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
-import Data.Newtype (unwrap, wrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NonEmpty (NonEmpty(..), (:|))
 import Data.Profunctor (lcmap)
 import Data.Set (Set, member, union)
@@ -45,6 +45,7 @@ import Graphics.Drawing.Font (bold, font, sansSerif)
 import Graphics.Painting (FillStyle, Gradient(..), ImageSource(..), MeasurableText, Painting, circle, drawImageFull, fillColor, fillGradient, filled, rectangle, text, textMeasurableText)
 import Klank.Dev.Util (makeBuffersKeepingCache, makeImagesKeepingCache)
 import Math (cos, pi, pow, sin, (%))
+import Record as R
 import Type.Klank.Dev (Klank', defaultEngineInfo, klank)
 import Web.Event.EventTarget (EventListener, addEventListener, eventListener, removeEventListener)
 import Web.HTML (window)
@@ -59,6 +60,7 @@ import Web.TouchEvent.TouchList as TL
 import Web.UIEvent.MouseEvent (MouseEvent)
 import Web.UIEvent.MouseEvent as ME
 
+----- engine
 sambaEngineInfo =
   defaultEngineInfo
     { msBetweenSamples = 50
@@ -66,6 +68,7 @@ sambaEngineInfo =
     } ::
     EngineInfo
 
+----- constants
 bpm = 160.0 :: Number
 
 beat = 60.0 / bpm :: Number
@@ -74,11 +77,48 @@ windowLength = beat * 4.0 :: Number
 
 kr = toNumber sambaEngineInfo.msBetweenSamples / 1000.0 :: Number
 
-type SambaAcc
-  = { prevEvents :: Set Int
-    , windowInteractions :: Window' (List { onset :: Number })
-    }
+start = 0.0 :: Number
 
+ptTop0 = 0.25 :: Number
+
+ptTop1 = 0.7 :: Number
+
+ptLeft0 = 0.45 :: Number
+
+ptLeft1 = 0.75 :: Number
+
+ptBottom0 = 0.33 :: Number
+
+ptRight0 = 0.25 :: Number
+
+end = 1.0 :: Number
+
+----- classes
+class Memoizable f g | f -> g, g -> f where
+  memoize :: Function f ~> g
+  functionize :: g ~> Function f
+
+----- instances
+instance memoizableWindow :: Memoizable Window Window' where
+  memoize f =
+    Window'
+      { w0: f W0
+      , w1: f W1
+      , w2: f W2
+      , w3: f W3
+      , w4: f W4
+      , w5: f W5
+      , w6: f W6
+      }
+  functionize (Window' { w0 }) W0 = w0
+  functionize (Window' { w1 }) W1 = w1
+  functionize (Window' { w2 }) W2 = w2
+  functionize (Window' { w3 }) W3 = w3
+  functionize (Window' { w4 }) W4 = w4
+  functionize (Window' { w5 }) W5 = w5
+  functionize (Window' { w6 }) W6 = w6
+
+----- type
 data Window
   = W0
   | W1
@@ -99,44 +139,67 @@ newtype Window' a
   , w6 :: a
   }
 
-class Memoizable f g | f -> g, g -> f where
-  memoize :: Function f ~> g
-  functionize :: g ~> Function f
+type AudioUnitD2
+  = AudioUnit D2
 
-instance memoizableWindow :: Memoizable Window Window' where
-  memoize f =
-    Window'
-      { w0: f W0
-      , w1: f W1
-      , w2: f W2
-      , w3: f W3
-      , w4: f W4
-      , w5: f W5
-      , w6: f W6
-      }
-  functionize (Window' { w0 }) W0 = w0
-  functionize (Window' { w1 }) W1 = w1
-  functionize (Window' { w2 }) W2 = w2
-  functionize (Window' { w3 }) W3 = w3
-  functionize (Window' { w4 }) W4 = w4
-  functionize (Window' { w5 }) W5 = w5
-  functionize (Window' { w6 }) W6 = w6
+type SambaAcc'
+  = { audio :: AudioUnitD2
+    , visual :: Map MeasurableText { width :: Number } -> Painting
+    , accumulator :: SambaAcc
+    }
 
-start = 0.0 :: Number
+newtype SambaAcc
+  = SambaAcc
+  (Reader (Record Env) SambaAcc')
 
-ptTop0 = 0.25 :: Number
+derive instance newtypeSambaAcc :: Newtype SambaAcc _
 
-ptTop1 = 0.7 :: Number
+type Env' r
+  = ( time :: Number
+    , interactions :: InteractionMap
+    , canvas :: { w :: Number, h :: Number }
+    | r
+    )
 
-ptLeft0 = 0.45 :: Number
+type Env
+  = Env' ()
 
-ptLeft1 = 0.75 :: Number
+type AugmentedEnv' r
+  = ( freshTouches :: InteractionMap
+    , background :: Painting
+    | r
+    )
 
-ptBottom0 = 0.33 :: Number
+type AugmentedEnv
+  = AugmentedEnv' Env
 
-ptRight0 = 0.25 :: Number
+type FirstPartEnv' r
+  = ( windowInteractions :: Window -> List { onset :: Number }
+    , isWindowTouched :: Window -> Boolean
+    | r
+    )
 
-end = 1.0 :: Number
+type FirstPartEnv
+  = FirstPartEnv' AugmentedEnv
+
+type RGB
+  = { r :: Int, g :: Int, b :: Int }
+
+type OnsetList
+  = List { onset :: Number }
+
+type InitialAccEnv
+  = { prevInter :: InteractionMap
+    , windowInteractions :: Window' OnsetList
+    }
+
+----- util
+withScope :: forall a b c. Reader a b -> Reader b c -> Reader a c
+withScope newEnv internalR = do
+  res <- newEnv
+  pure $ runReader internalR res
+
+infixr 9 withScope as <|<
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
 calcSlope x0 y0 x1 y1 x =
@@ -153,8 +216,8 @@ calcSlope x0 y0 x1 y1 x =
 bindBetween :: Number -> Number -> Number -> Number
 bindBetween mn mx n = max mn (min mx n)
 
-type RGB
-  = { r :: Int, g :: Int, b :: Int }
+inRect :: Point -> Number -> Number -> Number -> Number -> Boolean
+inRect pt x y w h = pt.x >= x && pt.x <= x + w && pt.y >= y && pt.y <= y + h
 
 xrgb :: Int -> Int -> Int -> RGB
 xrgb r g b = { r, g, b }
@@ -226,24 +289,36 @@ windowCoords = case _ of
     , height: end - ptLeft1
     }
 
-type AudioUnitD2
-  = AudioUnit D2
+augmentedEnv :: InteractionMap -> Reader (Record Env) (Record AugmentedEnv)
+augmentedEnv prevInter = do
+  env@{ interactions, canvas: { w, h } } <- ask
+  pure
+    $ env
+        `R.union`
+          { freshTouches: getFreshTouches prevInter interactions
+          , background:
+              filled (fillColor (rgb 0 0 0))
+                (rectangle 0.0 0.0 w h)
+          }
 
-type RenderInfo
-  = { audio :: AudioUnitD2
-    , visual :: Map MeasurableText { width :: Number } -> Painting
-    , accumulator :: SambaAcc
-    }
+firstPartEnv :: Window' OnsetList -> Reader (Record AugmentedEnv) (Record FirstPartEnv)
+firstPartEnv prevWindowInteractions = do
+  env@{ canvas, time, freshTouches } <- ask
+  let
+    isWindowTouched =
+      isRectangleTouched
+        (M.values freshTouches)
+        <<< windowToRect canvas.w canvas.h
 
-type Env
-  = { accumulator :: SambaAcc
-    , time :: Number
-    , interactions :: List (Tuple Int Interaction)
-    , canvas :: { w :: Number, h :: Number }
-    }
+    windowInteractions w = let wl = (functionize prevWindowInteractions) w in if isWindowTouched w then { onset: time } : wl else wl
+  pure $ env `R.union` { isWindowTouched, windowInteractions }
 
-inRect :: Point -> Number -> Number -> Number -> Number -> Boolean
-inRect pt x y w h = pt.x >= x && pt.x <= x + w && pt.y >= y && pt.y <= y + h
+executeInFirstPartEnv :: InitialAccEnv -> Reader (Record FirstPartEnv) SambaAcc' -> SambaAcc
+executeInFirstPartEnv { prevInter, windowInteractions } fpReader =
+  SambaAcc
+    $ augmentedEnv prevInter
+    <|< firstPartEnv windowInteractions
+    <|< fpReader
 
 isRectangleTouched :: List Interaction -> Rectangle -> Boolean
 isRectangleTouched l r = go l
@@ -254,16 +329,8 @@ isRectangleTouched l r = go l
 
   go ({ pt: Right _ } : b) = go b
 
--- operates under assumption
--- that most recent are only that can be new
-getFreshTouches :: Set Int -> List (Tuple Int Interaction) -> List (Tuple Int Interaction)
-getFreshTouches st l = tailRec go { acc: Nil, pool: l }
-  where
-  go { acc, pool: Nil } = Done acc
-
-  go { acc, pool: (a : b) }
-    | fst a `S.member` st = Done acc
-    | otherwise = Loop { acc: a : acc, pool: b }
+getFreshTouches :: InteractionMap -> InteractionMap -> InteractionMap
+getFreshTouches = M.filterKeys <<< flip M.member
 
 scaleRect :: Number -> Number -> Rectangle -> Rectangle
 scaleRect w h r = { x: r.x * w, y: r.y * h, width: r.width * w, height: r.height * h }
@@ -273,66 +340,45 @@ windowToRect w h = scaleRect w h <<< windowCoords
 
 windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 
-env :: Env -> RenderInfo
-env e =
-  let
-    freshTouches =
-      getFreshTouches
-        e.accumulator.prevEvents
-        e.interactions
-
-    isWindowTouched =
-      isRectangleTouched
-        (map snd freshTouches)
-        <<< windowToRect e.canvas.w e.canvas.h
-
-    windowInteractionsF = functionize e.accumulator.windowInteractions
-
-    newWindowInteractionsF w = let wl = windowInteractionsF w in if isWindowTouched w then { onset: e.time } : wl else wl
-
-    windowOnScreen w =
-      let
-        rct = windowToRect e.canvas.w e.canvas.h w
-      in
-        filled
-          ( fillColor
-              ( case newWindowInteractionsF w of
-                  Nil -> rgb 0 0 0
-                  { onset } : b
-                    | e.time - onset < windowLength ->
-                      rgbx
-                        ( argb
-                            onset
-                            (windowColors w)
-                            (onset + windowLength)
-                            (xrgb 0 0 0)
-                            e.time
-                        )
-                    | otherwise -> rgb 0 0 0
-              )
-          )
-          (rectangle rct.x rct.y rct.width rct.height)
-
-    bkgrnd =
-      filled (fillColor (rgb 0 0 0))
-        ( rectangle 0.0 0.0
-            e.canvas.w
-            e.canvas.h
-        )
-  in
-    { audio: zero
-    , visual: \_ -> bkgrnd <> (fold (map windowOnScreen windows))
-    , accumulator:
-        { prevEvents:
-            e.accumulator.prevEvents
-              `union`
-                (S.fromFoldable $ map fst freshTouches)
-        , windowInteractions: memoize newWindowInteractionsF
-        }
-    }
+initialAcc :: InitialAccEnv -> SambaAcc
+initialAcc =
+  flip executeInFirstPartEnv do
+    { canvas, interactions, windowInteractions, background, time } <- ask
+    let
+      windowOnScreen w =
+        let
+          rct = windowToRect canvas.w canvas.h w
+        in
+          filled
+            ( fillColor
+                ( case windowInteractions w of
+                    Nil -> rgb 0 0 0
+                    { onset } : b
+                      | time - onset < windowLength ->
+                        rgbx
+                          ( argb
+                              onset
+                              (windowColors w)
+                              (onset + windowLength)
+                              (xrgb 0 0 0)
+                              time
+                          )
+                      | otherwise -> rgb 0 0 0
+                )
+            )
+            (rectangle rct.x rct.y rct.width rct.height)
+    pure
+      { audio: zero
+      , visual: \_ -> background <> (fold (map windowOnScreen windows))
+      , accumulator:
+          initialAcc
+            { prevInter: interactions
+            , windowInteractions: memoize windowInteractions
+            }
+      }
 
 scene :: Interactions -> SambaAcc -> CanvasInfo -> Number -> Behavior (AV D2 SambaAcc)
-scene inter acc (CanvasInfo { w, h, boundingClientRect }) time = go <$> interactionLog inter
+scene inter (SambaAcc acc) (CanvasInfo { w, h, boundingClientRect }) time = go <$> interactionLog inter
   where
   go { interactions } =
     AV
@@ -346,15 +392,14 @@ scene inter acc (CanvasInfo { w, h, boundingClientRect }) time = go <$> interact
       }
     where
     { audio, visual, accumulator } =
-      env
-        { accumulator: acc
-        , interactions:
-            over (traversed <<< _2 <<< (prop (SProxy :: SProxy "pt")) <<< _Left)
+      runReader acc
+        { interactions:
+            over ((prop (SProxy :: SProxy "pt")) <<< _Left)
               ( \{ x, y } ->
                   { x: x - boundingClientRect.x, y: y - boundingClientRect.y
                   }
               )
-              (M.toUnfoldable interactions)
+              <$> interactions
         , time
         , canvas: { w, h }
         }
@@ -367,9 +412,11 @@ main =
     , accumulator =
       \res _ ->
         res
-          { prevEvents: S.empty
-          , windowInteractions: memoize (const Nil)
-          }
+          ( initialAcc
+              { prevInter: M.empty
+              , windowInteractions: memoize (const Nil)
+              }
+          )
     , exporter = defaultExporter
     , webcamCache = \_ _ -> identity
     , periodicWaves =
