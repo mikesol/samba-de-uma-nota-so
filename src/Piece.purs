@@ -348,7 +348,6 @@ initialAcc =
     , windowInteractions
     , background
     , time
-    , freshTouches
     } <-
       ask
     let
