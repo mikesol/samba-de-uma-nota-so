@@ -153,30 +153,41 @@ newtype SambaAcc
 
 derive instance newtypeSambaAcc :: Newtype SambaAcc _
 
+type WithTime' r
+  = ( time :: Number | r )
+
+type WithInteractions' r
+  = ( interactions :: InteractionMap | r )
+
+type WithCanvas' r
+  = ( canvas :: { w :: Number, h :: Number } | r )
+
 type Env' r
-  = ( time :: Number
-    , interactions :: InteractionMap
-    , canvas :: { w :: Number, h :: Number }
-    | r
-    )
+  = WithTime' (WithCanvas' (WithInteractions' r))
 
 type Env
   = Env' ()
 
+type WithFreshTouches' r
+  = ( freshTouches :: InteractionMap | r )
+
+type WithBackground' r
+  = ( background :: Painting | r )
+
 type AugmentedEnv' r
-  = ( freshTouches :: InteractionMap
-    , background :: Painting
-    | r
-    )
+  = WithFreshTouches' (WithBackground' r)
 
 type AugmentedEnv
   = AugmentedEnv' Env
 
+type WithWindowInteractions' r
+  = ( windowInteractions :: Window -> List { onset :: Number } | r )
+
+type WithIsWindowTouched' r
+  = ( isWindowTouched :: Window -> Boolean | r )
+
 type FirstPartEnv' r
-  = ( windowInteractions :: Window -> List { onset :: Number }
-    , isWindowTouched :: Window -> Boolean
-    | r
-    )
+  = WithWindowInteractions' (WithIsWindowTouched' r)
 
 type FirstPartEnv
   = FirstPartEnv' AugmentedEnv
@@ -187,10 +198,14 @@ type RGB
 type OnsetList
   = List { onset :: Number }
 
-type InitialAccEnv
-  = { prevInter :: InteractionMap
+type InfoForFirstPartEnv r
+  = ( prevInter :: InteractionMap
     , windowInteractions :: Window' OnsetList
-    }
+    | r
+    )
+
+type RPreFirstVideoInfo
+  = Record (InfoForFirstPartEnv ())
 
 ----- util
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
@@ -303,7 +318,8 @@ firstPartEnv prevWindowInteractions env@{ canvas, time, freshTouches } =
   in
     env `R.union` { isWindowTouched, windowInteractions }
 
-executeInFirstPartEnv :: InitialAccEnv -> Function (Record FirstPartEnv) SambaAcc' -> SambaAcc
+--addWindowInScreen :: forall r. Function (Record FirstPartEnv) SambaAcc' -> Function (Record FirstPartEnv) SambaAcc' 
+executeInFirstPartEnv :: forall r. Record (InfoForFirstPartEnv r) -> Function (Record FirstPartEnv) SambaAcc' -> SambaAcc
 executeInFirstPartEnv { prevInter, windowInteractions } fpFunction =
   SambaAcc
     $ augmentedEnv prevInter
@@ -330,9 +346,9 @@ windowToRect w h = scaleRect w h <<< windowCoords
 
 windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 
-initialAcc :: InitialAccEnv -> SambaAcc
-initialAcc =
-  flip executeInFirstPartEnv \{ canvas
+initialAcc :: RPreFirstVideoInfo -> SambaAcc
+initialAcc info =
+  executeInFirstPartEnv info \{ canvas
   , interactions
   , windowInteractions
   , background
