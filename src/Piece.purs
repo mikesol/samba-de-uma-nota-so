@@ -330,7 +330,7 @@ isRectangleTouched l r = go l
   go ({ pt: Right _ } : b) = go b
 
 getFreshTouches :: InteractionMap -> InteractionMap -> InteractionMap
-getFreshTouches = M.filterKeys <<< flip M.member
+getFreshTouches = M.filterKeys <<< map not <<< flip M.member
 
 scaleRect :: Number -> Number -> Rectangle -> Rectangle
 scaleRect w h r = { x: r.x * w, y: r.y * h, width: r.width * w, height: r.height * h }
@@ -343,7 +343,14 @@ windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 initialAcc :: InitialAccEnv -> SambaAcc
 initialAcc =
   flip executeInFirstPartEnv do
-    { canvas, interactions, windowInteractions, background, time } <- ask
+    { canvas
+    , interactions
+    , windowInteractions
+    , background
+    , time
+    , freshTouches
+    } <-
+      ask
     let
       windowOnScreen w =
         let
@@ -441,7 +448,7 @@ type Interaction
     }
 
 purge :: Number -> InteractionMap -> InteractionMap
-purge n = M.filter \{ onset } -> onset + 20.0 > n
+purge currentTime = M.filter \{ onset } -> onset + (20.0 * 1000.0) > currentTime
 
 handleTE :: MAction -> Ref.Ref Int -> Ref.Ref (Map Int Int) -> Ref.Ref InteractionMap -> TouchEvent -> Effect Unit
 handleTE mAction indxr rlsr ilk te = do
