@@ -4,7 +4,6 @@ import Prelude
 import Color (rgb, rgba)
 import Control.Comonad.Cofree (Cofree, deferCofree)
 import Control.Comonad.Cofree as Cf
-import Control.Monad.Reader (Reader, ask, runReader)
 import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as A
 import Data.DateTime.Instant (unInstant)
@@ -150,7 +149,7 @@ type SambaAcc'
 
 newtype SambaAcc
   = SambaAcc
-  (Reader (Record Env) SambaAcc')
+  (Function (Record Env) SambaAcc')
 
 derive instance newtypeSambaAcc :: Newtype SambaAcc _
 
@@ -194,13 +193,6 @@ type InitialAccEnv
     }
 
 ----- util
-withScope :: forall a b c. Reader a b -> Reader b c -> Reader a c
-withScope newEnv internalR = do
-  res <- newEnv
-  pure $ runReader internalR res
-
-infixr 9 withScope as <|<
-
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
 calcSlope x0 y0 x1 y1 x =
   if x1 == x0 || y1 == y0 then
@@ -289,21 +281,18 @@ windowCoords = case _ of
     , height: end - ptLeft1
     }
 
-augmentedEnv :: InteractionMap -> Reader (Record Env) (Record AugmentedEnv)
-augmentedEnv prevInter = do
-  env@{ interactions, canvas: { w, h } } <- ask
-  pure
-    $ env
-        `R.union`
-          { freshTouches: getFreshTouches prevInter interactions
-          , background:
-              filled (fillColor (rgb 0 0 0))
-                (rectangle 0.0 0.0 w h)
-          }
+augmentedEnv :: InteractionMap -> Function (Record Env) (Record AugmentedEnv)
+augmentedEnv prevInter env@{ interactions, canvas: { w, h } } =
+  env
+    `R.union`
+      { freshTouches: getFreshTouches prevInter interactions
+      , background:
+          filled (fillColor (rgb 0 0 0))
+            (rectangle 0.0 0.0 w h)
+      }
 
-firstPartEnv :: Window' OnsetList -> Reader (Record AugmentedEnv) (Record FirstPartEnv)
-firstPartEnv prevWindowInteractions = do
-  env@{ canvas, time, freshTouches } <- ask
+firstPartEnv :: Window' OnsetList -> Function (Record AugmentedEnv) (Record FirstPartEnv)
+firstPartEnv prevWindowInteractions env@{ canvas, time, freshTouches } =
   let
     isWindowTouched =
       isRectangleTouched
@@ -311,14 +300,15 @@ firstPartEnv prevWindowInteractions = do
         <<< windowToRect canvas.w canvas.h
 
     windowInteractions w = let wl = (functionize prevWindowInteractions) w in if isWindowTouched w then { onset: time } : wl else wl
-  pure $ env `R.union` { isWindowTouched, windowInteractions }
+  in
+    env `R.union` { isWindowTouched, windowInteractions }
 
-executeInFirstPartEnv :: InitialAccEnv -> Reader (Record FirstPartEnv) SambaAcc' -> SambaAcc
-executeInFirstPartEnv { prevInter, windowInteractions } fpReader =
+executeInFirstPartEnv :: InitialAccEnv -> Function (Record FirstPartEnv) SambaAcc' -> SambaAcc
+executeInFirstPartEnv { prevInter, windowInteractions } fpFunction =
   SambaAcc
     $ augmentedEnv prevInter
-    <|< firstPartEnv windowInteractions
-    <|< fpReader
+    >>> firstPartEnv windowInteractions
+    >>> fpFunction
 
 isRectangleTouched :: List Interaction -> Rectangle -> Boolean
 isRectangleTouched l r = go l
@@ -342,14 +332,12 @@ windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 
 initialAcc :: InitialAccEnv -> SambaAcc
 initialAcc =
-  flip executeInFirstPartEnv do
-    { canvas
-    , interactions
-    , windowInteractions
-    , background
-    , time
-    } <-
-      ask
+  flip executeInFirstPartEnv \{ canvas
+  , interactions
+  , windowInteractions
+  , background
+  , time
+  } ->
     let
       windowOnScreen w =
         let
@@ -373,7 +361,7 @@ initialAcc =
                 )
             )
             (rectangle rct.x rct.y rct.width rct.height)
-    pure
+    in
       { audio: zero
       , visual: \_ -> background <> (fold (map windowOnScreen windows))
       , accumulator:
@@ -398,7 +386,7 @@ scene inter (SambaAcc acc) (CanvasInfo { w, h, boundingClientRect }) time = go <
       }
     where
     { audio, visual, accumulator } =
-      runReader acc
+      acc
         { interactions:
             over ((prop (SProxy :: SProxy "pt")) <<< _Left)
               ( \{ x, y } ->
