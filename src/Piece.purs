@@ -2,6 +2,7 @@ module Klank.Dev where
 
 import Prelude
 import Color (rgb, rgba)
+import Type.Row (type (+))
 import Control.Comonad.Cofree (Cofree, deferCofree)
 import Control.Comonad.Cofree as Cf
 import Control.Monad.Rec.Class (Step(..), tailRec)
@@ -127,6 +128,8 @@ data Window
   | W5
   | W6
 
+derive instance eqWindow :: Eq Window
+
 newtype Window' a
   = Window'
   { w0 :: a
@@ -163,7 +166,7 @@ type WithCanvas' r
   = ( canvas :: { w :: Number, h :: Number } | r )
 
 type Env' r
-  = WithTime' (WithCanvas' (WithInteractions' r))
+  = (WithTime' + WithCanvas' + WithInteractions' + r)
 
 type Env
   = Env' ()
@@ -175,7 +178,7 @@ type WithBackground' r
   = ( background :: Painting | r )
 
 type AugmentedEnv' r
-  = WithFreshTouches' (WithBackground' r)
+  = (WithFreshTouches' + WithBackground' + r)
 
 type AugmentedEnv
   = AugmentedEnv' Env
@@ -187,10 +190,25 @@ type WithIsWindowTouched' r
   = ( isWindowTouched :: Window -> Boolean | r )
 
 type FirstPartEnv' r
-  = WithWindowInteractions' (WithIsWindowTouched' r)
+  = (WithWindowInteractions' + WithIsWindowTouched' + r)
 
 type FirstPartEnv
   = FirstPartEnv' AugmentedEnv
+
+type WithWindowOnScreen' r
+  = ( windowOnScreen :: Window -> Painting | r )
+
+type WithWindowAndVideoOnScreen' r
+  = ( windowAndVideoOnScreen :: Window -> Painting | r )
+
+type WithWindow' r
+  = ( window :: Window | r )
+
+type WithVideoSpan' r
+  = ( videoSpan :: Tuple Number Number | r )
+
+type VideoPlayingInfo' r
+  = (WithWindow' + WithVideoSpan' + r)
 
 type RGB
   = { r :: Int, g :: Int, b :: Int }
@@ -198,16 +216,36 @@ type RGB
 type OnsetList
   = List { onset :: Number }
 
+type WithPrevInter' r
+  = ( prevInter :: InteractionMap | r )
+
+type WithMemoizedWindowInteractions' r
+  = ( windowInteractions :: Window' OnsetList | r )
+
 type InfoForFirstPartEnv r
-  = ( prevInter :: InteractionMap
-    , windowInteractions :: Window' OnsetList
-    | r
-    )
+  = WithMemoizedWindowInteractions' (WithPrevInter' r)
 
 type RPreFirstVideoInfo
   = Record (InfoForFirstPartEnv ())
 
+type RAwaitingFirstVideoInfo
+  = Record (InfoForFirstPartEnv (WithWindow' ()))
+
+type RFirstVideoInfo
+  = Record (InfoForFirstPartEnv (VideoPlayingInfo' ()))
+
 ----- util
+intToWindow :: Int -> Window
+intToWindow = case _ of
+  0 -> W0
+  1 -> W1
+  2 -> W2
+  3 -> W3
+  4 -> W4
+  5 -> W5
+  6 -> W6
+  _ -> W0
+
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
 calcSlope x0 y0 x1 y1 x =
   if x1 == x0 || y1 == y0 then
@@ -318,7 +356,73 @@ firstPartEnv prevWindowInteractions env@{ canvas, time, freshTouches } =
   in
     env `R.union` { isWindowTouched, windowInteractions }
 
---addWindowInScreen :: forall r. Function (Record FirstPartEnv) SambaAcc' -> Function (Record FirstPartEnv) SambaAcc' 
+type AddWindowOnScreen' r
+  = WithCanvas' + WithWindowInteractions' + WithTime' + r
+
+withWindowOnScreen :: forall r a. Function (Record (AddWindowOnScreen' (WithWindowOnScreen' r))) a -> Function (Record (AddWindowOnScreen' r)) a
+withWindowOnScreen = (>>>) addWindowOnScreen
+
+addWindowOnScreen :: forall r. Record (AddWindowOnScreen' r) -> Record (AddWindowOnScreen' + WithWindowOnScreen' + r)
+addWindowOnScreen env@{ canvas
+, windowInteractions
+, time
+} =
+  let
+    windowOnScreen w =
+      let
+        rct = windowToRect canvas.w canvas.h w
+      in
+        filled
+          ( fillColor
+              ( case windowInteractions w of
+                  Nil -> rgb 0 0 0
+                  { onset } : b
+                    | time - onset < windowLength ->
+                      rgbx
+                        ( argb
+                            onset
+                            (windowColors w)
+                            (onset + windowLength)
+                            (xrgb 0 0 0)
+                            time
+                        )
+                    | otherwise -> rgb 0 0 0
+              )
+          )
+          (rectangle rct.x rct.y rct.width rct.height)
+  in
+    { windowOnScreen } `R.union` env
+
+type AddWindowPlusVideoOnScreen' r
+  = WithWindowOnScreen' + WithCanvas' + WithTime' + r
+
+addWindowPlusVideoOnScreen :: forall x r. Record (VideoPlayingInfo' x) -> Record (AddWindowPlusVideoOnScreen' + r) -> Record (AddWindowPlusVideoOnScreen' + WithWindowAndVideoOnScreen' + r)
+addWindowPlusVideoOnScreen { window, videoSpan } env@{ canvas
+, windowOnScreen
+, time
+} =
+  let
+    windowAndVideoOnScreen w
+      | w == window =
+        let
+          rct = windowToRect canvas.w canvas.h w
+        in
+          filled
+            (fillColor (rgb 255 255 255))
+            (rectangle rct.x rct.y rct.width rct.height)
+      | otherwise = windowOnScreen w
+  in
+    { windowAndVideoOnScreen } `R.union` env
+
+withWindowAndVideoOnScreen :: forall x r a. Record (VideoPlayingInfo' x) -> Function (Record (AddWindowPlusVideoOnScreen' (WithWindowAndVideoOnScreen' r))) a -> Function (Record (AddWindowPlusVideoOnScreen' r)) a
+withWindowAndVideoOnScreen = (>>>) <<< addWindowPlusVideoOnScreen
+
+makeInfoForFirstPartEnv :: forall r. Record (WithInteractions' (WithWindowInteractions' r)) -> RPreFirstVideoInfo
+makeInfoForFirstPartEnv { interactions, windowInteractions } =
+  { prevInter: interactions
+  , windowInteractions: memoize windowInteractions
+  }
+
 executeInFirstPartEnv :: forall r. Record (InfoForFirstPartEnv r) -> Function (Record FirstPartEnv) SambaAcc' -> SambaAcc
 executeInFirstPartEnv { prevInter, windowInteractions } fpFunction =
   SambaAcc
@@ -346,46 +450,84 @@ windowToRect w h = scaleRect w h <<< windowCoords
 
 windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 
-initialAcc :: RPreFirstVideoInfo -> SambaAcc
-initialAcc info =
-  executeInFirstPartEnv info \{ canvas
-  , interactions
-  , windowInteractions
-  , background
-  , time
-  } ->
-    let
-      windowOnScreen w =
-        let
-          rct = windowToRect canvas.w canvas.h w
-        in
-          filled
-            ( fillColor
-                ( case windowInteractions w of
-                    Nil -> rgb 0 0 0
-                    { onset } : b
-                      | time - onset < windowLength ->
-                        rgbx
-                          ( argb
-                              onset
-                              (windowColors w)
-                              (onset + windowLength)
-                              (xrgb 0 0 0)
-                              time
-                          )
-                      | otherwise -> rgb 0 0 0
-                )
-            )
-            (rectangle rct.x rct.y rct.width rct.height)
-    in
-      { audio: zero
-      , visual: \_ -> background <> (fold (map windowOnScreen windows))
-      , accumulator:
-          initialAcc
-            { prevInter: interactions
-            , windowInteractions: memoize windowInteractions
+preFirstVideo' :: forall r. Record (WithPrevInter' r) -> Function (Record FirstPartEnv) SambaAcc'
+preFirstVideo' { prevInter } e@{ time } =
+  if M.size prevInter >= 5 then
+    awaitingFirstVideo'
+      { window: (intToWindow (floor ((time * 7.0) % 7.0))) }
+      e
+  else
+    withWindowOnScreen
+      ( \env@{ canvas
+        , background
+        , interactions
+        , windowOnScreen
+        , windowInteractions
+        } ->
+          { audio: zero
+          , visual: \_ -> background <> (fold (map windowOnScreen windows))
+          , accumulator:
+              preFirstVideo (makeInfoForFirstPartEnv env)
+          }
+      )
+      e
+
+preFirstVideo :: RPreFirstVideoInfo -> SambaAcc
+preFirstVideo info =
+  executeInFirstPartEnv
+    info
+    (preFirstVideo' info)
+
+awaitingFirstVideo' :: forall r. Record (WithWindow' + r) -> Function (Record FirstPartEnv) SambaAcc'
+awaitingFirstVideo' ipt@{ window } e@{ isWindowTouched } =
+  if isWindowTouched window then
+    awaitingFirstVideo'
+      ipt
+      e
+  else
+    withWindowOnScreen
+      ( \env@{ canvas
+        , background
+        , interactions
+        , windowOnScreen
+        , windowInteractions
+        } ->
+          { audio: zero
+          , visual: \_ -> background <> (fold (map windowOnScreen windows))
+          , accumulator:
+              awaitingFirstVideo ({ window } `R.union` (makeInfoForFirstPartEnv env))
+          }
+      )
+      e
+
+awaitingFirstVideo :: RAwaitingFirstVideoInfo -> SambaAcc
+awaitingFirstVideo info =
+  executeInFirstPartEnv
+    info
+    (awaitingFirstVideo' info)
+
+firstVideo' :: forall r. Record (VideoPlayingInfo' r) -> Function (Record FirstPartEnv) SambaAcc'
+firstVideo' x@{ window, videoSpan } =
+  addWindowOnScreen
+    >>> withWindowAndVideoOnScreen x
+        ( \env@{ canvas
+          , background
+          , interactions
+          , windowAndVideoOnScreen
+          } ->
+            { audio: zero
+            , visual: \_ -> background <> (fold (map windowAndVideoOnScreen windows))
+            , accumulator:
+                firstVideo
+                  ({ window, videoSpan } `R.union` (makeInfoForFirstPartEnv env))
             }
-      }
+        )
+
+firstVideo :: RFirstVideoInfo -> SambaAcc
+firstVideo info =
+  executeInFirstPartEnv
+    info
+    (firstVideo' info)
 
 scene :: Interactions -> SambaAcc -> CanvasInfo -> Number -> Behavior (AV D2 SambaAcc)
 scene inter (SambaAcc acc) (CanvasInfo { w, h, boundingClientRect }) time = go <$> interactionLog inter
@@ -422,7 +564,7 @@ main =
     , accumulator =
       \res _ ->
         res
-          ( initialAcc
+          ( preFirstVideo
               { prevInter: M.empty
               , windowInteractions: memoize (const Nil)
               }
