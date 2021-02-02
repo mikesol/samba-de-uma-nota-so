@@ -2,7 +2,6 @@ module Klank.Dev where
 
 import Prelude
 import Color (rgb, rgba)
-import Type.Row (type (+))
 import Control.Comonad.Cofree (Cofree, deferCofree)
 import Control.Comonad.Cofree as Cf
 import Control.Monad.Rec.Class (Step(..), tailRec)
@@ -47,6 +46,8 @@ import Klank.Dev.Util (makeBuffersKeepingCache, makeImagesKeepingCache)
 import Math (cos, pi, pow, sin, (%))
 import Record as R
 import Type.Klank.Dev (Klank', defaultEngineInfo, klank)
+import Type.Row (type (+))
+import Unsafe.Coerce (unsafeCoerce)
 import Web.Event.EventTarget (EventListener, addEventListener, eventListener, removeEventListener)
 import Web.HTML (window)
 import Web.HTML.Navigator (userAgent)
@@ -479,10 +480,10 @@ preFirstVideo info =
     (preFirstVideo' info)
 
 awaitingFirstVideo' :: forall r. Record (WithWindow' + r) -> Function (Record FirstPartEnv) SambaAcc'
-awaitingFirstVideo' ipt@{ window } e@{ isWindowTouched } =
+awaitingFirstVideo' ipt@{ window } e@{ isWindowTouched, time } =
   if isWindowTouched window then
-    awaitingFirstVideo'
-      ipt
+    firstVideo'
+      { window, videoSpan: Tuple time time }
       e
   else
     withWindowOnScreen
