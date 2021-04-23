@@ -4,6 +4,7 @@ import Prelude
 import Color (rgb, rgba)
 import Control.Comonad.Cofree (Cofree, deferCofree)
 import Control.Comonad.Cofree as Cf
+import Control.Monad.Reader (Reader, ask, runReader)
 import Control.Monad.Rec.Class (Step(..), tailRec)
 import Data.Array as A
 import Data.DateTime.Instant (unInstant)
@@ -73,6 +74,8 @@ sambaEngineInfo =
 bpm = 160.0 :: Number
 
 beat = 60.0 / bpm :: Number
+
+measure = beat * 4.0 :: Number
 
 windowLength = beat * 4.0 :: Number
 
@@ -145,18 +148,6 @@ newtype Window' a
 type AudioUnitD2
   = AudioUnit D2
 
-type SambaAcc'
-  = { audio :: AudioUnitD2
-    , visual :: Map MeasurableText { width :: Number } -> Painting
-    , accumulator :: SambaAcc
-    }
-
-newtype SambaAcc
-  = SambaAcc
-  (Function (Record Env) SambaAcc')
-
-derive instance newtypeSambaAcc :: Newtype SambaAcc _
-
 type WithTime' r
   = ( time :: Number | r )
 
@@ -206,10 +197,10 @@ type WithWindow' r
   = ( window :: Window | r )
 
 type WithVideoSpan' r
-  = ( videoSpan :: Tuple Number Number | r )
+  = ( videoSpan :: { start :: Number, duration :: Number } | r )
 
 type VideoPlayingInfo' r
-  = (WithWindow' + WithVideoSpan' + r)
+  = (WithWindow' + WithVideoSpan' + WithPrevInter' + r)
 
 type RGB
   = { r :: Int, g :: Int, b :: Int }
@@ -219,6 +210,9 @@ type OnsetList
 
 type WithPrevInter' r
   = ( prevInter :: InteractionMap | r )
+
+type WithNSincePrevInter' r
+  = ( nSincePrevInter :: Int | r )
 
 type WithMemoizedWindowInteractions' r
   = ( windowInteractions :: Window' OnsetList | r )
@@ -234,6 +228,9 @@ type RAwaitingFirstVideoInfo
 
 type RFirstVideoInfo
   = Record (InfoForFirstPartEnv (VideoPlayingInfo' ()))
+
+type RPreSecondVideoInfo
+  = Record (InfoForFirstPartEnv (WithNSincePrevInter' ()))
 
 ----- util
 intToWindow :: Int -> Window
@@ -258,6 +255,21 @@ calcSlope x0 y0 x1 y1 x =
       b = y0 - m * x0
     in
       m * x + b
+
+firstVocalDuration :: Number -> Number
+firstVocalDuration t =
+  let
+    nMeasures = toNumber $ floor (t / measure)
+
+    nearestM = nMeasures * measure
+
+    mos
+      | t % measure < 2.0 * beat = 1.0
+      | otherwise = 2.0
+  in
+    (((nMeasures + mos) * measure) - t) + (measure * 4.0)
+
+secondVocalDuration = firstVocalDuration :: Number -> Number
 
 bindBetween :: Number -> Number -> Number -> Number
 bindBetween mn mx n = max mn (min mx n)
@@ -335,33 +347,37 @@ windowCoords = case _ of
     , height: end - ptLeft1
     }
 
-augmentedEnv :: InteractionMap -> Function (Record Env) (Record AugmentedEnv)
-augmentedEnv prevInter env@{ interactions, canvas: { w, h } } =
-  env
-    `R.union`
-      { freshTouches: getFreshTouches prevInter interactions
-      , background:
-          filled (fillColor (rgb 0 0 0))
-            (rectangle 0.0 0.0 w h)
-      }
+withAugmentedEnv :: InteractionMap -> Reader (Record Env) (Record AugmentedEnv)
+withAugmentedEnv prevInter =
+  ask
+    <#> \env@{ interactions, canvas: { w, h } } ->
+        env
+          `R.union`
+            { freshTouches: getFreshTouches prevInter interactions
+            , background:
+                filled (fillColor (rgb 0 0 0))
+                  (rectangle 0.0 0.0 w h)
+            }
 
-firstPartEnv :: Window' OnsetList -> Function (Record AugmentedEnv) (Record FirstPartEnv)
-firstPartEnv prevWindowInteractions env@{ canvas, time, freshTouches } =
-  let
-    isWindowTouched =
-      isRectangleTouched
-        (M.values freshTouches)
-        <<< windowToRect canvas.w canvas.h
+withFirstPartEnv :: Window' OnsetList -> Reader (Record AugmentedEnv) (Record FirstPartEnv)
+withFirstPartEnv prevWindowInteractions =
+  ask
+    <#> \env@{ canvas, time, freshTouches } ->
+        let
+          isWindowTouched =
+            isRectangleTouched
+              (M.values freshTouches)
+              <<< windowToRect canvas.w canvas.h
 
-    windowInteractions w = let wl = (functionize prevWindowInteractions) w in if isWindowTouched w then { onset: time } : wl else wl
-  in
-    env `R.union` { isWindowTouched, windowInteractions }
+          windowInteractions w = let wl = (functionize prevWindowInteractions) w in if isWindowTouched w then { onset: time } : wl else wl
+        in
+          env `R.union` { isWindowTouched, windowInteractions }
 
 type AddWindowOnScreen' r
   = WithCanvas' + WithWindowInteractions' + WithTime' + r
 
-withWindowOnScreen :: forall r a. Function (Record (AddWindowOnScreen' (WithWindowOnScreen' r))) a -> Function (Record (AddWindowOnScreen' r)) a
-withWindowOnScreen = (>>>) addWindowOnScreen
+withWindowOnScreen :: forall r. Reader (Record (AddWindowOnScreen' r)) (Record (AddWindowOnScreen' (WithWindowOnScreen' r)))
+withWindowOnScreen = ask <#> addWindowOnScreen
 
 addWindowOnScreen :: forall r. Record (AddWindowOnScreen' r) -> Record (AddWindowOnScreen' + WithWindowOnScreen' + r)
 addWindowOnScreen env@{ canvas
@@ -394,11 +410,11 @@ addWindowOnScreen env@{ canvas
   in
     { windowOnScreen } `R.union` env
 
-type AddWindowPlusVideoOnScreen' r
+type AddWindowAndVideoOnScreen' r
   = WithWindowOnScreen' + WithCanvas' + WithTime' + r
 
-addWindowPlusVideoOnScreen :: forall x r. Record (VideoPlayingInfo' x) -> Record (AddWindowPlusVideoOnScreen' + r) -> Record (AddWindowPlusVideoOnScreen' + WithWindowAndVideoOnScreen' + r)
-addWindowPlusVideoOnScreen { window, videoSpan } env@{ canvas
+addWindowAndVideoOnScreen :: forall x r. Record (VideoPlayingInfo' x) -> Record (AddWindowAndVideoOnScreen' + r) -> Record (AddWindowAndVideoOnScreen' + WithWindowAndVideoOnScreen' + r)
+addWindowAndVideoOnScreen { window, videoSpan } env@{ canvas
 , windowOnScreen
 , time
 } =
@@ -411,25 +427,21 @@ addWindowPlusVideoOnScreen { window, videoSpan } env@{ canvas
           filled
             (fillColor (rgb 255 255 255))
             (rectangle rct.x rct.y rct.width rct.height)
+            <> filled
+                (fillColor (rgba 0 0 0 (bindBetween 0.0 1.0 (calcSlope (videoSpan.start) 0.0 (videoSpan.start + videoSpan.duration) 1.0 time))))
+                (rectangle rct.x rct.y rct.width rct.height)
       | otherwise = windowOnScreen w
   in
     { windowAndVideoOnScreen } `R.union` env
 
-withWindowAndVideoOnScreen :: forall x r a. Record (VideoPlayingInfo' x) -> Function (Record (AddWindowPlusVideoOnScreen' (WithWindowAndVideoOnScreen' r))) a -> Function (Record (AddWindowPlusVideoOnScreen' r)) a
-withWindowAndVideoOnScreen = (>>>) <<< addWindowPlusVideoOnScreen
+withWindowAndVideoOnScreen :: forall x r. Record (VideoPlayingInfo' x) -> Reader (Record (AddWindowAndVideoOnScreen' r)) (Record (AddWindowAndVideoOnScreen' (WithWindowAndVideoOnScreen' r)))
+withWindowAndVideoOnScreen = (<#>) ask <<< addWindowAndVideoOnScreen
 
 makeInfoForFirstPartEnv :: forall r. Record (WithInteractions' (WithWindowInteractions' r)) -> RPreFirstVideoInfo
 makeInfoForFirstPartEnv { interactions, windowInteractions } =
   { prevInter: interactions
   , windowInteractions: memoize windowInteractions
   }
-
-executeInFirstPartEnv :: forall r. Record (InfoForFirstPartEnv r) -> Function (Record FirstPartEnv) SambaAcc' -> SambaAcc
-executeInFirstPartEnv { prevInter, windowInteractions } fpFunction =
-  SambaAcc
-    $ augmentedEnv prevInter
-    >>> firstPartEnv windowInteractions
-    >>> fpFunction
 
 isRectangleTouched :: List Interaction -> Rectangle -> Boolean
 isRectangleTouched l r = go l
@@ -451,87 +463,329 @@ windowToRect w h = scaleRect w h <<< windowCoords
 
 windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 
-preFirstVideo' :: forall r. Record (WithPrevInter' r) -> Function (Record FirstPartEnv) SambaAcc'
-preFirstVideo' { prevInter } e@{ time } =
-  if M.size prevInter >= 5 then
-    awaitingFirstVideo'
-      { window: (intToWindow (floor ((time * 7.0) % 7.0))) }
-      e
-  else
-    withWindowOnScreen
-      ( \env@{ canvas
-        , background
-        , interactions
-        , windowOnScreen
-        , windowInteractions
-        } ->
-          { audio: zero
-          , visual: \_ -> background <> (fold (map windowOnScreen windows))
-          , accumulator:
-              preFirstVideo (makeInfoForFirstPartEnv env)
-          }
-      )
-      e
+type OneNoteOutput
+  = { audio :: AudioUnitD2
+    , visual :: Map MeasurableText { width :: Number } -> Painting
+    , accumulator :: OneNoteInfo
+    }
 
-preFirstVideo :: RPreFirstVideoInfo -> SambaAcc
-preFirstVideo info =
-  executeInFirstPartEnv
-    info
-    (preFirstVideo' info)
+dummyOutput =
+  { audio: zero, visual: const mempty, accumulator: Terminus
+  } ::
+    OneNoteOutput
 
-awaitingFirstVideo' :: forall r. Record (WithWindow' + r) -> Function (Record FirstPartEnv) SambaAcc'
-awaitingFirstVideo' ipt@{ window } e@{ isWindowTouched, time } =
-  if isWindowTouched window then
-    firstVideo'
-      { window, videoSpan: Tuple time time }
-      e
-  else
-    withWindowOnScreen
-      ( \env@{ canvas
-        , background
-        , interactions
-        , windowOnScreen
-        , windowInteractions
-        } ->
-          { audio: zero
-          , visual: \_ -> background <> (fold (map windowOnScreen windows))
-          , accumulator:
-              awaitingFirstVideo ({ window } `R.union` (makeInfoForFirstPartEnv env))
-          }
-      )
-      e
+composeReadersFlipped :: forall a b c. Reader b c -> Reader a b -> Reader a c
+composeReadersFlipped = map <<< runReader
 
-awaitingFirstVideo :: RAwaitingFirstVideoInfo -> SambaAcc
-awaitingFirstVideo info =
-  executeInFirstPartEnv
-    info
-    (awaitingFirstVideo' info)
+composeReaders :: forall a b c. Reader a b -> Reader b c -> Reader a c
+composeReaders = flip composeReadersFlipped
 
-firstVideo' :: forall r. Record (VideoPlayingInfo' r) -> Function (Record FirstPartEnv) SambaAcc'
-firstVideo' x@{ window, videoSpan } =
-  addWindowOnScreen
-    >>> withWindowAndVideoOnScreen x
-        ( \env@{ canvas
-          , background
-          , interactions
-          , windowAndVideoOnScreen
-          } ->
-            { audio: zero
-            , visual: \_ -> background <> (fold (map windowAndVideoOnScreen windows))
-            , accumulator:
-                firstVideo
-                  ({ window, videoSpan } `R.union` (makeInfoForFirstPartEnv env))
+infixr 9 composeReadersFlipped as <|<
+
+infixr 9 composeReaders as >|>
+
+interpretFirstVideo :: FirstVideo' -> Reader (Record (WithWindowOnScreen' FirstPartEnv)) OneNoteOutput
+interpretFirstVideo ac@{ window, videoSpan } =
+  withWindowAndVideoOnScreen ac
+    >|> ask
+    <#> \env@{ canvas
+      , background
+      , windowAndVideoOnScreen
+      } ->
+        { audio: zero
+        , visual: \_ -> background <> (fold (map windowAndVideoOnScreen windows))
+        , accumulator:
+            FirstVideo
+              ({ window, videoSpan } `R.union` (makeInfoForFirstPartEnv env))
+        }
+
+interpretSecondVideo :: SecondVideo' -> Reader (Record (WithWindowOnScreen' FirstPartEnv)) OneNoteOutput
+interpretSecondVideo ac@{ window, videoSpan } =
+  withWindowAndVideoOnScreen ac
+    >|> ask
+    <#> \env@{ canvas
+      , background
+      , windowAndVideoOnScreen
+      } ->
+        { audio: zero
+        , visual: \_ -> background <> (fold (map windowAndVideoOnScreen windows))
+        , accumulator:
+            SecondVideo
+              ({ window, videoSpan } `R.union` (makeInfoForFirstPartEnv env))
+        }
+
+interpretThirdVideo :: ThirdVideo' -> Reader (Record (WithWindowOnScreen' FirstPartEnv)) OneNoteOutput
+interpretThirdVideo ac@{ window, videoSpan } =
+  withWindowAndVideoOnScreen ac
+    >|> ask
+    <#> \env@{ canvas
+      , background
+      , windowAndVideoOnScreen
+      } ->
+        { audio: zero
+        , visual: \_ -> background <> (fold (map windowAndVideoOnScreen windows))
+        , accumulator:
+            SecondVideo
+              ({ window, videoSpan } `R.union` (makeInfoForFirstPartEnv env))
+        }
+
+getTouchedWindow :: (Window -> Boolean) -> Maybe Window
+getTouchedWindow f = tailRec go windows
+  where
+  go Nil = Done Nothing
+
+  go (a : b) = if f a then Done (Just a) else Loop b
+
+interpret :: OneNoteInfo -> Reader (Record Env) OneNoteOutput
+interpret (PreFirstVideo ac) =
+  if M.size ac.prevInter >= 5 then
+    ask
+      >>= \{ time } ->
+          (interpret <<< AwaitingFirstVideo <<< R.union ac)
+            { window: (intToWindow (floor ((time * 7.0) % 7.0)))
             }
-        )
+  else
+    withAugmentedEnv ac.prevInter
+      >|> withFirstPartEnv ac.windowInteractions
+      >|> withWindowOnScreen
+      >|> ask
+      <#> \env@{ background
+        , windowOnScreen
+        } ->
+          { audio: zero
+          , visual: \_ -> background <> (fold (map windowOnScreen windows))
+          , accumulator: PreFirstVideo (makeInfoForFirstPartEnv env)
+          }
 
-firstVideo :: RFirstVideoInfo -> SambaAcc
-firstVideo info =
-  executeInFirstPartEnv
-    info
-    (firstVideo' info)
+interpret (AwaitingFirstVideo ac@{ window }) =
+  withAugmentedEnv ac.prevInter
+    >|> withFirstPartEnv ac.windowInteractions
+    >|> withWindowOnScreen
+    >|> do
+        { isWindowTouched, time } <- ask
+        if isWindowTouched ac.window then
+          (interpretFirstVideo <<< R.union ac)
+            { videoSpan:
+                { start: time
+                , duration: (firstVocalDuration time)
+                }
+            }
+        else
+          ask
+            <#> \env@{ background
+              , windowOnScreen
+              } ->
+                { audio: zero
+                , visual: \_ -> background <> (fold (map windowOnScreen windows))
+                , accumulator:
+                    AwaitingFirstVideo ({ window } `R.union` (makeInfoForFirstPartEnv env))
+                }
 
-scene :: Interactions -> SambaAcc -> CanvasInfo -> Number -> Behavior (AV D2 SambaAcc)
-scene inter (SambaAcc acc) (CanvasInfo { w, h, boundingClientRect }) time = go <$> interactionLog inter
+interpret (FirstVideo ac@{ prevInter, windowInteractions }) =
+  ask
+    >>= \{ time } ->
+        if ac.videoSpan.start + ac.videoSpan.duration > time then
+          interpret
+            ( PreSecondVideo
+                { prevInter
+                , windowInteractions
+                , nSincePrevInter: M.size ac.prevInter
+                }
+            )
+        else
+          withAugmentedEnv ac.prevInter
+            >|> withFirstPartEnv ac.windowInteractions
+            >|> withWindowOnScreen
+            >|> interpretFirstVideo ac
+
+interpret (PreSecondVideo { nSincePrevInter, prevInter, windowInteractions }) =
+  if M.size prevInter + 3 >= nSincePrevInter then
+    ask
+      >>= \{ time } ->
+          interpret
+            ( AwaitingSecondVideo
+                { window: (intToWindow (floor ((time * 7.0) % 7.0)))
+                , prevInter
+                , windowInteractions
+                }
+            )
+  else
+    withAugmentedEnv prevInter
+      >|> withFirstPartEnv windowInteractions
+      >|> withWindowOnScreen
+      >|> ask
+      <#> \env@{ background
+        , windowOnScreen
+        } ->
+          { audio: zero
+          , visual: \_ -> background <> (fold (map windowOnScreen windows))
+          , accumulator:
+              PreSecondVideo
+                ( { nSincePrevInter }
+                    `R.union`
+                      (makeInfoForFirstPartEnv env)
+                )
+          }
+
+interpret (AwaitingSecondVideo ac@{ window }) =
+  withAugmentedEnv ac.prevInter
+    >|> withFirstPartEnv ac.windowInteractions
+    >|> withWindowOnScreen
+    >|> do
+        { isWindowTouched, time } <- ask
+        if isWindowTouched ac.window then
+          (interpretSecondVideo <<< R.union ac)
+            { videoSpan:
+                { start: time
+                , duration: (firstVocalDuration time)
+                }
+            }
+        else
+          ask
+            <#> \env@{ background
+              , windowOnScreen
+              } ->
+                { audio: zero
+                , visual: \_ -> background <> (fold (map windowOnScreen windows))
+                , accumulator:
+                    AwaitingSecondVideo ({ window } `R.union` (makeInfoForFirstPartEnv env))
+                }
+
+interpret (SecondVideo ac@{ prevInter, windowInteractions }) =
+  ask
+    >>= \{ time } ->
+        if ac.videoSpan.start + ac.videoSpan.duration > time then
+          interpret
+            ( PreThirdVideo
+                { prevInter
+                , windowInteractions
+                , nSincePrevInter: M.size ac.prevInter
+                }
+            )
+        else
+          withAugmentedEnv ac.prevInter
+            >|> withFirstPartEnv ac.windowInteractions
+            >|> withWindowOnScreen
+            >|> interpretSecondVideo ac
+
+interpret (PreThirdVideo { nSincePrevInter, prevInter, windowInteractions }) =
+  withAugmentedEnv prevInter
+    >|> withFirstPartEnv windowInteractions
+    >|> do
+        { isWindowTouched } <- ask
+        case unit of
+          _
+            | M.size prevInter + 2 >= nSincePrevInter
+            , Just window <- getTouchedWindow isWindowTouched ->
+              withWindowOnScreen
+                >|> do
+                    { time } <- ask
+                    interpretThirdVideo
+                      { window
+                      , prevInter
+                      , windowInteractions
+                      , videoSpan:
+                          { start: time
+                          , duration: (firstVocalDuration time)
+                          }
+                      }
+          otherwise ->
+            withWindowOnScreen
+              >|> ask
+              <#> \env@{ background
+                , windowOnScreen
+                } ->
+                  { audio: zero
+                  , visual: \_ -> background <> (fold (map windowOnScreen windows))
+                  , accumulator:
+                      PreThirdVideo
+                        ( { nSincePrevInter }
+                            `R.union`
+                              (makeInfoForFirstPartEnv env)
+                        )
+                  }
+
+interpret _ = pure dummyOutput
+
+type PreFirstVideo'
+  = Record
+      ( WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type AwaitingFirstVideo'
+  = Record
+      ( WithWindow'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type FirstVideo'
+  = Record
+      ( WithVideoSpan'
+          + WithWindow'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type PreSecondVideo'
+  = Record
+      ( WithNSincePrevInter'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type AwaitingSecondVideo'
+  = Record
+      ( WithWindow'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type SecondVideo'
+  = Record
+      ( WithVideoSpan'
+          + WithWindow'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type PreThirdVideo'
+  = Record
+      ( WithNSincePrevInter'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+type ThirdVideo'
+  = Record
+      ( WithVideoSpan'
+          + WithWindow'
+          + WithPrevInter'
+          + WithMemoizedWindowInteractions'
+          + ()
+      )
+
+data OneNoteInfo
+  = PreFirstVideo PreFirstVideo'
+  | AwaitingFirstVideo AwaitingFirstVideo'
+  | FirstVideo FirstVideo'
+  | PreSecondVideo PreSecondVideo'
+  | AwaitingSecondVideo AwaitingSecondVideo'
+  | SecondVideo SecondVideo'
+  | PreThirdVideo PreThirdVideo'
+  | ThirdVideo ThirdVideo'
+  | Terminus
+
+scene :: Interactions -> OneNoteInfo -> CanvasInfo -> Number -> Behavior (AV D2 OneNoteInfo)
+scene inter acc (CanvasInfo { w, h, boundingClientRect }) time = go <$> interactionLog inter
   where
   go { interactions } =
     AV
@@ -545,7 +799,7 @@ scene inter (SambaAcc acc) (CanvasInfo { w, h, boundingClientRect }) time = go <
       }
     where
     { audio, visual, accumulator } =
-      acc
+      runReader (interpret acc)
         { interactions:
             over ((prop (SProxy :: SProxy "pt")) <<< _Left)
               ( \{ x, y } ->
@@ -557,7 +811,7 @@ scene inter (SambaAcc acc) (CanvasInfo { w, h, boundingClientRect }) time = go <
         , canvas: { w, h }
         }
 
-main :: Klank' SambaAcc
+main :: Klank' OneNoteInfo
 main =
   klank
     { run = runInBrowser_ (scene <$> getInteractivity)
@@ -565,7 +819,7 @@ main =
     , accumulator =
       \res _ ->
         res
-          ( preFirstVideo
+          ( PreFirstVideo
               { prevInter: M.empty
               , windowInteractions: memoize (const Nil)
               }
