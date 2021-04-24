@@ -1,16 +1,16 @@
 module SambaDeUmaNotaSo.Transitions.PreFirstVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Int (floor)
-import Data.List (fold)
+import Data.Foldable (fold)
 import Data.List as L
-import Data.Typelevel.Num (class Lt, class Nat, d0, d1, d2, d3, d4, d5, d6, D7)
-import Data.Vec as V
+import Data.Typelevel.Num ( d0, d1, d2, d3, d4, d5, d6)
 import Record as R
-import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowAndVideoOnScreen, withWindowOnScreen)
-import SambaDeUmaNotaSo.IO.PreFirstVideo (InterpretVideoSig, IsVideoWindowTouched)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreFirstVideo as IO
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
@@ -19,27 +19,6 @@ import WAGS.Control.Functions (branch, env, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig)
 
-isVideoWindowTouched ::
-  forall window.
-  Nat window =>
-  Lt window D7 =>
-  window ->
-  IsVideoWindowTouched
-isVideoWindowTouched = flip V.index
-
-interpretVideo ::
-  forall window.
-  Nat window =>
-  Lt window D7 =>
-  window ->
-  InterpretVideoSig
-interpretVideo window videoSpan =
-  _.windowsAndVideoOnScreen
-    <<< withWindowAndVideoOnScreen
-        { window
-        , videoSpan
-        }
-    <<< withWindowOnScreen
 
 doPreFirstVideo ::
   forall proof iu cb.

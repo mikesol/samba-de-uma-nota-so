@@ -1,25 +1,21 @@
 module SambaDeUmaNotaSo.Transitions.PreSecondVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
+import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
-import Data.List (fold)
+import Data.Int (floor)
 import Data.List as L
-import SambaDeUmaNotaSo.Empty (reset)
+import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
+import Record as R
 import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreSecondVideo as IO
-import SambaDeUmaNotaSo.Loops.End (endCreate)
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo, preFirstVideoConstant)
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
+import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
 import WAGS.Change (change)
-import WAGS.Connect (connect)
 import WAGS.Control.Functions (branch, env, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Create (create)
-import WAGS.Cursor (cursor)
-import WAGS.Destroy (destroy)
-import WAGS.Disconnect (disconnect)
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig)
 
 doPreSecondVideo ::
@@ -55,11 +51,42 @@ doPreSecondVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                cursorConstant <- cursor preFirstVideoConstant
-                disconnect cursorConstant acc.cursorGain
-                destroy cursorConstant
-                reset
-                toAdd <- create endCreate
-                connect toAdd acc.cursorGain
-                withProof pr unit
+            $ inSitu doAwaitingSecondVideo WAGS.do
+                let
+                  fixed =
+                    { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                    , cursorGain: acc.cursorGain
+                    }
+                withProof pr
+                  $ R.union
+                      ( case floor e.time `mod` 7 of
+                          0 ->
+                            { interpretVideo: interpretVideo d0
+                            , isVideoWindowTouched: isVideoWindowTouched d0
+                            }
+                          1 ->
+                            { interpretVideo: interpretVideo d1
+                            , isVideoWindowTouched: isVideoWindowTouched d1
+                            }
+                          2 ->
+                            { interpretVideo: interpretVideo d2
+                            , isVideoWindowTouched: isVideoWindowTouched d2
+                            }
+                          3 ->
+                            { interpretVideo: interpretVideo d3
+                            , isVideoWindowTouched: isVideoWindowTouched d3
+                            }
+                          4 ->
+                            { interpretVideo: interpretVideo d4
+                            , isVideoWindowTouched: isVideoWindowTouched d4
+                            }
+                          5 ->
+                            { interpretVideo: interpretVideo d5
+                            , isVideoWindowTouched: isVideoWindowTouched d5
+                            }
+                          _ ->
+                            { interpretVideo: interpretVideo d6
+                            , isVideoWindowTouched: isVideoWindowTouched d6
+                            }
+                      )
+                      fixed

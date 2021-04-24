@@ -3,7 +3,7 @@ module SambaDeUmaNotaSo.Transitions.FirstVideo where
 import Prelude
 import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
-import Data.List (fold)
+import Data.Foldable (fold)
 import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.FirstVideo as IO
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
