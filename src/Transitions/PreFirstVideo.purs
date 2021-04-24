@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Int (floor)
-import Data.Maybe (isJust)
+import Data.Maybe (Maybe(..), isJust)
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Record as R
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
@@ -35,7 +35,7 @@ doPreFirstVideo =
         withFirstPartEnv acc.mostRecentWindowInteraction
           $ withAugmentedEnv
               { canvas: e.world.canvas
-              , interaction: asTouch e.trigger
+              , interaction: if e.active then asTouch e.trigger else Nothing
               , time: e.time
               }
     withProof pr
@@ -46,7 +46,9 @@ doPreFirstVideo =
                   visualCtxt = withWindowOnScreen ctxt
                 ivoid
                   $ modifyRes
-                  $ const { painting: visualCtxt.background <> (fold visualCtxt.windowsOnScreen) }
+                  $ const
+                      { painting: visualCtxt.background <> (fold visualCtxt.windowsOnScreen)
+                      }
                 change deltaPreFirstVideo
                   $> acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0

@@ -5,6 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
+import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Empty (reset)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
@@ -34,7 +35,7 @@ doSecondVideo =
         withFirstPartEnv acc.mostRecentWindowInteraction
           $ withAugmentedEnv
               { canvas: e.world.canvas
-              , interaction: asTouch e.trigger
+              , interaction: if e.active then asTouch e.trigger else Nothing
               , time: e.time
               }
     withProof pr
@@ -45,7 +46,9 @@ doSecondVideo =
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
                 change deltaPreFirstVideo
-                  $> acc
+                  $> acc 
+                      { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
+                      }
         else
           Left
             $ inSitu doEnd WAGS.do

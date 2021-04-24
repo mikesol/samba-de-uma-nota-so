@@ -1,6 +1,7 @@
 module Main where
 
 import Prelude
+
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, mkCofree)
 import Data.Compactable (compact)
@@ -11,7 +12,7 @@ import Data.Maybe (Maybe(..), isNothing)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
-import FRP.Behavior (Behavior, behavior)
+import FRP.Behavior (behavior)
 import FRP.Event (makeEvent, subscribe)
 import FRP.Event.Mouse (Mouse, down, getMouse, withPosition)
 import Foreign.Object as O
@@ -28,7 +29,7 @@ import Heterogeneous.Mapping (hmap)
 import SambaDeUmaNotaSo.Action (Action(..))
 import SambaDeUmaNotaSo.ClickPlayModal (clickPlay)
 import SambaDeUmaNotaSo.Piece (piece)
-import WAGS.Example.KitchenSink.TLP.LoopSig (SambaTrigger(..), SambaWorld)
+import WAGS.Example.KitchenSink.TLP.LoopSig (SambaTrigger(..))
 import WAGS.Interpret (AudioContext, FFIAudio(..), close, context, defaultFFIAudio, makeUnitCache)
 import WAGS.Run (run)
 import Web.HTML.HTMLElement (HTMLElement, getBoundingClientRect)
@@ -46,7 +47,6 @@ type State
   = { unsubscribeFromWAGS :: Effect Unit
     , audioCtx :: Maybe AudioContext
     , mouse :: Maybe Mouse
-    , world :: Maybe (Behavior SambaWorld)
     , graph :: Maybe String
     , audioSrc :: Maybe String
     }
@@ -71,7 +71,6 @@ initialState _ =
   , graph: Nothing
   , audioSrc: Nothing
   , mouse: Nothing
-  , world: Nothing
   }
 
 render :: forall m. State -> H.ComponentHTML Action () m
@@ -102,18 +101,6 @@ foreign import asCanvasElement :: HTMLElement -> (CanvasElement -> Maybe CanvasE
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Ilz -> do
-    H.getHTMLElementRef (H.RefLabel "myCanvas")
-      >>= traverse_ \element -> do
-          H.modify_
-            _
-              { world =
-                Just
-                  $ behavior \e ->
-                      makeEvent \k -> do
-                        subscribe e \aToB -> do
-                          canvas <- getBoundingClientRect element
-                          k $ aToB $ { canvas }
-              }
     { mouse } <-
       H.liftEffect do
         mouse <- getMouse
@@ -121,44 +108,50 @@ handleAction = case _ of
     H.modify_ _ { mouse = Just mouse }
   StartAudio -> do
     handleAction StopAudio
-    { world, mouse } <- H.get
+    { mouse } <- H.get
     H.getHTMLElementRef (H.RefLabel "myCanvas")
-      >>= traverse_ \element ->
-          for_ world \world' ->
-            for_ mouse \mouse' -> do
-              { unsubscribeFromWAGS, audioCtx } <-
-                H.liftEffect do
-                  let
-                    mouseEvent =
-                      map (Interaction <<< { touch: _ })
-                        ( map (hmap toNumber)
-                            (compact (map _.pos $ withPosition mouse' down))
-                        )
-                  audioCtx <- H.liftEffect context
-                  unitCache <- H.liftEffect makeUnitCache
-                  let
-                    ffiAudio = defaultFFIAudio audioCtx unitCache
-                  unsubscribeFromWAGS <-
-                    subscribe
-                      ( run
-                          (mouseEvent <|> pure Start)
-                          world'
-                          { easingAlgorithm }
-                          (FFIAudio ffiAudio)
-                          piece
+      >>= traverse_ \element -> do
+          let
+            world =
+              behavior \e ->
+                makeEvent \k -> do
+                  subscribe e \aToB -> do
+                    canvas <- getBoundingClientRect element
+                    k $ aToB $ { canvas }
+          for_ mouse \mouse' -> do
+            { unsubscribeFromWAGS, audioCtx } <-
+              H.liftEffect do
+                let
+                  mouseEvent =
+                    map (Interaction <<< { touch: _ })
+                      ( map (hmap toNumber)
+                          (compact (map _.pos $ withPosition mouse' down))
                       )
-                      ( \{ res } -> do
-                          asCanvas <- asCanvasElement element Just Nothing
-                          for_ asCanvas \asCanvas' -> do
-                            ctx2d <- getContext2D asCanvas'
-                            Painting.render ctx2d imageSources res.painting
-                      )
-                  pure { unsubscribeFromWAGS, audioCtx }
-              H.modify_
-                _
-                  { unsubscribeFromWAGS = unsubscribeFromWAGS
-                  , audioCtx = Just audioCtx
-                  }
+                audioCtx <- H.liftEffect context
+                unitCache <- H.liftEffect makeUnitCache
+                let
+                  ffiAudio = defaultFFIAudio audioCtx unitCache
+                unsubscribeFromWAGS <-
+                  subscribe
+                    ( run
+                        (mouseEvent <|> pure Start)
+                        world
+                        { easingAlgorithm }
+                        (FFIAudio ffiAudio)
+                        piece
+                    )
+                    ( \{ res } -> do
+                        asCanvas <- asCanvasElement element Just Nothing
+                        for_ asCanvas \asCanvas' -> do
+                          ctx2d <- getContext2D asCanvas'
+                          Painting.render ctx2d imageSources res.painting
+                    )
+                pure { unsubscribeFromWAGS, audioCtx }
+            H.modify_
+              _
+                { unsubscribeFromWAGS = unsubscribeFromWAGS
+                , audioCtx = Just audioCtx
+                }
   StopAudio -> do
     { unsubscribeFromWAGS, audioCtx } <- H.get
     H.liftEffect unsubscribeFromWAGS

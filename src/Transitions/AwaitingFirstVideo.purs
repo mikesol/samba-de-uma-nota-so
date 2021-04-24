@@ -5,6 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
+import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Duration (firstVocalDuration)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingFirstVideo as IO
@@ -28,7 +29,7 @@ doAwaitingFirstVideo =
         withFirstPartEnv acc.mostRecentWindowInteraction
           $ withAugmentedEnv
               { canvas: e.world.canvas
-              , interaction: asTouch e.trigger
+              , interaction: if e.active then asTouch e.trigger else Nothing
               , time: e.time
               }
     withProof pr
@@ -39,7 +40,9 @@ doAwaitingFirstVideo =
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (withWindowOnScreen ctxt).windowsOnScreen) }
                 change deltaPreFirstVideo
-                  $> acc
+                  $> acc 
+                      { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
+                      }
         else
           Left
             $ inSitu doFirstVideo WAGS.do
