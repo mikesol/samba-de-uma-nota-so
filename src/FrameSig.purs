@@ -16,10 +16,12 @@ type SambaTrigger = { touches :: List Point }
 
 type SambaWorld = { canvas :: { h :: Number , w :: Number } }
 
+type SambaSceneI = SceneI SambaTrigger SambaWorld
+
 type SceneSig :: forall k. k -> Type
 type SceneSig proof
   = SceneT
-      (SceneI SambaTrigger SambaWorld)
+      SambaSceneI
       FFIAudio
       (Effect Unit)
       proof
