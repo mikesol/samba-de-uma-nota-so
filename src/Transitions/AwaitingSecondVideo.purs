@@ -1,24 +1,17 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
-import Data.Functor.Indexed (ivoid)
 import Data.Foldable (fold)
-import SambaDeUmaNotaSo.Empty (reset)
+import Data.Functor.Indexed (ivoid)
+import SambaDeUmaNotaSo.Duration (secondVocalDuration)
 import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
-import SambaDeUmaNotaSo.Loops.End (endCreate)
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo, preFirstVideoConstant)
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
+import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import WAGS.Change (change)
-import WAGS.Connect (connect)
 import WAGS.Control.Functions (branch, env, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Create (create)
-import WAGS.Cursor (cursor)
-import WAGS.Destroy (destroy)
-import WAGS.Disconnect (disconnect)
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig)
 
 doAwaitingSecondVideo ::
@@ -47,11 +40,12 @@ doAwaitingSecondVideo =
                   $> acc
         else
           Left
-            $ inSitu doEnd WAGS.do
-                cursorConstant <- cursor preFirstVideoConstant
-                disconnect cursorConstant acc.cursorGain
-                destroy cursorConstant
-                reset
-                toAdd <- create endCreate
-                connect toAdd acc.cursorGain
-                withProof pr unit
+            $ inSitu doSecondVideo WAGS.do
+                let
+                  videoSpan = { start: e.time, duration: secondVocalDuration e.time }
+                withProof pr
+                  { interpretVideo: acc.interpretVideo videoSpan
+                  , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                  , cursorGain: acc.cursorGain
+                  , videoSpan
+                  }
