@@ -31,28 +31,24 @@ Purpose:
     the package set's repo
 
 Syntax:
-Replace the overrides' "{=}" (an empty record) with the following idea
-The "//" or "⫽" means "merge these two records and
-  when they have the same value, use the one on the right:"
+where `entityName` is one of the following:
+- dependencies
+- repo
+- version
 -------------------------------
-let overrides =
-  { packageName =
-      upstream.packageName // { updateEntity1 = "new value", updateEntity2 = "new value" }
-  , packageName =
-      upstream.packageName // { version = "v4.0.0" }
-  , packageName =
-      upstream.packageName // { repo = "https://www.example.com/path/to/new/repo.git" }
-  }
+let upstream = --
+in  upstream
+  with packageName.entityName = "new value"
 -------------------------------
 
 Example:
 -------------------------------
-let overrides =
-  { halogen =
-      upstream.halogen // { version = "master" }
-  , halogen-vdom =
-      upstream.halogen-vdom // { version = "v4.0.0" }
-  }
+let upstream = --
+in  upstream
+  with halogen.version = "master"
+  with halogen.repo = "https://example.com/path/to/git/repo.git"
+
+  with halogen-vdom.version = "v4.0.0"
 -------------------------------
 
 ### Additions
@@ -61,37 +57,30 @@ Purpose:
 - Add packages that aren't already included in the default package set
 
 Syntax:
-Replace the additions' "{=}" (an empty record) with the following idea:
+where `<version>` is:
+- a tag (i.e. "v4.0.0")
+- a branch (i.e. "master")
+- commit hash (i.e. "701f3e44aafb1a6459281714858fadf2c4c2a977")
 -------------------------------
-let additions =
-  { package-name =
-       { dependencies =
-           [ "dependency1"
-           , "dependency2"
-           ]
-       , repo =
-           "https://example.com/path/to/git/repo.git"
-       , version =
-           "tag ('v4.0.0') or branch ('master')"
-       }
-  , package-name =
-       { dependencies =
-           [ "dependency1"
-           , "dependency2"
-           ]
-       , repo =
-           "https://example.com/path/to/git/repo.git"
-       , version =
-           "tag ('v4.0.0') or branch ('master')"
-       }
-  , etc.
-  }
+let upstream = --
+in  upstream
+  with new-package-name =
+    { dependencies =
+       [ "dependency1"
+       , "dependency2"
+       ]
+    , repo =
+       "https://example.com/path/to/git/repo.git"
+    , version =
+        "<version>"
+    }
 -------------------------------
 
 Example:
 -------------------------------
-let additions =
-  { benchotron =
+let upstream = --
+in  upstream
+  with benchotron =
       { dependencies =
           [ "arrays"
           , "exists"
@@ -113,71 +102,103 @@ let additions =
       , version =
           "v7.0.0"
       }
-  }
 -------------------------------
 -}
-
-
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20200911-2/packages.dhall sha256:872c06349ed9c8210be43982dc6466c2ca7c5c441129826bcb9bf3672938f16e
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.1-20210419/packages.dhall sha256:d9a082ffb5c0fabf689574f0680e901ca6f924e01acdbece5eeedd951731375a
 
 let overrides = {=}
 
-let additions = {
-    audio-behaviors =
-      { dependencies =
+let additions =
+      { typelevel-peano =
+        { dependencies =
+          [ "arrays"
+          , "console"
+          , "effect"
+          , "prelude"
+          , "psci-support"
+          , "typelevel-prelude"
+          , "unsafe-coerce"
+          ]
+        , repo = "https://github.com/csicar/purescript-typelevel-peano.git"
+        , version = "v1.0.1"
+        }
+      , event =
+        { dependencies =
+          [ "console"
+          , "effect"
+          , "filterable"
+          , "nullable"
+          , "unsafe-reference"
+          , "js-timers"
+          , "now"
+          ]
+        , repo = "https://github.com/mikesol/purescript-event.git"
+        , version = "v1.4.1"
+        }
+      , behaviors =
+        { dependencies =
+          [ "psci-support"
+          , "effect"
+          , "ordered-collections"
+          , "filterable"
+          , "nullable"
+          , "event"
+          , "web-html"
+          , "web-events"
+          , "web-uievents"
+          ]
+        , repo = "https://github.com/mikesol/purescript-behaviors.git"
+        , version = "v8.1.0"
+        }
+      , wags =
+        { dependencies =
           [ "aff-promise"
-            , "behaviors"
-            , "console"
-            , "debug"
-            , "effect"
-            , "drawing"
-            , "canvas"
-            , "foreign-object"
-            , "heterogeneous"
-            , "parseint"
-            , "psci-support"
-            , "record-extra"
-            , "sized-vectors"
-            , "typelevel-prelude"
-            , "typelevel-graph"
+          , "arraybuffer-types"
+          , "behaviors"
+          , "console"
+          , "convertable-options"
+          , "debug"
+          , "effect"
+          , "event"
+          , "free"
+          , "heterogeneous"
+          , "indexed-monad"
+          , "maybe"
+          , "ordered-collections"
+          , "profunctor-lenses"
+          , "psci-support"
+          , "record"
+          , "sized-vectors"
+          , "transformers"
+          , "tuples"
+          , "typelevel"
+          , "typelevel-peano"
+          , "typelevel-prelude"
           ]
-      , repo =
-          "https://github.com/mikesol/purescript-audio-behaviors.git"
-      , version =
-          "master"
-      },
-    typelevel-graph =
-      { dependencies =
-          [ 
-             "record-extra"
-            , "typelevel-peano"
+        , repo = "https://github.com/mikesol/purescript-wags.git"
+        , version = "v0.0.2"
+        }
+      , painting =
+        { dependencies =
+          [ "canvas"
+          , "colors"
+          , "console"
+          , "effect"
+          , "foldable-traversable"
+          , "foreign-object"
+          , "psci-support"
+          , "web-html"
           ]
-      , repo =
-          "https://github.com/mikesol/purescript-typelevel-graph.git"
-      , version =
-          "main"
-      },
-    typelevel-klank-dev =
-      { dependencies =
-          [ "audio-behaviors"
-          ]
-      , repo =
-          "https://github.com/mikesol/type.klank.dev.git"
-      , version =
-          "main"
-      },
-    klank-dev-util =
-      { dependencies =
-          [ "audio-behaviors"
-          ]
-      , repo =
-          "https://github.com/mikesol/util.klank.dev.git"
-      , version =
-          "main"
+        , repo = "https://github.com/mikesol/purescript-painting.git"
+        , version = "main"
+        }
+      , convertable-options =
+        { dependencies = [ "console", "effect", "maybe", "record" ]
+        , repo =
+            "https://github.com/natefaubion/purescript-convertable-options.git"
+        , version = "v1.0.0"
+        }
       }
-
-      
-}
 
 in  upstream // overrides // additions

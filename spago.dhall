@@ -2,22 +2,26 @@
 Welcome to a Spago project!
 You can edit this file as you like.
 -}
-{ name = "samba-de-uma-nota-so"
+{ name = "my-project"
 , dependencies =
-  [ "affjax"
-  , "audio-behaviors"
+  [ "behaviors"
   , "canvas"
+  , "colors"
   , "console"
-  , "drawing"
   , "effect"
-  , "free"
-  , "klank-dev-util"
-  , "node-fs"
+  , "event"
+  , "heterogeneous"
+  , "integers"
+  , "lists"
+  , "math"
+  , "maybe"
+  , "painting"
+  , "prelude"
   , "psci-support"
-  , "sunde"
-  , "typelevel-klank-dev"
-  , "web-touchevents"
+  , "record"
+  , "transformers"
+  , "wags"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs" ]
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }
