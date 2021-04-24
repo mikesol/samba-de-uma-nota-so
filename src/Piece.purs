@@ -1,4 +1,33 @@
-module Crap where
+module SambaDeUmaNotaSo.Piece where
+
+import Prelude
+import Data.Functor.Indexed (ivoid)
+import Data.Maybe (Maybe(..))
+import Data.Vec as V
+import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate, preFirstVideoMainBus)
+import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
+import Type.Data.Peano as N
+import Type.Proxy (Proxy(..))
+import WAGS.Control.Functions (start, (@|>))
+import WAGS.Control.Qualified as WAGS
+import WAGS.Control.Types (Frame0)
+import WAGS.Create (create)
+import WAGS.Cursor (cursor)
+import WAGS.Example.KitchenSink.TLP.LoopSig (SceneSig)
+import WAGS.MoveNode (moveNode)
+
+piece :: SceneSig Frame0
+piece =
+  WAGS.do
+    start
+    ivoid $ create preFirstVideoCreate
+    cursorGain <- cursor preFirstVideoMainBus
+    moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
+      $> { nTouchesSoFar: 0
+        , mostRecentWindowInteraction: V.fill (const Nothing)
+        , cursorGain
+        }
+    @|> doPreFirstVideo
 
 {-
 import Prelude
@@ -64,95 +93,6 @@ import Web.UIEvent.MouseEvent (MouseEvent)
 import Web.UIEvent.MouseEvent as ME
 
 
-withAugmentedEnv :: InteractionMap -> Reader (Record Env) (Record AugmentedEnv)
-withAugmentedEnv prevInter =
-  ask
-    <#> \env@{ interactions, canvas: { w, h } } ->
-        env
-          `R.union`
-            { freshTouches: getFreshTouches prevInter interactions
-            , background:
-                filled (fillColor (rgb 0 0 0))
-                  (rectangle 0.0 0.0 w h)
-            }
-
-withFirstPartEnv :: Window' OnsetList -> Reader (Record AugmentedEnv) (Record FirstPartEnv)
-withFirstPartEnv prevWindowInteractions =
-  ask
-    <#> \env@{ canvas, time, freshTouches } ->
-        let
-          isWindowTouched =
-            isRectangleTouched
-              (M.values freshTouches)
-              <<< windowToRect canvas.w canvas.h
-
-          windowInteractions w = let wl = (functionize prevWindowInteractions) w in if isWindowTouched w then { onset: time } : wl else wl
-        in
-          env `R.union` { isWindowTouched, windowInteractions }
-
-type AddWindowOnScreen' r
-  = WithCanvas' + WithWindowInteractions' + WithTime' + r
-
-withWindowOnScreen :: forall r. Reader (Record (AddWindowOnScreen' r)) (Record (AddWindowOnScreen' (WithWindowOnScreen' r)))
-withWindowOnScreen = ask <#> addWindowOnScreen
-
-addWindowOnScreen :: forall r. Record (AddWindowOnScreen' r) -> Record (AddWindowOnScreen' + WithWindowOnScreen' + r)
-addWindowOnScreen env@{ canvas
-, windowInteractions
-, time
-} =
-  let
-    windowOnScreen w =
-      let
-        rct = windowToRect canvas.w canvas.h w
-      in
-        filled
-          ( fillColor
-              ( case windowInteractions w of
-                  Nil -> rgb 0 0 0
-                  { onset } : b
-                    | time - onset < windowLength ->
-                      rgbx
-                        ( argb
-                            onset
-                            (windowColors w)
-                            (onset + windowLength)
-                            (xrgb 0 0 0)
-                            time
-                        )
-                    | otherwise -> rgb 0 0 0
-              )
-          )
-          (rectangle rct.x rct.y rct.width rct.height)
-  in
-    { windowOnScreen } `R.union` env
-
-type AddWindowAndVideoOnScreen' r
-  = WithWindowOnScreen' + WithCanvas' + WithTime' + r
-
-addWindowAndVideoOnScreen :: forall x r. Record (VideoPlayingInfo' x) -> Record (AddWindowAndVideoOnScreen' + r) -> Record (AddWindowAndVideoOnScreen' + WithWindowAndVideoOnScreen' + r)
-addWindowAndVideoOnScreen { window, videoSpan } env@{ canvas
-, windowOnScreen
-, time
-} =
-  let
-    windowAndVideoOnScreen w
-      | w == window =
-        let
-          rct = windowToRect canvas.w canvas.h w
-        in
-          filled
-            (fillColor (rgb 255 255 255))
-            (rectangle rct.x rct.y rct.width rct.height)
-            <> filled
-                (fillColor (rgba 0 0 0 (bindBetween 0.0 1.0 (calcSlope (videoSpan.start) 0.0 (videoSpan.start + videoSpan.duration) 1.0 time))))
-                (rectangle rct.x rct.y rct.width rct.height)
-      | otherwise = windowOnScreen w
-  in
-    { windowAndVideoOnScreen } `R.union` env
-
-withWindowAndVideoOnScreen :: forall x r. Record (VideoPlayingInfo' x) -> Reader (Record (AddWindowAndVideoOnScreen' r)) (Record (AddWindowAndVideoOnScreen' (WithWindowAndVideoOnScreen' r)))
-withWindowAndVideoOnScreen = (<#>) ask <<< addWindowAndVideoOnScreen
 
 makeInfoForFirstPartEnv :: forall r. Record (WithInteractions' (WithWindowInteractions' r)) -> RPreFirstVideoInfo
 makeInfoForFirstPartEnv { interactions, windowInteractions } =
@@ -160,25 +100,6 @@ makeInfoForFirstPartEnv { interactions, windowInteractions } =
   , windowInteractions: memoize windowInteractions
   }
 
-isRectangleTouched :: List Interaction -> Rectangle -> Boolean
-isRectangleTouched l r = go l
-  where
-  go Nil = false
-
-  go ({ pt: Left pt } : b) = inRect pt r.x r.y r.width r.height || go b
-
-  go ({ pt: Right _ } : b) = go b
-
-getFreshTouches :: InteractionMap -> InteractionMap -> InteractionMap
-getFreshTouches = M.filterKeys <<< map not <<< flip M.member
-
-scaleRect :: Number -> Number -> Rectangle -> Rectangle
-scaleRect w h r = { x: r.x * w, y: r.y * h, width: r.width * w, height: r.height * h }
-
-windowToRect :: Number -> Number -> Window -> Rectangle
-windowToRect w h = scaleRect w h <<< windowCoords
-
-windows = W0 : W1 : W2 : W3 : W4 : W5 : W6 : Nil :: List Window
 
 type OneNoteOutput
   = { audio :: AudioUnitD2

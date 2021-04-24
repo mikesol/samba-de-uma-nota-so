@@ -1,22 +1,15 @@
 module SambaDeUmaNotaSo.Util where
 
 import Prelude
-
 import Color (Color, rgb)
-import Control.Comonad.Env (withEnv)
 import Data.Int (floor, toNumber)
 import Data.List (List(..), (:))
-import Data.Symbol (class IsSymbol)
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Point)
-import Heterogeneous.Mapping (class MappingWithIndex, hmap, hmapWithIndex)
-import Prim.Row as Row
-import Record as R
+import Data.Vec ((+>))
+import Data.Vec as V
 import SambaDeUmaNotaSo.Constants (end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, start)
 import SambaDeUmaNotaSo.Types (RGB, Windows, Interactions)
-import Type.Proxy (Proxy)
-
-infix 5 withEnv as >|>
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
 calcSlope x0 y0 x1 y1 x =
@@ -41,60 +34,53 @@ argb t0 c0 t1 c1 t =
 
 windowColors :: Windows RGB
 windowColors =
-    { w0: xrgb 194 233 251
-    , w1: xrgb 250 208 196
-    , w2: xrgb 255 236 210
-    , w3: xrgb 254 207 239
-    , w4: xrgb 226 235 240
-    , w5: xrgb 102 126 234
-    , w6: xrgb 253 252 251
-    }
+  xrgb 194 233 251
+    +> xrgb 250 208 196
+    +> xrgb 255 236 210
+    +> xrgb 254 207 239
+    +> xrgb 226 235 240
+    +> xrgb 102 126 234
+    +> xrgb 253 252 251
+    +> V.empty
 
 windowCoords :: Windows Rectangle
 windowCoords =
-  { w0:
-        { x: start
-        , y: start
-        , width: ptTop0
-        , height: ptLeft0
-        }
-    , w1:
-        { x: ptTop0
-        , y: start
-        , width: end - ptTop0
-        , height: ptRight0
-        }
-    , w2:
-        { x: ptTop0
-        , y: ptRight0
-        , width: ptTop1 - ptTop0
-        , height: ptLeft0 - ptRight0
-        }
-    , w3:
-        { x: ptTop1
-        , y: ptRight0
-        , width: end - ptTop1
-        , height: ptLeft1 - ptRight0
-        }
-    , w4:
-        { x: start
-        , y: ptLeft0
-        , width: ptTop1
-        , height: ptLeft1 - ptLeft0
-        }
-    , w5:
-        { x: start
-        , y: ptLeft1
-        , width: ptBottom0
-        , height: end - ptLeft1
-        }
-    , w6:
-        { x: ptBottom0
-        , y: ptLeft1
-        , width: end - ptBottom0
-        , height: end - ptLeft1
-        }
-    }
+  { x: start
+  , y: start
+  , width: ptTop0
+  , height: ptLeft0
+  }
+    +> { x: ptTop0
+      , y: start
+      , width: end - ptTop0
+      , height: ptRight0
+      }
+    +> { x: ptTop0
+      , y: ptRight0
+      , width: ptTop1 - ptTop0
+      , height: ptLeft0 - ptRight0
+      }
+    +> { x: ptTop1
+      , y: ptRight0
+      , width: end - ptTop1
+      , height: ptLeft1 - ptRight0
+      }
+    +> { x: start
+      , y: ptLeft0
+      , width: ptTop1
+      , height: ptLeft1 - ptLeft0
+      }
+    +> { x: start
+      , y: ptLeft1
+      , width: ptBottom0
+      , height: end - ptLeft1
+      }
+    +> { x: ptBottom0
+      , y: ptLeft1
+      , width: end - ptBottom0
+      , height: end - ptLeft1
+      }
+    +> V.empty
 
 bindBetween :: Number -> Number -> Number -> Number
 bindBetween mn mx n = max mn (min mx n)
@@ -119,13 +105,4 @@ scaleRect :: Number -> Number -> Rectangle -> Rectangle
 scaleRect w h r = { x: r.x * w, y: r.y * h, width: r.width * w, height: r.height * h }
 
 windowToRect :: Number -> Number -> Windows Rectangle
-windowToRect w h = hmap (scaleRect w h) windowCoords
-
-newtype ZipProps fns = ZipProps { | fns }
-
-instance zipProps ::
-  (IsSymbol sym, Row.Cons sym (a -> b) x fns) =>
-  MappingWithIndex (ZipProps fns) (Proxy sym) a b where
-  mappingWithIndex (ZipProps fns) prop = R.get prop fns
-
-zipRecord = hmapWithIndex <<< ZipProps
+windowToRect w h = map (scaleRect w h) windowCoords

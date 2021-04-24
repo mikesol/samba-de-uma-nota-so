@@ -9,8 +9,11 @@ You can edit this file as you like.
   , "colors"
   , "console"
   , "effect"
+  , "either"
   , "event"
   , "heterogeneous"
+  , "identity"
+  , "indexed-monad"
   , "integers"
   , "lists"
   , "math"
@@ -19,7 +22,10 @@ You can edit this file as you like.
   , "prelude"
   , "psci-support"
   , "record"
+  , "sized-vectors"
   , "transformers"
+  , "typelevel"
+  , "typelevel-peano"
   , "wags"
   ]
 , packages = ./packages.dhall

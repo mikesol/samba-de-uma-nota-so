@@ -1,16 +1,17 @@
 module SambaDeUmaNotaSo.Env where
 
 import Prelude
-import Color (rgb)
+import Color (rgb, rgba)
 import Data.Maybe (Maybe(..))
+import Data.Typelevel.Num (class Lt, class Nat, D7)
+import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import Heterogeneous.Mapping (hmap)
 import Prim.Row (class Lacks)
 import Record as R
 import SambaDeUmaNotaSo.Constants (windowLength)
 import SambaDeUmaNotaSo.Types (AugmentedEnv, BaseEnv, FirstPartEnv, Windows, RGB)
-import SambaDeUmaNotaSo.Util (argb, isRectangleTouched, rgbx, windowColors, windowToRect, xrgb, zipRecord)
+import SambaDeUmaNotaSo.Util (argb, bindBetween, calcSlope, isRectangleTouched, rgbx, windowColors, windowToRect, xrgb)
 import Type.Proxy (Proxy(..))
 
 withAugmentedEnv :: BaseEnv -> AugmentedEnv
@@ -25,13 +26,14 @@ withFirstPartEnv :: Windows (Maybe Number) -> AugmentedEnv -> FirstPartEnv
 withFirstPartEnv prevMostRecentWindowInteraction i =
   let
     isWindowTouched =
-      hmap
+      map
         (isRectangleTouched i.interactions)
         (windowToRect i.canvas.w i.canvas.h)
 
     mostRecentWindowInteraction =
-      zipRecord
-        (hmap (\x y -> if x then pure i.time else y) isWindowTouched)
+      V.zipWithE
+        (\x y -> if x then pure i.time else y)
+        isWindowTouched
         prevMostRecentWindowInteraction
   in
     R.union i { isWindowTouched, mostRecentWindowInteraction }
@@ -59,7 +61,8 @@ paintWindowOnScreen time mostRecentWindowInteraction windowDims windowColor =
 
 withWindowOnScreen ::
   forall r.
-  Lacks "windowOnScreen" r =>
+  Lacks "windowDims" r =>
+  Lacks "windowsOnScreen" r =>
   { time :: Number
   , canvas :: { w :: Number, h :: Number }
   , mostRecentWindowInteraction :: Windows (Maybe Number)
@@ -68,46 +71,69 @@ withWindowOnScreen ::
   { time :: Number
   , canvas :: { w :: Number, h :: Number }
   , mostRecentWindowInteraction :: Windows (Maybe Number)
-  , windowOnScreen :: Windows Painting
+  , windowDims :: Windows Rectangle
+  , windowsOnScreen :: Windows Painting
   | r
   }
 withWindowOnScreen i@{ canvas, mostRecentWindowInteraction, time } =
   let
     rcts = windowToRect canvas.w canvas.h
 
-    curriedFn0 = hmap (paintWindowOnScreen time) mostRecentWindowInteraction
+    curriedFn0 = map (paintWindowOnScreen time) mostRecentWindowInteraction
 
-    curriedFn1 = zipRecord curriedFn0 rcts
+    curriedFn1 = V.zipWithE ($) curriedFn0 rcts
 
-    windowOnScreen = zipRecord curriedFn1 windowColors
+    windowsOnScreen = V.zipWithE ($) curriedFn1 windowColors
   in
-    R.insert (Proxy :: _ "windowOnScreen") windowOnScreen i
+    R.insert (Proxy :: _ "windowDims") rcts
+      (R.insert (Proxy :: _ "windowsOnScreen") windowsOnScreen i)
 
-{-
 withWindowAndVideoOnScreen ::
-  forall x r.
-  Lacks "windowAndVideoOnScreen" r =>
-  { | VideoPlayingInfo' x } ->
-  Env { | AddWindowAndVideoOnScreen' r }
-    ~> Env { | AddWindowAndVideoOnScreen' + WithWindowAndVideoOnScreen' + r }
-withWindowAndVideoOnScreen { window, videoSpan } =
-  withEnv \i@{ canvas
-  , windowOnScreen
-  , time
+  forall nat x r.
+  Nat nat =>
+  Lt nat D7 =>
+  Lacks "windowsAndVideoOnScreen" r =>
+  { window :: nat
+  , videoSpan :: { start :: Number, duration :: Number }
+  | x
   } ->
-    let
-      windowAndVideoOnScreen w
-        | w == window =
-          let
-            rct = windowToRect canvas.w canvas.h w
-          in
-            filled
-              (fillColor (rgb 255 255 255))
-              (rectangle rct.x rct.y rct.width rct.height)
-              <> filled
-                  (fillColor (rgba 0 0 0 (bindBetween 0.0 1.0 (calcSlope (videoSpan.start) 0.0 (videoSpan.start + videoSpan.duration) 1.0 time))))
-                  (rectangle rct.x rct.y rct.width rct.height)
-        | otherwise = windowOnScreen w
-    in
-      R.insert (Proxy :: _ "windowAndVideoOnScreen") windowAndVideoOnScreen i
--}
+  { time :: Number
+  , windowsOnScreen :: Windows Painting
+  , windowDims :: Windows Rectangle
+  | r
+  } ->
+  { time :: Number
+  , windowDims :: Windows Rectangle
+  , windowsOnScreen :: Windows Painting
+  , windowsAndVideoOnScreen :: Windows Painting
+  | r
+  }
+withWindowAndVideoOnScreen { window, videoSpan } i@{ windowsOnScreen
+, windowDims
+, time
+} =
+  let
+    rct = V.index windowDims window
+
+    vid =
+      filled
+        (fillColor (rgb 255 255 255))
+        (rectangle rct.x rct.y rct.width rct.height)
+        <> filled
+            ( fillColor
+                ( rgba 0 0 0
+                    ( bindBetween 0.0 1.0
+                        ( calcSlope (videoSpan.start)
+                            0.0
+                            (videoSpan.start + videoSpan.duration)
+                            1.0
+                            time
+                        )
+                    )
+                )
+            )
+            (rectangle rct.x rct.y rct.width rct.height)
+
+    windowsAndVideoOnScreen = V.updateAt window vid windowsOnScreen
+  in
+    R.insert (Proxy :: _ "windowsAndVideoOnScreen") windowsAndVideoOnScreen i

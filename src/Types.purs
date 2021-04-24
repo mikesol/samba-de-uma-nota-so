@@ -2,20 +2,15 @@ module SambaDeUmaNotaSo.Types where
 
 import Data.List (List)
 import Data.Maybe (Maybe)
+import Data.Typelevel.Num (D7)
+import Data.Vec (Vec)
 import Graphics.Painting (Painting)
 
 type RGB
   = { r :: Int, g :: Int, b :: Int }
 
 type Windows a
-  = { w0 :: a
-    , w1 :: a
-    , w2 :: a
-    , w3 :: a
-    , w4 :: a
-    , w5 :: a
-    , w6 :: a
-    }
+  = Vec D7 a
 
 type Point
   = { x :: Number, y :: Number }
