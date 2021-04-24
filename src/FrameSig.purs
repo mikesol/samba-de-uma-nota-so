@@ -2,19 +2,26 @@ module WAGS.Example.KitchenSink.TLP.LoopSig where
 
 import Prelude
 
-import Data.List (List)
+import Control.Plus (empty)
+import Data.Maybe (Maybe)
 import Effect (Effect)
 import Graphics.Painting (Painting, Point)
 import WAGS.Control.Thunkable (Thunkable)
 import WAGS.Control.Types (FrameT, SceneT)
 import WAGS.Interpret (FFIAudio)
 import WAGS.Run (SceneI)
+import Web.HTML.HTMLElement (DOMRect)
 
 type SambaRes = { painting :: Painting }
 
-type SambaTrigger = { touches :: List Point }
+asTouch :: SambaTrigger -> Maybe Point
+asTouch = case _ of
+  Interaction { touch } -> pure touch
+  _ -> empty
 
-type SambaWorld = { canvas :: { h :: Number , w :: Number } }
+data SambaTrigger = Start | Interaction { touch :: Point }
+
+type SambaWorld = { canvas :: DOMRect }
 
 type SambaSceneI = SceneI SambaTrigger SambaWorld
 

@@ -1,15 +1,16 @@
 module SambaDeUmaNotaSo.Util where
 
 import Prelude
+
 import Color (Color, rgb)
 import Data.Int (floor, toNumber)
-import Data.List (List(..), (:))
-import Graphics.Canvas (Rectangle)
-import Graphics.Painting (Point)
+import Data.Maybe (Maybe(..))
 import Data.Vec ((+>))
 import Data.Vec as V
+import Graphics.Canvas (Rectangle)
+import Graphics.Painting (Point)
 import SambaDeUmaNotaSo.Constants (end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, start)
-import SambaDeUmaNotaSo.Types (RGB, Windows, Interactions)
+import SambaDeUmaNotaSo.Types (RGB, Windows)
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
 calcSlope x0 y0 x1 y1 x =
@@ -94,12 +95,12 @@ xrgb r g b = { r, g, b }
 rgbx :: RGB -> Color
 rgbx { r, g, b } = rgb r g b
 
-isRectangleTouched :: Interactions -> Rectangle -> Boolean
+isRectangleTouched :: Maybe Point -> Rectangle -> Boolean
 isRectangleTouched l r = go l
   where
-  go Nil = false
+  go Nothing = false
 
-  go (pt : b) = inRect pt r.x r.y r.width r.height || go b
+  go (Just pt) = inRect pt r.x r.y r.width r.height
 
 scaleRect :: Number -> Number -> Rectangle -> Rectangle
 scaleRect w h r = { x: r.x * w, y: r.y * h, width: r.width * w, height: r.height * h }

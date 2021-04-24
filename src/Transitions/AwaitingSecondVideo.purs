@@ -1,32 +1,34 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import SambaDeUmaNotaSo.Duration (secondVocalDuration)
-import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import WAGS.Change (change)
-import WAGS.Control.Functions (branch, env, inSitu, modifyRes, proof, withProof)
+import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig)
+import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 
+-- | We wait until there's an interaction with the second video's rectangle.
 doAwaitingSecondVideo ::
   forall proof iu cb.
   StepSig (PreFirstVideoUniverse cb) proof iu IO.Accumulator
 doAwaitingSecondVideo =
   branch \acc -> WAGS.do
-    e <- env
+    e <- modEnv
     pr <- proof
     let
       ctxt =
         withFirstPartEnv acc.mostRecentWindowInteraction
           $ withAugmentedEnv
               { canvas: e.world.canvas
-              , interactions: e.trigger.touches
+              , interaction: asTouch e.trigger
               , time: e.time
               }
     withProof pr

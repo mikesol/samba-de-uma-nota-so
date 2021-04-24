@@ -12,6 +12,7 @@ You can edit this file as you like.
   , "either"
   , "event"
   , "foldable-traversable"
+  , "halogen"
   , "heterogeneous"
   , "identity"
   , "indexed-monad"
@@ -30,5 +31,5 @@ You can edit this file as you like.
   , "wags"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }

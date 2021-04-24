@@ -13,13 +13,41 @@ import SambaDeUmaNotaSo.Constants (windowLength)
 import SambaDeUmaNotaSo.Types (AugmentedEnv, BaseEnv, FirstPartEnv, Windows, RGB)
 import SambaDeUmaNotaSo.Util (argb, bindBetween, calcSlope, isRectangleTouched, rgbx, windowColors, windowToRect, xrgb)
 import Type.Proxy (Proxy(..))
+import WAGS.Control.Functions (env)
+import WAGS.Control.Types (FrameT)
+import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI, SambaTrigger(..))
+import WAGS.Interpret (class AudioInterpret)
+import Web.HTML.HTMLElement (DOMRect)
+
+modEnv ::
+  forall audio engine proof m res i.
+  Monad m =>
+  AudioInterpret audio engine =>
+  FrameT SambaSceneI audio engine proof m res i i SambaSceneI
+modEnv =
+  map
+    ( \i@{ trigger, world } ->
+        i
+          { trigger =
+            case trigger of
+              Interaction { touch: { x, y } } ->
+                Interaction
+                  { touch:
+                      { x: x - world.canvas.left
+                      , y: y - world.canvas.top
+                      }
+                  }
+              x -> x
+          }
+    )
+    env
 
 withAugmentedEnv :: BaseEnv -> AugmentedEnv
 withAugmentedEnv i =
   R.union i
     { background:
         filled (fillColor (rgb 0 0 0))
-          (rectangle 0.0 0.0 i.canvas.w i.canvas.h)
+          (rectangle 0.0 0.0 i.canvas.width i.canvas.height)
     }
 
 withFirstPartEnv :: Windows (Maybe Number) -> AugmentedEnv -> FirstPartEnv
@@ -27,8 +55,8 @@ withFirstPartEnv prevMostRecentWindowInteraction i =
   let
     isWindowTouched =
       map
-        (isRectangleTouched i.interactions)
-        (windowToRect i.canvas.w i.canvas.h)
+        (isRectangleTouched i.interaction)
+        (windowToRect i.canvas.width i.canvas.height)
 
     mostRecentWindowInteraction =
       V.zipWithE
@@ -64,12 +92,12 @@ withWindowOnScreen ::
   Lacks "windowDims" r =>
   Lacks "windowsOnScreen" r =>
   { time :: Number
-  , canvas :: { w :: Number, h :: Number }
+  , canvas :: DOMRect
   , mostRecentWindowInteraction :: Windows (Maybe Number)
   | r
   } ->
   { time :: Number
-  , canvas :: { w :: Number, h :: Number }
+  , canvas :: DOMRect
   , mostRecentWindowInteraction :: Windows (Maybe Number)
   , windowDims :: Windows Rectangle
   , windowsOnScreen :: Windows Painting
@@ -77,7 +105,7 @@ withWindowOnScreen ::
   }
 withWindowOnScreen i@{ canvas, mostRecentWindowInteraction, time } =
   let
-    rcts = windowToRect canvas.w canvas.h
+    rcts = windowToRect canvas.width canvas.height
 
     curriedFn0 = map (paintWindowOnScreen time) mostRecentWindowInteraction
 
