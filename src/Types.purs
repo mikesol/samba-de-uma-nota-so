@@ -4,16 +4,13 @@ import Data.List (List)
 import Data.Maybe (Maybe)
 import Data.Typelevel.Num (D7)
 import Data.Vec (Vec)
-import Graphics.Painting (Painting)
+import Graphics.Painting (Painting, Point)
 
 type RGB
   = { r :: Int, g :: Int, b :: Int }
 
 type Windows a
   = Vec D7 a
-
-type Point
-  = { x :: Number, y :: Number }
 
 type Interactions
   = List Point

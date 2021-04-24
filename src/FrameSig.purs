@@ -2,8 +2,9 @@ module WAGS.Example.KitchenSink.TLP.LoopSig where
 
 import Prelude
 
+import Data.List (List)
 import Effect (Effect)
-import Graphics.Painting (Painting)
+import Graphics.Painting (Painting, Point)
 import WAGS.Control.Thunkable (Thunkable)
 import WAGS.Control.Types (FrameT, SceneT)
 import WAGS.Interpret (FFIAudio)
@@ -11,8 +12,9 @@ import WAGS.Run (SceneI)
 
 type SambaRes = { painting :: Painting }
 
-type SambaTrigger = Unit
-type SambaWorld = Unit
+type SambaTrigger = { touches :: List Point }
+
+type SambaWorld = { canvas :: { h :: Number , w :: Number } }
 
 type SceneSig :: forall k. k -> Type
 type SceneSig proof
