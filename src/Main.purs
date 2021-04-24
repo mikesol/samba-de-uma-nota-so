@@ -1,7 +1,6 @@
 module Main where
 
 import Prelude
-
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, mkCofree)
 import Data.Compactable (compact)
@@ -12,6 +11,7 @@ import Data.Maybe (Maybe(..), isNothing)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
+import Effect.Ref as Ref
 import FRP.Behavior (behavior)
 import FRP.Event (makeEvent, subscribe)
 import FRP.Event.Mouse (Mouse, down, getMouse, withPosition)
@@ -32,7 +32,9 @@ import SambaDeUmaNotaSo.Piece (piece)
 import WAGS.Example.KitchenSink.TLP.LoopSig (SambaTrigger(..))
 import WAGS.Interpret (AudioContext, FFIAudio(..), close, context, defaultFFIAudio, makeUnitCache)
 import WAGS.Run (run)
+import Web.HTML as HTML
 import Web.HTML.HTMLElement (HTMLElement, getBoundingClientRect)
+import Web.HTML.Window as Window
 
 easingAlgorithm :: Cofree ((->) Int) Int
 easingAlgorithm = let fOf initialTime = mkCofree initialTime \adj -> fOf $ max 10 (initialTime - adj) in fOf 20
@@ -131,7 +133,20 @@ handleAction = case _ of
                 unitCache <- H.liftEffect makeUnitCache
                 let
                   ffiAudio = defaultFFIAudio audioCtx unitCache
-                unsubscribeFromWAGS <-
+                refId <- Ref.new Nothing
+                refPainting <- Ref.new Nothing
+                let
+                  loop = do
+                    asCanvas <- asCanvasElement element Just Nothing
+                    for_ asCanvas \asCanvas' -> do
+                      painting <- Ref.read refPainting
+                      ctx2d <- getContext2D asCanvas'
+                      for_ painting $ Painting.render ctx2d imageSources
+                    w <- HTML.window
+                    id <- Window.requestAnimationFrame loop w
+                    Ref.write (Just id) refId
+                loop
+                unsub <-
                   subscribe
                     ( run
                         (mouseEvent <|> pure Start)
@@ -140,13 +155,16 @@ handleAction = case _ of
                         (FFIAudio ffiAudio)
                         piece
                     )
-                    ( \{ res } -> do
-                        asCanvas <- asCanvasElement element Just Nothing
-                        for_ asCanvas \asCanvas' -> do
-                          ctx2d <- getContext2D asCanvas'
-                          Painting.render ctx2d imageSources res.painting
-                    )
-                pure { unsubscribeFromWAGS, audioCtx }
+                    (\{ res: { painting } } -> Ref.write (Just painting) refPainting)
+                pure
+                  { unsubscribeFromWAGS:
+                      do
+                        unsub
+                        id <- Ref.read refId
+                        w <- HTML.window
+                        for_ id $ flip Window.cancelAnimationFrame w
+                  , audioCtx
+                  }
             H.modify_
               _
                 { unsubscribeFromWAGS = unsubscribeFromWAGS
