@@ -1,14 +1,13 @@
 module Main where
 
 import Prelude
-
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, mkCofree)
 import Data.Compactable (compact)
 import Data.Foldable (for_, traverse_)
 import Data.Int (toNumber)
 import Data.List (List(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), isNothing)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
@@ -26,6 +25,8 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.VDom.Driver (runUI)
 import Heterogeneous.Mapping (hmap)
+import SambaDeUmaNotaSo.Action (Action(..))
+import SambaDeUmaNotaSo.ClickPlayModal (clickPlay)
 import SambaDeUmaNotaSo.Piece (piece)
 import WAGS.Example.KitchenSink.TLP.LoopSig (SambaTrigger(..), SambaWorld)
 import WAGS.Interpret (AudioContext, FFIAudio(..), close, context, defaultFFIAudio, makeUnitCache)
@@ -49,11 +50,6 @@ type State
     , graph :: Maybe String
     , audioSrc :: Maybe String
     }
-
-data Action
-  = StartAudio
-  | Ilz
-  | StopAudio
 
 component :: forall query input output m. MonadEffect m => MonadAff m => H.Component query input output m
 component =
@@ -79,19 +75,19 @@ initialState _ =
   }
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render =
-  const
-    $ HH.div [ HP.classes $ map ClassName [ "h-screen", "w-screen" ] ]
-        [ HH.div
-            [ HP.classes $ map ClassName [ "h-full", "w-full", "flex", "flex-col" ] ]
-            [ HH.div [ HP.classes $ map ClassName [ "flex-grow" ] ]
-                [ HH.canvas
-                    [ HP.ref (H.RefLabel "myCanvas")
-                    , HP.classes $ map ClassName [ "h-full", "w-full" ]
-                    ]
+render { audioCtx } =
+  HH.div [ HP.classes $ map ClassName [ "h-screen", "w-screen" ] ]
+    [ HH.div
+        [ HP.classes $ map ClassName [ "h-full", "w-full", "flex", "flex-col" ] ]
+        [ HH.div [ HP.classes $ map ClassName [ "flex-grow" ] ]
+            [ HH.canvas
+                [ HP.ref (H.RefLabel "myCanvas")
+                , HP.classes $ map ClassName [ "h-full", "w-full" ]
                 ]
             ]
         ]
+    , clickPlay { open: isNothing audioCtx }
+    ]
 
 imageSources :: ImageSources
 imageSources =
@@ -106,7 +102,6 @@ foreign import asCanvasElement :: HTMLElement -> (CanvasElement -> Maybe CanvasE
 handleAction :: forall output m. MonadEffect m => MonadAff m => Action -> H.HalogenM State Action () output m Unit
 handleAction = case _ of
   Ilz -> do
-    -- todo: can we use `ref` here?
     H.getHTMLElementRef (H.RefLabel "myCanvas")
       >>= traverse_ \element -> do
           H.modify_
