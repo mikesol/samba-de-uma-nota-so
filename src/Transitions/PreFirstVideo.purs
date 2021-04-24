@@ -9,7 +9,6 @@ import Data.List as L
 import Data.Typelevel.Num (class Lt, class Nat, d0, d1, d2, d3, d4, d5, d6, D7)
 import Data.Vec as V
 import Record as R
-import SambaDeUmaNotaSo.Duration (firstVocalDuration)
 import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowAndVideoOnScreen, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (InterpretVideoSig, IsVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreFirstVideo as IO
@@ -34,14 +33,11 @@ interpretVideo ::
   Lt window D7 =>
   window ->
   InterpretVideoSig
-interpretVideo window stTime =
+interpretVideo window videoSpan =
   _.windowsAndVideoOnScreen
     <<< withWindowAndVideoOnScreen
         { window
-        , videoSpan:
-            { start: stTime
-            , duration: (firstVocalDuration stTime)
-            }
+        , videoSpan
         }
     <<< withWindowOnScreen
 

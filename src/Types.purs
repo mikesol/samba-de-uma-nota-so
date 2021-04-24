@@ -37,6 +37,9 @@ type FirstPartEnv
     , isWindowTouched :: Windows Boolean
     }
 
+type VideoSpan
+  = { start :: Number, duration :: Number }
+
 {-
 type WithWindowOnScreen' r
   = ( windowOnScreen :: Window -> Painting | r )

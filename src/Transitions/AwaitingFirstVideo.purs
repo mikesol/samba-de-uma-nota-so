@@ -1,24 +1,18 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.List (fold)
-import SambaDeUmaNotaSo.Empty (reset)
+import SambaDeUmaNotaSo.Duration (firstVocalDuration)
 import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingFirstVideo as IO
-import SambaDeUmaNotaSo.Loops.End (endCreate)
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo, preFirstVideoConstant)
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
+import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import WAGS.Change (change)
-import WAGS.Connect (connect)
 import WAGS.Control.Functions (branch, env, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Create (create)
-import WAGS.Cursor (cursor)
-import WAGS.Destroy (destroy)
-import WAGS.Disconnect (disconnect)
+
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig)
 
 doAwaitingFirstVideo ::
@@ -30,7 +24,7 @@ doAwaitingFirstVideo =
     pr <- proof
     let
       ctxt =
-          withFirstPartEnv acc.mostRecentWindowInteraction
+        withFirstPartEnv acc.mostRecentWindowInteraction
           $ withAugmentedEnv
               { canvas: e.world.canvas
               , interactions: e.trigger.touches
@@ -47,11 +41,12 @@ doAwaitingFirstVideo =
                   $> acc
         else
           Left
-            $ inSitu doEnd WAGS.do
-                cursorConstant <- cursor preFirstVideoConstant
-                disconnect cursorConstant acc.cursorGain
-                destroy cursorConstant
-                reset
-                toAdd <- create endCreate
-                connect toAdd acc.cursorGain
-                withProof pr unit
+            $ inSitu doFirstVideo WAGS.do
+                let
+                  videoSpan = { start: e.time, duration: firstVocalDuration e.time }
+                withProof pr
+                  { interpretVideo: acc.interpretVideo videoSpan
+                  , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                  , cursorGain: acc.cursorGain
+                  , videoSpan
+                  }
