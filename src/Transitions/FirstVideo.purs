@@ -8,7 +8,7 @@ import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.FirstVideo as IO
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
+import SambaDeUmaNotaSo.Loops.FirstVideo (FirstVideoUniverse, deltaFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -18,7 +18,7 @@ import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 -- | We play the first video and then move onto the pre-second video.
 doFirstVideo ::
   forall proof iu cb.
-  StepSig (PreFirstVideoUniverse cb) proof iu IO.Accumulator
+  StepSig (FirstVideoUniverse cb) proof iu IO.Accumulator
 doFirstVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -38,7 +38,7 @@ doFirstVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                change deltaPreFirstVideo
+                change deltaFirstVideo
                   $> acc 
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }

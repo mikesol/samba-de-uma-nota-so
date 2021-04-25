@@ -3,9 +3,9 @@ module SambaDeUmaNotaSo.Loops.PreFirstVideo where
 import Prelude
 
 import Data.Identity (Identity(..))
-import SambaDeUmaNotaSo.Empty (BaseGraph, EI0, EI1, MainBus, mainBus, mainBusFG)
+import SambaDeUmaNotaSo.Empty (BaseGraph, EI0, EI1, MainBus, MainBusFG, mainBus, mainBusFG)
 import WAGS.Control.Types (Universe')
-import WAGS.Graph.Constructors (Constant, Gain, Speaker)
+import WAGS.Graph.Constructors (Constant)
 import WAGS.Graph.Decorators (Focus(..), Decorating')
 import WAGS.Graph.Optionals (GetSetAP, constant)
 import WAGS.Universe.AudioUnit (TConstant)
@@ -21,21 +21,31 @@ type PreFirstVideoGraph
 type PreFirstVideoUniverse cb
   = Universe' EI1 PreFirstVideoGraph cb
 
+type PreFirstVideoLens' :: forall k. (Type -> k) -> k
+type PreFirstVideoLens' constant
+  = constant (Constant GetSetAP)
+
 type PreFirstVideoLens constant
   = MainBus (constant (Constant GetSetAP))
 
+preFirstVideo'' ::
+  forall dConstant.
+  { dConstant :: Decorating' dConstant } ->
+  PreFirstVideoLens' dConstant
+preFirstVideo'' f = f.dConstant $ constant 0.0
+
 preFirstVideo' ::
   forall dConstant.
-  Decorating' dConstant ->
+  { dConstant :: Decorating' dConstant } ->
   PreFirstVideoLens dConstant
-preFirstVideo' dConstant = mainBus (dConstant $ constant 0.0)
+preFirstVideo' f = mainBus (preFirstVideo'' f)
 
-preFirstVideoMainBus :: Speaker (Focus (Gain GetSetAP (Constant GetSetAP)))
-preFirstVideoMainBus = mainBusFG (constant 0.0)
+preFirstVideoMainBus :: MainBusFG (PreFirstVideoLens' Identity)
+preFirstVideoMainBus = mainBusFG (preFirstVideo'' {dConstant : Identity})
 
-preFirstVideoCreate = preFirstVideo' Identity :: PreFirstVideoLens Identity
+preFirstVideoCreate = preFirstVideo' {dConstant : Identity} :: PreFirstVideoLens Identity
 
-preFirstVideoConstant = preFirstVideo' Focus :: PreFirstVideoLens Focus
+preFirstVideoConstant = preFirstVideo' {dConstant : Focus} :: PreFirstVideoLens Focus
 
-deltaPreFirstVideo :: MainBus (Constant GetSetAP)
-deltaPreFirstVideo = mainBus (constant 0.0)
+deltaPreFirstVideo :: PreFirstVideoLens Identity
+deltaPreFirstVideo = mainBus (Identity $ constant 0.0)

@@ -47,6 +47,9 @@ type BaseGraph ptr
 type MainBus c
   = Speaker (Gain GetSetAP c)
 
+type MainBusFG c
+  = Speaker (Focus (Gain GetSetAP c))
+
 mainBus ::
   forall music.
   IsMultiAudioOrF music =>

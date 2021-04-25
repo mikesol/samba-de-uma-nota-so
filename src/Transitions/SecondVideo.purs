@@ -10,7 +10,7 @@ import SambaDeUmaNotaSo.Empty (reset)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
 import SambaDeUmaNotaSo.Loops.End (endCreate)
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo, preFirstVideoConstant)
+import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoUniverse, deltaSecondVideo, secondVideoConstant)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
 import WAGS.Change (change)
 import WAGS.Connect (connect)
@@ -25,7 +25,7 @@ import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 -- | We play the first video and then move onto the pre-second video.
 doSecondVideo ::
   forall proof iu cb.
-  StepSig (PreFirstVideoUniverse cb) proof iu IO.Accumulator
+  StepSig (SecondVideoUniverse cb) proof iu IO.Accumulator
 doSecondVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -45,14 +45,14 @@ doSecondVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                change deltaPreFirstVideo
+                change deltaSecondVideo
                   $> acc 
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else
           Left
             $ inSitu doEnd WAGS.do
-                cursorConstant <- cursor preFirstVideoConstant
+                cursorConstant <- cursor secondVideoConstant
                 disconnect cursorConstant acc.cursorGain
                 destroy cursorConstant
                 reset

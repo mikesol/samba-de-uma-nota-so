@@ -9,7 +9,7 @@ import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Duration (secondVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
+import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (AwaitingSecondVideoUniverse, deltaAwaitingSecondVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -19,7 +19,7 @@ import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 -- | We wait until there's an interaction with the second video's rectangle.
 doAwaitingSecondVideo ::
   forall proof iu cb.
-  StepSig (PreFirstVideoUniverse cb) proof iu IO.Accumulator
+  StepSig (AwaitingSecondVideoUniverse cb) proof iu IO.Accumulator
 doAwaitingSecondVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -39,7 +39,7 @@ doAwaitingSecondVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (withWindowOnScreen ctxt).windowsOnScreen) }
-                change deltaPreFirstVideo
+                change deltaAwaitingSecondVideo
                   $> acc 
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }

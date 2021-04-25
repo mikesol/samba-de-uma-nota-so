@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.IO.PreFirstVideo where
 
 import Prelude
-
 import Data.Maybe (Maybe)
 import Data.Typelevel.Num (class Lt, class Nat, D7)
 import Data.Vec as V
@@ -33,12 +32,12 @@ interpretVideo window videoSpan =
         }
     <<< withWindowOnScreen
 
-type IsVideoWindowTouched = Windows Boolean -> Boolean
+type IsVideoWindowTouched
+  = Windows Boolean -> Boolean
 
 type InterpretVideoSig0
   = FirstPartEnv ->
     Windows Painting
-
 
 type InterpretVideoSig
   = VideoSpan ->
