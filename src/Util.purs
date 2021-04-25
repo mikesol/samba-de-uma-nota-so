@@ -3,13 +3,15 @@ module SambaDeUmaNotaSo.Util where
 import Prelude
 
 import Color (Color, rgb)
-import Data.Int (floor, toNumber)
+import Data.Int (toNumber)
+import Data.Int as DInt
 import Data.Maybe (Maybe(..))
 import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Point)
-import SambaDeUmaNotaSo.Constants (end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, start)
+import Math (floor)
+import SambaDeUmaNotaSo.Constants (beat, end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, start)
 import SambaDeUmaNotaSo.Types (RGB, Windows)
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
@@ -31,7 +33,7 @@ argb t0 c0 t1 c1 t =
   , b: cs c0.b c1.b
   }
   where
-  cs x y = floor (bindBetween 0.0 255.0 (calcSlope t0 (toNumber x) t1 (toNumber y) t))
+  cs x y = DInt.floor (bindBetween 0.0 255.0 (calcSlope t0 (toNumber x) t1 (toNumber y) t))
 
 windowColors :: Windows RGB
 windowColors =
@@ -107,3 +109,9 @@ scaleRect w h r = { x: r.x * w, y: r.y * h, width: r.width * w, height: r.height
 
 windowToRect :: Number -> Number -> Windows Rectangle
 windowToRect w h = map (scaleRect w h) windowCoords
+
+rectCenter :: Rectangle -> Point
+rectCenter { x, y, width, height } = { x: x + (width / 2.0), y: y + (height / 2.0) }
+
+lastBeat :: Number -> Number
+lastBeat t = (floor (t / beat)) * beat

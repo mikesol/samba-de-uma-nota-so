@@ -6,20 +6,13 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Empty (reset)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
-import SambaDeUmaNotaSo.Loops.End (endCreate)
-import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoUniverse, deltaSecondVideo, secondVideoConstant)
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoUniverse, deltaSecondVideo)
+import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import WAGS.Change (change)
-import WAGS.Connect (connect)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Create (create)
-import WAGS.Cursor (cursor)
-import WAGS.Destroy (destroy)
-import WAGS.Disconnect (disconnect)
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 
 -- | We play the first video and then move onto the pre-second video.
@@ -51,11 +44,9 @@ doSecondVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                cursorConstant <- cursor secondVideoConstant
-                disconnect cursorConstant acc.cursorGain
-                destroy cursorConstant
-                reset
-                toAdd <- create endCreate
-                connect toAdd acc.cursorGain
-                withProof pr unit
+            $ inSitu doPreThirdVideo WAGS.do
+                withProof pr
+                  { startsInEarnestAt: acc.videoSpan.end
+                  , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                  , cursorGain: acc.cursorGain
+                  }

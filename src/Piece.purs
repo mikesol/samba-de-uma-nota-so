@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
+
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
@@ -12,12 +13,14 @@ import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate, aw
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate, firstVideoMainBus)
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate, preFirstVideoMainBus)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate, preSecondVideoMainBus)
+import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate, preThirdVideoMainBus)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate, secondVideoMainBus)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
+import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import Type.Data.Peano as N
 import Type.Proxy (Proxy(..))
@@ -36,8 +39,9 @@ data StartAt
   | PreSecondVideo
   | AwaitingSecondVideo
   | SecondVideo
+  | PreThirdVideo
 
-startAt = PreFirstVideo :: StartAt
+startAt = PreThirdVideo :: StartAt
 
 -- | When working on the piece, we want to be able to start from any section.
 -- | This splits up the start of the piece on a section-by-section basis
@@ -120,3 +124,14 @@ piece = case startAt of
             , videoSpan
             }
         @|> doSecondVideo
+  PreThirdVideo ->
+      WAGS.do
+        start
+        ivoid $ create preThirdVideoCreate
+        cursorGain <- cursor preThirdVideoMainBus
+        moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
+          $> { startsInEarnestAt: 0.0
+            , mostRecentWindowInteraction: V.fill (const Nothing)
+            , cursorGain
+            }
+        @|> doPreThirdVideo

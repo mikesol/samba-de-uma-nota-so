@@ -12,6 +12,14 @@ measure = beat * beatsInMeasure :: Number
 
 fourMeasures = measure * 4.0 :: Number
 
+oneBeat = beat * 1.0 :: Number
+twoBeats = beat * 2.0 :: Number
+threeBeats = beat * 3.0 :: Number
+fourBeats = beat * 4.0 :: Number
+fiveBeats = beat * 5.0 :: Number
+sixBeats = beat * 6.0 :: Number
+sevenBeats = beat * 7.0 :: Number
+
 -- | How long a window should last when clicked.
 -- | For now this is 4 beats, but it could be shorter/longer.
 beatsInWindow = 4.0 :: Number
