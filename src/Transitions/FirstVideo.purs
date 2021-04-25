@@ -32,7 +32,7 @@ doFirstVideo =
               , time: e.time
               }
     withProof pr
-      $ if acc.videoSpan.start + acc.videoSpan.duration > e.time then
+      $ if acc.videoSpan.end > e.time then
           Right
             $ WAGS.do
                 ivoid

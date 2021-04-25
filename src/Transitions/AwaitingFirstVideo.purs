@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Duration (firstVocalDuration)
+import SambaDeUmaNotaSo.Duration (firstVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingFirstVideo as IO
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoUniverse, deltaPreFirstVideo)
@@ -47,7 +47,7 @@ doAwaitingFirstVideo =
           Left
             $ inSitu doFirstVideo WAGS.do
                 let
-                  videoSpan = { start: e.time, duration: firstVocalDuration e.time }
+                  videoSpan = { start: e.time, end: firstVocalEnds e.time }
                 withProof pr
                   { interpretVideo: acc.interpretVideo videoSpan
                   , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction

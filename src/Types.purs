@@ -39,4 +39,4 @@ type FirstPartEnv
     }
 
 type VideoSpan
-  = { start :: Number, duration :: Number }
+  = { start :: Number, end :: Number }

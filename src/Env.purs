@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Env where
 
 import Prelude
+
 import Color (rgb, rgba)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (class Lt, class Nat, D7)
@@ -10,7 +11,7 @@ import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import Prim.Row (class Lacks)
 import Record as R
 import SambaDeUmaNotaSo.Constants (windowLength)
-import SambaDeUmaNotaSo.Types (AugmentedEnv, BaseEnv, FirstPartEnv, Windows, RGB)
+import SambaDeUmaNotaSo.Types (AugmentedEnv, BaseEnv, FirstPartEnv, RGB, Windows, VideoSpan)
 import SambaDeUmaNotaSo.Util (argb, bindBetween, calcSlope, isRectangleTouched, rgbx, windowColors, windowToRect, xrgb)
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions (env)
@@ -122,7 +123,7 @@ withWindowAndVideoOnScreen ::
   Lt nat D7 =>
   Lacks "windowsAndVideoOnScreen" r =>
   { window :: nat
-  , videoSpan :: { start :: Number, duration :: Number }
+  , videoSpan :: VideoSpan
   | x
   } ->
   { time :: Number
@@ -151,9 +152,10 @@ withWindowAndVideoOnScreen { window, videoSpan } i@{ windowsOnScreen
             ( fillColor
                 ( rgba 0 0 0
                     ( bindBetween 0.0 1.0
-                        ( calcSlope (videoSpan.start)
+                        ( calcSlope
+                            videoSpan.start
                             0.0
-                            (videoSpan.start + videoSpan.duration)
+                            videoSpan.end
                             1.0
                             time
                         )

@@ -9,6 +9,7 @@ import Data.Int (floor)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Record as R
+import SambaDeUmaNotaSo.Constants (jitterForMod)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreSecondVideo as IO
@@ -62,7 +63,7 @@ doPreSecondVideo =
                     }
                 withProof pr
                   $ R.union
-                      ( case floor e.time `mod` 7 of
+                      ( case (floor (e.time * jitterForMod)) `mod` 7 of
                           0 ->
                             { interpretVideo: interpretVideo d0
                             , isVideoWindowTouched: isVideoWindowTouched d0

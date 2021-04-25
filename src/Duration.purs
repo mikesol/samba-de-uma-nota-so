@@ -1,19 +1,23 @@
 module SambaDeUmaNotaSo.Duration where
 
 import Prelude
-import Data.Int (floor, toNumber)
-import Math ((%))
-import SambaDeUmaNotaSo.Constants (beat, measure)
 
-firstVocalDuration :: Number -> Number
-firstVocalDuration t =
-  let
-    nMeasures = toNumber $ floor (t / measure)
+import Math (ceil)
+import SambaDeUmaNotaSo.Constants (beat, fourMeasures, measure)
 
-    mos
-      | t % measure < 2.0 * beat = 1.0
-      | otherwise = 2.0
-  in
-    (((nMeasures + mos) * measure) - t) + (measure * 4.0)
+firstVocalEnds :: Number -> Number
+firstVocalEnds t = startsAtWithoutAdjustment + adjustmentIfTooClose + sectionLength
+  where
+  -- how many measures will have passed before we can start the section
+  nMeasures = ceil (t / measure)
 
-secondVocalDuration = firstVocalDuration :: Number -> Number
+  -- timestamp of start without any adjustment
+  startsAtWithoutAdjustment = nMeasures * measure
+
+  -- If we are right up against a new measure, elongate by one measure
+  adjustmentIfTooClose = if (t - startsAtWithoutAdjustment) < (2.0 * beat) then measure else 0.0
+
+  -- Eis aqui este sambinha feito numa nota só
+  sectionLength = fourMeasures
+
+secondVocalEnds = firstVocalEnds :: Number -> Number
