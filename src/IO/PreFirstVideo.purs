@@ -1,12 +1,14 @@
 module SambaDeUmaNotaSo.IO.PreFirstVideo where
 
 import Prelude
+
 import Data.Maybe (Maybe)
-import Data.Typelevel.Num (class Lt, class Nat, D7)
+import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
+import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Painting (Painting)
 import SambaDeUmaNotaSo.Empty (MainFader)
-import SambaDeUmaNotaSo.Env (withWindowAndVideoOnScreen, withWindowOnScreen)
+import SambaDeUmaNotaSo.Env (withWindowAndVideoOnScreen, withWindowAndVideoOnScreen', withWindowOnScreen)
 import SambaDeUmaNotaSo.Types (FirstPartEnv, Windows, VideoSpan)
 import WAGS.Universe.AudioUnit (AudioUnitRef)
 
@@ -31,6 +33,32 @@ interpretVideo window videoSpan =
         , videoSpan
         }
     <<< withWindowOnScreen
+
+interpretVideoNoDim ::
+  forall window.
+  Nat window =>
+  Lt window D7 =>
+  window ->
+  InterpretVideoSig
+interpretVideoNoDim window videoSpan =
+  _.windowsAndVideoOnScreen
+    <<< withWindowAndVideoOnScreen' false
+        { window
+        , videoSpan
+        }
+    <<< withWindowOnScreen
+
+-- todo: hmap?
+interpretVideoAsWindows :: Windows InterpretVideoSig
+interpretVideoAsWindows =
+  interpretVideoNoDim d0
+    +> interpretVideoNoDim d1
+    +> interpretVideoNoDim d2
+    +> interpretVideoNoDim d3
+    +> interpretVideoNoDim d4
+    +> interpretVideoNoDim d5
+    +> interpretVideoNoDim d6
+    +> V.empty
 
 type IsVideoWindowTouched
   = Windows Boolean -> Boolean

@@ -46,7 +46,6 @@ doSecondVideo =
           Left
             $ inSitu doPreThirdVideo WAGS.do
                 withProof pr
-                  { startsInEarnestAt: acc.videoSpan.end
-                  , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                  { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain
                   }

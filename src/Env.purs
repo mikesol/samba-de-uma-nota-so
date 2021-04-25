@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Env where
 
 import Prelude
-
 import Color (rgb, rgba)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (class Lt, class Nat, D7)
@@ -137,7 +136,30 @@ withWindowAndVideoOnScreen ::
   , windowsAndVideoOnScreen :: Windows Painting
   | r
   }
-withWindowAndVideoOnScreen { window, videoSpan } i@{ windowsOnScreen
+withWindowAndVideoOnScreen = withWindowAndVideoOnScreen' true
+
+withWindowAndVideoOnScreen' ::
+  forall nat x r.
+  Nat nat =>
+  Lt nat D7 =>
+  Lacks "windowsAndVideoOnScreen" r =>
+  Boolean ->
+  { window :: nat
+  , videoSpan :: VideoSpan
+  | x
+  } ->
+  { time :: Number
+  , windowsOnScreen :: Windows Painting
+  , windowDims :: Windows Rectangle
+  | r
+  } ->
+  { time :: Number
+  , windowDims :: Windows Rectangle
+  , windowsOnScreen :: Windows Painting
+  , windowsAndVideoOnScreen :: Windows Painting
+  | r
+  }
+withWindowAndVideoOnScreen' doAlphaDim { window, videoSpan } i@{ windowsOnScreen
 , windowDims
 , time
 } =
@@ -148,21 +170,24 @@ withWindowAndVideoOnScreen { window, videoSpan } i@{ windowsOnScreen
       filled
         (fillColor (rgb 255 255 255))
         (rectangle rct.x rct.y rct.width rct.height)
-        <> filled
-            ( fillColor
-                ( rgba 0 0 0
-                    ( bindBetween 0.0 1.0
-                        ( calcSlope
-                            videoSpan.start
-                            0.0
-                            videoSpan.end
-                            1.0
-                            time
-                        )
-                    )
-                )
-            )
-            (rectangle rct.x rct.y rct.width rct.height)
+        <> if not doAlphaDim then
+            mempty
+          else
+            filled
+              ( fillColor
+                  ( rgba 0 0 0
+                      ( bindBetween 0.0 1.0
+                          ( calcSlope
+                              videoSpan.start
+                              0.0
+                              videoSpan.end
+                              1.0
+                              time
+                          )
+                      )
+                  )
+              )
+              (rectangle rct.x rct.y rct.width rct.height)
 
     windowsAndVideoOnScreen = V.updateAt window vid windowsOnScreen
   in

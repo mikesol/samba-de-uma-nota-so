@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Duration where
 
 import Prelude
-
 import Math (ceil)
 import SambaDeUmaNotaSo.Constants (beat, fourMeasures, measure)
 
@@ -21,3 +20,5 @@ firstVocalEnds t = startsAtWithoutAdjustment + adjustmentIfTooClose + sectionLen
   sectionLength = fourMeasures
 
 secondVocalEnds = firstVocalEnds :: Number -> Number
+
+thirdVocalEnds = firstVocalEnds :: Number -> Number

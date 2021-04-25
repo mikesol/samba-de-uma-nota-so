@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
-
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
@@ -15,6 +14,7 @@ import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate, preFirstVideoM
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate, preSecondVideoMainBus)
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate, preThirdVideoMainBus)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate, secondVideoMainBus)
+import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate, thirdVideoMainBus)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
@@ -22,6 +22,7 @@ import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
+import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import Type.Data.Peano as N
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions (start, (@|>))
@@ -40,6 +41,7 @@ data StartAt
   | AwaitingSecondVideo
   | SecondVideo
   | PreThirdVideo
+  | ThirdVideo
 
 startAt = PreThirdVideo :: StartAt
 
@@ -125,13 +127,27 @@ piece = case startAt of
             }
         @|> doSecondVideo
   PreThirdVideo ->
+    WAGS.do
+      start
+      ivoid $ create preThirdVideoCreate
+      cursorGain <- cursor preThirdVideoMainBus
+      moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
+        $> { mostRecentWindowInteraction: V.fill (const Nothing)
+          , cursorGain
+          }
+      @|> doPreThirdVideo
+  ThirdVideo ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
       WAGS.do
         start
-        ivoid $ create preThirdVideoCreate
-        cursorGain <- cursor preThirdVideoMainBus
+        ivoid $ create thirdVideoCreate
+        cursorGain <- cursor thirdVideoMainBus
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
-          $> { startsInEarnestAt: 0.0
+          $> { interpretVideo: interpretVideo d5 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
             , cursorGain
+            , videoSpan
             }
-        @|> doPreThirdVideo
+        @|> doThirdVideo

@@ -6,12 +6,13 @@ import Color (Color, rgb)
 import Data.Int (toNumber)
 import Data.Int as DInt
 import Data.Maybe (Maybe(..))
+import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Point)
-import Math (floor)
-import SambaDeUmaNotaSo.Constants (beat, end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, start)
+import Math (floor, (%))
+import SambaDeUmaNotaSo.Constants (beat, end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, sevenBeats, start, fiveBeats, fourBeats, oneBeat, sixBeats, threeBeats, twoBeats)
 import SambaDeUmaNotaSo.Types (RGB, Windows)
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
@@ -115,3 +116,13 @@ rectCenter { x, y, width, height } = { x: x + (width / 2.0), y: y + (height / 2.
 
 lastBeat :: Number -> Number
 lastBeat t = (floor (t / beat)) * beat
+
+thingCurrentBeat :: forall a. Number -> Windows a -> a
+thingCurrentBeat time windows
+  | time % sevenBeats < oneBeat = V.index windows d0
+  | time % sevenBeats < twoBeats = V.index windows d1
+  | time % sevenBeats < threeBeats = V.index windows d2
+  | time % sevenBeats < fourBeats = V.index windows d3
+  | time % sevenBeats < fiveBeats = V.index windows d4
+  | time % sevenBeats < sixBeats = V.index windows d5
+  | otherwise = V.index windows d6
