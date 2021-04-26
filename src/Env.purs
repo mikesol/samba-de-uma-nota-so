@@ -86,6 +86,22 @@ paintWindowOnScreen time mostRecentWindowInteraction windowDims windowColor =
     )
     (rectangle windowDims.x windowDims.y windowDims.width windowDims.height)
 
+withWindowDims ::
+  forall r.
+  Lacks "windowDims" r =>
+  { canvas :: DOMRect
+  | r
+  } ->
+  { canvas :: DOMRect
+  , windowDims :: Windows Rectangle
+  | r
+  }
+withWindowDims i@{ canvas } =
+  R.insert
+    (Proxy :: _ "windowDims")
+    (windowToRect canvas.width canvas.height)
+    i
+
 withWindowOnScreen ::
   forall r.
   Lacks "windowDims" r =>
@@ -102,18 +118,17 @@ withWindowOnScreen ::
   , windowsOnScreen :: Windows Painting
   | r
   }
-withWindowOnScreen i@{ canvas, mostRecentWindowInteraction, time } =
+withWindowOnScreen i'@{ mostRecentWindowInteraction, time } =
   let
-    rcts = windowToRect canvas.width canvas.height
+    i = withWindowDims i'
 
     curriedFn0 = map (paintWindowOnScreen time) mostRecentWindowInteraction
 
-    curriedFn1 = V.zipWithE ($) curriedFn0 rcts
+    curriedFn1 = V.zipWithE ($) curriedFn0 i.windowDims
 
     windowsOnScreen = V.zipWithE ($) curriedFn1 windowColors
   in
-    R.insert (Proxy :: _ "windowDims") rcts
-      (R.insert (Proxy :: _ "windowsOnScreen") windowsOnScreen i)
+    R.insert (Proxy :: _ "windowsOnScreen") windowsOnScreen i
 
 withWindowAndVideoOnScreen ::
   forall nat x r.
@@ -191,3 +206,37 @@ withWindowAndVideoOnScreen' doAlphaDim { window, videoSpan } i@{ windowsOnScreen
     windowsAndVideoOnScreen = V.updateAt window vid windowsOnScreen
   in
     R.insert (Proxy :: _ "windowsAndVideoOnScreen") windowsAndVideoOnScreen i
+
+-----------------------
+-----------------------
+-----------------------
+---------------- bridge
+-----------------------
+-----------------------
+-----------------------
+paintBridgeWindowOnScreen :: Rectangle -> RGB -> Painting
+paintBridgeWindowOnScreen windowDims windowColor =
+  filled
+    (fillColor (rgbx windowColor))
+    (rectangle windowDims.x windowDims.y windowDims.width windowDims.height)
+
+withBridgeWindowOnScreen ::
+  forall r.
+  Lacks "windowDims" r =>
+  Lacks "windowsOnScreen" r =>
+  { canvas :: DOMRect
+  | r
+  } ->
+  { canvas :: DOMRect
+  , windowDims :: Windows Rectangle
+  , windowsOnScreen :: Windows (RGB -> Painting)
+  | r
+  }
+withBridgeWindowOnScreen i' =
+  let
+    i = withWindowDims i'
+
+    curriedFn0 = map paintBridgeWindowOnScreen i.windowDims
+
+  in
+    R.insert (Proxy :: _ "windowsOnScreen") curriedFn0 i

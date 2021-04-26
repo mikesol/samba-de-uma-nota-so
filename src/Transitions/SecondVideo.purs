@@ -10,6 +10,7 @@ import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
 import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoUniverse, deltaSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
+import SambaDeUmaNotaSo.Util (beatModSeven)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
@@ -48,4 +49,6 @@ doSecondVideo =
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain
+                  , b7IsWindowTouched: beatModSeven
+                  , b7WindowDims: beatModSeven
                   }

@@ -26,6 +26,7 @@ import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
+import SambaDeUmaNotaSo.Util (beatModSeven)
 import Type.Data.Peano as N
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
@@ -48,7 +49,7 @@ data StartAt
   | ThirdVideo
   | FourthVideo
 
-startAt = PreFirstVideo :: StartAt
+startAt = PreThirdVideo :: StartAt
 
 startWithBlackBackground ::
   forall audio engine m.
@@ -153,6 +154,8 @@ piece = case startAt of
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { mostRecentWindowInteraction: V.fill (const Nothing)
           , cursorGain
+          , b7IsWindowTouched: beatModSeven
+          , b7WindowDims: beatModSeven
           }
       @|> doPreThirdVideo
   ThirdVideo ->
@@ -168,6 +171,7 @@ piece = case startAt of
             , mostRecentWindowInteraction: V.fill (const Nothing)
             , cursorGain
             , videoSpan
+            , b7WindowDims: beatModSeven
             }
         @|> doThirdVideo
   FourthVideo ->
@@ -182,5 +186,6 @@ piece = case startAt of
           $> { mostRecentWindowInteraction: V.fill (const Nothing)
             , cursorGain
             , videoSpan
+            , b7WindowDims: beatModSeven
             }
         @|> doFourthVideo

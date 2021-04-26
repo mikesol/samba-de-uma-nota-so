@@ -3,6 +3,7 @@ module SambaDeUmaNotaSo.Transitions.FourthVideo where
 import Prelude
 
 import Color (rgb)
+import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -18,7 +19,7 @@ import SambaDeUmaNotaSo.IO.FourthVideo as IO
 import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoUniverse, deltaFourthVideo)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
 import SambaDeUmaNotaSo.Types (Windows)
-import SambaDeUmaNotaSo.Util (rectCenter, thingCurrentBeat)
+import SambaDeUmaNotaSo.Util (rectCenter)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
@@ -29,21 +30,28 @@ boomBoom :: Number -> Number -> DOMRect -> Painting
 boomBoom time startsAt canvas = go
   where
   pos = time - startsAt
+
   middleFrame = filled (fillColor (rgb 255 255 255)) (rectangle (canvas.width / 3.0) (canvas.height / 3.0) (1.0 * canvas.width / 3.0) (1.0 * canvas.height / 3.0))
+
   go
     | pos < thirteenAndAHalfBeats = middleFrame
-    | pos < fourteenBeats = filled
-            (fillColor (rgb 100 100 100))
-            (rectangle 0.0 0.0 canvas.width canvas.height) <> middleFrame
-    | pos < fifteenBeats = filled
-            (fillColor (rgb 200 200 200))
-            (rectangle 0.0 0.0 canvas.width canvas.height) <> middleFrame
+    | pos < fourteenBeats =
+      filled
+        (fillColor (rgb 100 100 100))
+        (rectangle 0.0 0.0 canvas.width canvas.height)
+        <> middleFrame
+    | pos < fifteenBeats =
+      filled
+        (fillColor (rgb 200 200 200))
+        (rectangle 0.0 0.0 canvas.width canvas.height)
+        <> middleFrame
     | otherwise = mempty
 
 moveVideo :: Number -> Number -> Windows Rectangle -> Windows Painting -> Windows Painting
 moveVideo time startsAt windowDims windowsOnScreen = go
   where
   pos = time - startsAt
+
   ua :: forall w. Nat w => Lt w D7 => w -> Windows Painting
   ua d =
     V.updateAt d
@@ -95,9 +103,9 @@ doFourthVideo =
                 let
                   visualCtxt = withWindowOnScreen ctxt
 
-                  windowCoord = thingCurrentBeat e.time visualCtxt.windowDims
+                  wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
 
-                  ctr = rectCenter windowCoord
+                  ctr = rectCenter (head wd)
 
                   beforeTag = e.time - acc.videoSpan.start < elevenAndAHalfBeats
 
@@ -111,6 +119,7 @@ doFourthVideo =
                 change deltaFourthVideo
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
+                      , b7WindowDims = tail wd
                       }
         else
           Left

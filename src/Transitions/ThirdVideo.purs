@@ -2,6 +2,7 @@ module SambaDeUmaNotaSo.Transitions.ThirdVideo where
 
 import Prelude
 
+import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -12,7 +13,7 @@ import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWin
 import SambaDeUmaNotaSo.IO.ThirdVideo as IO
 import SambaDeUmaNotaSo.Loops.ThirdVideo (ThirdVideoUniverse, deltaThirdVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
-import SambaDeUmaNotaSo.Util (rectCenter, thingCurrentBeat)
+import SambaDeUmaNotaSo.Util (rectCenter)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
@@ -41,9 +42,9 @@ doThirdVideo =
                 let
                   visualCtxt = withWindowOnScreen ctxt
 
-                  windowCoord = thingCurrentBeat e.time visualCtxt.windowDims
+                  wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
 
-                  ctr = rectCenter windowCoord
+                  ctr = rectCenter (head wd)
 
                   -- todo: we draw over. maybe hide?
                   dotNow = firstPartDot e ctr
@@ -53,6 +54,8 @@ doThirdVideo =
                 change deltaThirdVideo
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
+                      , b7WindowDims = tail wd
+
                       }
         else
           Left
@@ -63,5 +66,6 @@ doThirdVideo =
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain
                   , videoSpan: videoSpan
+                  , b7WindowDims: acc.b7WindowDims
                   }
 

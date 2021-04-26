@@ -1,11 +1,14 @@
 module SambaDeUmaNotaSo.Util where
 
 import Prelude
-
 import Color (Color, rgb)
+import Control.Comonad.Cofree (Cofree, (:<))
 import Data.Int (toNumber)
 import Data.Int as DInt
 import Data.Maybe (Maybe(..))
+import Data.List ((:), List(..))
+import Data.NonEmpty (NonEmpty(..), (:|))
+import Data.Tuple.Nested (type (/\), (/\))
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec ((+>))
 import Data.Vec as V
@@ -117,12 +120,33 @@ rectCenter { x, y, width, height } = { x: x + (width / 2.0), y: y + (height / 2.
 lastBeat :: Number -> Number
 lastBeat t = (floor (t / beat)) * beat
 
-thingCurrentBeat :: forall a. Number -> Windows a -> a
-thingCurrentBeat time windows
-  | time % sevenBeats < oneBeat = V.index windows d0
-  | time % sevenBeats < twoBeats = V.index windows d1
-  | time % sevenBeats < threeBeats = V.index windows d2
-  | time % sevenBeats < fourBeats = V.index windows d3
-  | time % sevenBeats < fiveBeats = V.index windows d4
-  | time % sevenBeats < sixBeats = V.index windows d5
-  | otherwise = V.index windows d6
+nonEmptyToCofree :: forall a b. Maybe (a -> b) -> NonEmpty List ((Number -> Boolean) /\ (a -> b)) -> { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
+nonEmptyToCofree maybeOtherwise (h :| t) = go (h : t)
+  where
+  go Nil = case maybeOtherwise of
+    Just f -> let q { value } = f value :< q in q
+    Nothing -> go (h : t)
+
+  go ((tf /\ vf) : b) = let q i@{ time, value } = if tf time then (vf value :< q) else go b i in q
+
+type ThingCurrentBeatF a
+  = (->) { time :: Number, value :: Windows a }
+
+type BeatMod7' a
+  = (ThingCurrentBeatF a) (Cofree (ThingCurrentBeatF a) a)
+
+type BeatMod7
+  = forall a. (ThingCurrentBeatF a) (Cofree (ThingCurrentBeatF a) a)
+
+beatModSeven :: BeatMod7
+beatModSeven =
+  nonEmptyToCofree Nothing
+    ( ((\time -> time % sevenBeats < oneBeat) /\ (flip V.index d0))
+        :| ((\time -> time % sevenBeats < twoBeats) /\ (flip V.index d1))
+        : ((\time -> time % sevenBeats < threeBeats) /\ (flip V.index d2))
+        : ((\time -> time % sevenBeats < fourBeats) /\ (flip V.index d3))
+        : ((\time -> time % sevenBeats < fiveBeats) /\ (flip V.index d4))
+        : ((\time -> time % sevenBeats < sixBeats) /\ (flip V.index d5))
+        : ((\time -> time % sevenBeats >= sixBeats) /\ (flip V.index d6))
+        : Nil
+    )

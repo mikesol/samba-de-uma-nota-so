@@ -6,6 +6,9 @@ bpm = 160.0 :: Number
 
 beat = 60.0 / bpm :: Number
 
+beats :: Number -> Number
+beats m = beat * m
+
 beatsInMeasure = 4.0 :: Number
 
 measure = beat * beatsInMeasure :: Number

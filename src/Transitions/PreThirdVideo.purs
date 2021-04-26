@@ -1,7 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.PreThirdVideo where
 
 import Prelude
-
+import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -13,7 +13,7 @@ import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideoAsWindows)
 import SambaDeUmaNotaSo.IO.PreThirdVideo as IO
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (PreThirdVideoUniverse, deltaPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
-import SambaDeUmaNotaSo.Util (rectCenter, thingCurrentBeat)
+import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
@@ -35,16 +35,18 @@ doPreThirdVideo =
               , interaction: if e.active then asTouch e.trigger else Nothing
               , time: e.time
               }
+    let
+      iwt = acc.b7IsWindowTouched { time: e.time, value: ctxt.isWindowTouched }
     withProof pr
-      $ if not (thingCurrentBeat e.time ctxt.isWindowTouched) then
+      $ if not (head iwt) then
           Right
             $ WAGS.do
                 let
                   visualCtxt = withWindowOnScreen ctxt
 
-                  windowCoord = thingCurrentBeat e.time visualCtxt.windowDims
+                  wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
 
-                  ctr = rectCenter windowCoord
+                  ctr = rectCenter (head wd)
 
                   dotNow = firstPartDot e ctr
                 ivoid
@@ -58,6 +60,8 @@ doPreThirdVideo =
                 change deltaPreThirdVideo
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
+                      , b7IsWindowTouched = tail iwt
+                      , b7WindowDims = tail wd
                       }
         else
           Left
@@ -67,6 +71,14 @@ doPreThirdVideo =
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain
-                  , interpretVideo: (thingCurrentBeat e.time interpretVideoAsWindows) videoSpan
+                  , interpretVideo:
+                      ( head
+                          $ beatModSeven
+                              { time: e.time
+                              , value: interpretVideoAsWindows
+                              }
+                      )
+                        videoSpan
                   , videoSpan: videoSpan
+                  , b7WindowDims: acc.b7WindowDims
                   }
