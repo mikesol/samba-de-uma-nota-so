@@ -1,6 +1,7 @@
 module Main where
 
 import Prelude
+import Color (rgb)
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, mkCofree)
 import Data.Compactable (compact)
@@ -17,7 +18,7 @@ import FRP.Event (makeEvent, subscribe)
 import FRP.Event.Mouse (Mouse, down, getMouse, withPosition)
 import Foreign.Object as O
 import Graphics.Canvas (CanvasElement, getContext2D)
-import Graphics.Painting (ImageSources)
+import Graphics.Painting (ImageSources, fillColor, filled, rectangle)
 import Graphics.Painting as Painting
 import Halogen (ClassName(..))
 import Halogen as H
@@ -107,6 +108,15 @@ handleAction = case _ of
       H.liftEffect do
         mouse <- getMouse
         pure { mouse }
+    H.getHTMLElementRef (H.RefLabel "myCanvas")
+      >>= traverse_ \element ->
+          H.liftEffect
+            $ do
+                asCanvas <- asCanvasElement element Just Nothing
+                for_ asCanvas \asCanvas' -> do
+                  ctx2d <- getContext2D asCanvas'
+                  bb <- getBoundingClientRect element
+                  Painting.render ctx2d imageSources (filled (fillColor (rgb 0 0 0)) (rectangle 0.0 0.0 bb.width bb.height))
     H.modify_ _ { mouse = Just mouse }
   StartAudio -> do
     handleAction StopAudio

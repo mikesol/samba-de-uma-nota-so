@@ -10,6 +10,7 @@ import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import Prim.Row (class Lacks)
 import Record as R
 import SambaDeUmaNotaSo.Constants (windowLength)
+import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.Types (AugmentedEnv, BaseEnv, FirstPartEnv, RGB, Windows, VideoSpan)
 import SambaDeUmaNotaSo.Util (argb, bindBetween, calcSlope, isRectangleTouched, rgbx, windowColors, windowToRect, xrgb)
 import Type.Proxy (Proxy(..))
@@ -45,9 +46,7 @@ modEnv =
 withAugmentedEnv :: BaseEnv -> AugmentedEnv
 withAugmentedEnv i =
   R.union i
-    { background:
-        filled (fillColor (rgb 0 0 0))
-          (rectangle 0.0 0.0 i.canvas.width i.canvas.height)
+    { background: blackBackground i.canvas.width i.canvas.height
     }
 
 withFirstPartEnv :: Windows (Maybe Number) -> AugmentedEnv -> FirstPartEnv
