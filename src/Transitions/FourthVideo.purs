@@ -1,27 +1,71 @@
 module SambaDeUmaNotaSo.Transitions.FourthVideo where
 
 import Prelude
-
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
+import Data.NonEmpty ((:|))
+import Data.List ((:), List(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested ((/\), type (/\))
+import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
+import Data.Vec as V
+import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Constants (elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats)
+import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
 import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoUniverse, deltaFourthVideo)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
-import SambaDeUmaNotaSo.Util (rectCenter)
+import SambaDeUmaNotaSo.Types (Windows, RGB)
+import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
+
+quantaGenteExiste :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows (RGB -> Painting)) (Windows Painting)
+quantaGenteExiste startsAt =
+  nonEmptyToCofree (Just (const (V.fill (const mempty))))
+    ( (pos (beats 0.5) /\ ua d0 dummyColors)
+        :| ( (pos (beats 1.0) /\ ua d4 dummyColors)
+              : (pos (beats 1.5) /\ ua d3 dummyColors)
+              : (pos (beats 2.0) /\ ua d5 dummyColors)
+              : (pos (beats 2.5) /\ ua d1 dummyColors)
+              : (pos (beats 3.0) /\ ua d6 dummyColors)
+              : (pos (beats 3.5) /\ ua d0 dummyColors)
+              : (pos (beats 4.0) /\ ua d2 dummyColors)
+              : (pos (beats 4.5) /\ ua d3 dummyColors)
+              : (pos (beats 5.0) /\ ua d1 dummyColors)
+              : (pos (beats 5.5) /\ ua d5 dummyColors)
+              : (pos (beats 6.0) /\ ua d3 dummyColors)
+              : (pos (beats 6.5) /\ ua d4 dummyColors)
+              : (pos (beats 7.0) /\ ua d0 dummyColors)
+              : (pos (beats 7.5) /\ ua d2 dummyColors)
+              : (pos (beats 8.0) /\ ua d6 dummyColors)
+              : Nil
+          )
+    )
+  where
+  pos v time = (time - startsAt) < v
+
+  dummyColors = V.fill (const { r: 100, g: 100, b: 100 })
+
+  ua :: forall w. Nat w => Lt w D7 => w -> Windows RGB -> (Windows Rectangle /\ Windows (RGB -> Painting)) -> Windows Painting
+  ua d wrgb (windowDims /\ windowsOnScreen) =
+    V.updateAt d
+      ( let
+          rct = V.index windowDims d
+        in
+          filled
+            (fillColor (rgb 255 255 255))
+            (rectangle rct.x rct.y rct.width rct.height)
+      )
+      (V.zipWithE ($) windowsOnScreen wrgb)
 
 boomBoom :: Number -> Number -> DOMRect -> Painting
 boomBoom time startsAt canvas = go
@@ -72,7 +116,7 @@ doFourthVideo =
                   ctr = rectCenter (head wd)
 
                   beforeTag = e.time - acc.videoSpan.start < elevenAndAHalfBeats
-                  
+
                   rs = acc.rectangleSamba { time: e.time, value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen }
 
                   videoAndWindows = if beforeTag then fold (head rs) else boomBoom e.time acc.videoSpan.start e.world.canvas
