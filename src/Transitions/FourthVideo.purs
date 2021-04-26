@@ -8,17 +8,14 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
-import Data.Vec as V
-import Graphics.Canvas (Rectangle)
+import Data.Tuple.Nested ((/\))
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Constants (eightBeats, elevenAndAHalfBeats, fifteenBeats, fiveAndAHalfBeats, fiveBeats, fourteenBeats, nineAndAHalfBeats, nineBeats, oneAndAHalfBeats, oneBeat, sevenAndAHalfBeats, sixAndAHalfBeats, tenAndAHalfBeats, thirteenAndAHalfBeats, threeAndAHalfBeats, twoAndAHalfBeats)
+import SambaDeUmaNotaSo.Constants (elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
 import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoUniverse, deltaFourthVideo)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
-import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (rectCenter)
 import WAGS.Change (change)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -46,39 +43,6 @@ boomBoom time startsAt canvas = go
         (rectangle 0.0 0.0 canvas.width canvas.height)
         <> middleFrame
     | otherwise = mempty
-
-moveVideo :: Number -> Number -> Windows Rectangle -> Windows Painting -> Windows Painting
-moveVideo time startsAt windowDims windowsOnScreen = go
-  where
-  pos = time - startsAt
-
-  ua :: forall w. Nat w => Lt w D7 => w -> Windows Painting
-  ua d =
-    V.updateAt d
-      ( let
-          rct = V.index windowDims d
-        in
-          filled
-            (fillColor (rgb 255 255 255))
-            (rectangle rct.x rct.y rct.width rct.height)
-      )
-      windowsOnScreen
-
-  go
-    | pos < oneBeat = ua d0
-    | pos < oneAndAHalfBeats = ua d1
-    | pos < twoAndAHalfBeats = ua d2
-    | pos < threeAndAHalfBeats = ua d3
-    | pos < fiveBeats = ua d4
-    | pos < fiveAndAHalfBeats = ua d5
-    | pos < sixAndAHalfBeats = ua d6
-    | pos < sevenAndAHalfBeats = ua d0
-    | pos < eightBeats = ua d1
-    | pos < nineBeats = ua d2
-    | pos < nineAndAHalfBeats = ua d3
-    | pos < tenAndAHalfBeats = ua d4
-    | pos < elevenAndAHalfBeats = ua d5
-    | otherwise = V.fill (const mempty)
 
 -- | We play the first video and then move onto the pre-second video.
 doFourthVideo ::
@@ -108,8 +72,10 @@ doFourthVideo =
                   ctr = rectCenter (head wd)
 
                   beforeTag = e.time - acc.videoSpan.start < elevenAndAHalfBeats
+                  
+                  rs = acc.rectangleSamba { time: e.time, value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen }
 
-                  videoAndWindows = if beforeTag then fold (moveVideo e.time acc.videoSpan.start visualCtxt.windowDims visualCtxt.windowsOnScreen) else boomBoom e.time acc.videoSpan.start e.world.canvas
+                  videoAndWindows = if beforeTag then fold (head rs) else boomBoom e.time acc.videoSpan.start e.world.canvas
 
                   -- todo: we draw over. maybe hide?
                   dotNow = if beforeTag then firstPartDot e ctr else mempty
@@ -120,6 +86,7 @@ doFourthVideo =
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd
+                      , rectangleSamba = tail rs
                       }
         else
           Left

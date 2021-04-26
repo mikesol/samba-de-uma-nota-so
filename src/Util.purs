@@ -120,6 +120,9 @@ rectCenter { x, y, width, height } = { x: x + (width / 2.0), y: y + (height / 2.
 lastBeat :: Number -> Number
 lastBeat t = (floor (t / beat)) * beat
 
+type NonEmptyToCofree a b
+  = { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
+
 nonEmptyToCofree :: forall a b. Maybe (a -> b) -> NonEmpty List ((Number -> Boolean) /\ (a -> b)) -> { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
 nonEmptyToCofree maybeOtherwise (h :| t) = go (h : t)
   where

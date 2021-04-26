@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
+
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
@@ -25,7 +26,7 @@ import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
-import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
+import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, moveVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven)
 import Type.Data.Peano as N
 import Type.Proxy (Proxy(..))
@@ -187,5 +188,6 @@ piece = case startAt of
             , cursorGain
             , videoSpan
             , b7WindowDims: beatModSeven
+            , rectangleSamba: moveVideo 0.0
             }
         @|> doFourthVideo
