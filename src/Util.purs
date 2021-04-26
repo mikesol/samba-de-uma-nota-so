@@ -7,7 +7,7 @@ import Data.Int (toNumber)
 import Data.Int as DInt
 import Data.Maybe (Maybe(..))
 import Data.List ((:), List(..))
-import Data.NonEmpty (NonEmpty(..), (:|))
+import Data.NonEmpty (NonEmpty, (:|))
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec ((+>))
