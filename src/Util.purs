@@ -129,14 +129,14 @@ nonEmptyToCofree maybeOtherwise (h :| t) = go (h : t)
 
   go ((tf /\ vf) : b) = let q i@{ time, value } = if tf time then (vf value :< q) else go b i in q
 
-type ThingCurrentBeatF a
+type BeatMod7F a
   = (->) { time :: Number, value :: Windows a }
 
 type BeatMod7' a
-  = (ThingCurrentBeatF a) (Cofree (ThingCurrentBeatF a) a)
+  = (BeatMod7F a) (Cofree (BeatMod7F a) a)
 
 type BeatMod7
-  = forall a. (ThingCurrentBeatF a) (Cofree (ThingCurrentBeatF a) a)
+  = forall a. (BeatMod7F a) (Cofree (BeatMod7F a) a)
 
 beatModSeven :: BeatMod7
 beatModSeven =
