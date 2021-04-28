@@ -18,11 +18,11 @@ import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.ThirdVideo as IO
-import SambaDeUmaNotaSo.Loops.ThirdVideo (ThirdVideoUniverse, deltaThirdVideo)
+import SambaDeUmaNotaSo.Chemin (ThirdVideoUniverse)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -93,7 +93,7 @@ doThirdVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) <> dotNow }
-                change deltaThirdVideo
+                changes unit
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd

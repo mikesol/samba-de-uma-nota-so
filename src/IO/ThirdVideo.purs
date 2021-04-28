@@ -2,7 +2,7 @@ module SambaDeUmaNotaSo.IO.ThirdVideo where
 
 import Data.Maybe (Maybe)
 import Graphics.Canvas (Rectangle)
-import SambaDeUmaNotaSo.Empty (MainFader)
+import SambaDeUmaNotaSo.Chemin (MainFader)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (InterpretVideoSig0)
 import SambaDeUmaNotaSo.Types (Windows, VideoSpan)
 import SambaDeUmaNotaSo.Util (BeatMod7')

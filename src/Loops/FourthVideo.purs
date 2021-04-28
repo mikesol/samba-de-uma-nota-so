@@ -3,23 +3,10 @@ module SambaDeUmaNotaSo.Loops.FourthVideo where
 import Prelude
 
 import Data.Identity (Identity(..))
-import SambaDeUmaNotaSo.Empty (BaseGraph, EI0, EI1, MainBus, MainBusFG, mainBus, mainBusFG)
-import WAGS.Control.Types (Universe')
+import SambaDeUmaNotaSo.Empty (MainBus, MainBusFG, mainBus, mainBusFG)
 import WAGS.Graph.Constructors (Constant)
 import WAGS.Graph.Decorators (Focus(..), Decorating')
 import WAGS.Graph.Optionals (GetSetAP, constant)
-import WAGS.Universe.AudioUnit (TConstant)
-import WAGS.Universe.EdgeProfile (NoEdge)
-import WAGS.Universe.Graph (GraphC)
-import WAGS.Universe.Node (NodeC)
-
-type FourthVideoGraph
-  = GraphC
-      (NodeC (TConstant EI0) NoEdge)
-      (BaseGraph EI0)
-
-type FourthVideoUniverse cb
-  = Universe' EI1 FourthVideoGraph cb
 
 type FourthVideoLens' :: forall k. (Type -> k) -> k
 type FourthVideoLens' constant
@@ -47,5 +34,3 @@ fourthVideoCreate = fourthVideo' {dConstant : Identity} :: FourthVideoLens Ident
 
 fourthVideoConstant = fourthVideo' {dConstant : Focus} :: FourthVideoLens Focus
 
-deltaFourthVideo :: FourthVideoLens Identity
-deltaFourthVideo = mainBus (Identity $ constant 0.0)

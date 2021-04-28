@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Transitions.PreSecondVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -13,9 +12,9 @@ import SambaDeUmaNotaSo.Constants (jitterForMod)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreSecondVideo as IO
-import SambaDeUmaNotaSo.Loops.PreSecondVideo (PreSecondVideoUniverse, deltaPreSecondVideo)
+import SambaDeUmaNotaSo.Chemin (PreSecondVideoUniverse)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -48,7 +47,7 @@ doPreSecondVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: visualCtxt.background <> (fold visualCtxt.windowsOnScreen) }
-                change deltaPreSecondVideo
+                changes unit
                   $> acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0
                       , mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction

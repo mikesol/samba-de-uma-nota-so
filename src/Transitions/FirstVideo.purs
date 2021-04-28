@@ -1,16 +1,15 @@
 module SambaDeUmaNotaSo.Transitions.FirstVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.FirstVideo as IO
-import SambaDeUmaNotaSo.Loops.FirstVideo (FirstVideoUniverse, deltaFirstVideo)
+import SambaDeUmaNotaSo.Chemin (FirstVideoUniverse)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -38,8 +37,8 @@ doFirstVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                change deltaFirstVideo
-                  $> acc 
+                changes unit
+                  $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

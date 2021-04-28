@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -9,9 +8,9 @@ import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Duration (firstVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingFirstVideo as IO
-import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (AwaitingFirstVideoUniverse, deltaAwaitingFirstVideo)
+import SambaDeUmaNotaSo.Chemin (AwaitingFirstVideoUniverse)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -39,8 +38,8 @@ doAwaitingFirstVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (withWindowOnScreen ctxt).windowsOnScreen) }
-                change deltaAwaitingFirstVideo
-                  $> acc 
+                changes unit
+                  $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

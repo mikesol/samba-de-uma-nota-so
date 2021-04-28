@@ -3,23 +3,10 @@ module SambaDeUmaNotaSo.Loops.PreThirdVideo where
 import Prelude
 
 import Data.Identity (Identity(..))
-import SambaDeUmaNotaSo.Empty (BaseGraph, EI0, EI1, MainBus, MainBusFG, mainBus, mainBusFG)
-import WAGS.Control.Types (Universe')
+import SambaDeUmaNotaSo.Empty (MainBus, MainBusFG, mainBus, mainBusFG)
 import WAGS.Graph.Constructors (Constant)
 import WAGS.Graph.Decorators (Focus(..), Decorating')
 import WAGS.Graph.Optionals (GetSetAP, constant)
-import WAGS.Universe.AudioUnit (TConstant)
-import WAGS.Universe.EdgeProfile (NoEdge)
-import WAGS.Universe.Graph (GraphC)
-import WAGS.Universe.Node (NodeC)
-
-type PreThirdVideoGraph
-  = GraphC
-      (NodeC (TConstant EI0) NoEdge)
-      (BaseGraph EI0)
-
-type PreThirdVideoUniverse cb
-  = Universe' EI1 PreThirdVideoGraph cb
 
 type PreThirdVideoLens' :: forall k. (Type -> k) -> k
 type PreThirdVideoLens' constant
@@ -46,6 +33,3 @@ preThirdVideoMainBus = mainBusFG (preThirdVideo'' {dConstant : Identity})
 preThirdVideoCreate = preThirdVideo' {dConstant : Identity} :: PreThirdVideoLens Identity
 
 preThirdVideoConstant = preThirdVideo' {dConstant : Focus} :: PreThirdVideoLens Focus
-
-deltaPreThirdVideo :: PreThirdVideoLens Identity
-deltaPreThirdVideo = mainBus (Identity $ constant 0.0)

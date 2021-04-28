@@ -2,7 +2,7 @@ module SambaDeUmaNotaSo.IO.PreThirdVideo where
 
 import Data.Maybe (Maybe)
 import Graphics.Canvas (Rectangle)
-import SambaDeUmaNotaSo.Empty (MainFader)
+import SambaDeUmaNotaSo.Chemin (MainFader)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (BeatMod7')
 import WAGS.Universe.AudioUnit (AudioUnitRef)

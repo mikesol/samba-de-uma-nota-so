@@ -5,24 +5,24 @@ import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.NonEmpty ((:|))
-import Data.List ((:), List(..))
 import Data.Functor.Indexed (ivoid)
+import Data.List ((:), List(..))
 import Data.Maybe (Maybe(..))
+import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
+import SambaDeUmaNotaSo.Chemin (FourthVideoUniverse)
 import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
-import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoUniverse, deltaFourthVideo)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -126,7 +126,7 @@ doFourthVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> videoAndWindows <> dotNow }
-                change deltaFourthVideo
+                changes unit
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd

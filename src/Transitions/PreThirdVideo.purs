@@ -11,10 +11,10 @@ import SambaDeUmaNotaSo.Duration (thirdVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideoAsWindows)
 import SambaDeUmaNotaSo.IO.PreThirdVideo as IO
-import SambaDeUmaNotaSo.Loops.PreThirdVideo (PreThirdVideoUniverse, deltaPreThirdVideo)
+import SambaDeUmaNotaSo.Chemin (PreThirdVideoUniverse)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -57,7 +57,7 @@ doPreThirdVideo =
                             <> (fold visualCtxt.windowsOnScreen)
                             <> dotNow
                       }
-                change deltaPreThirdVideo
+                changes unit
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7IsWindowTouched = tail iwt

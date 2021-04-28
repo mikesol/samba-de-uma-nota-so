@@ -3,23 +3,10 @@ module SambaDeUmaNotaSo.Loops.AwaitingFirstVideo where
 import Prelude
 
 import Data.Identity (Identity(..))
-import SambaDeUmaNotaSo.Empty (BaseGraph, EI0, EI1, MainBus, MainBusFG, mainBus, mainBusFG)
-import WAGS.Control.Types (Universe')
+import SambaDeUmaNotaSo.Empty ( MainBus, MainBusFG, mainBus, mainBusFG)
 import WAGS.Graph.Constructors (Constant)
 import WAGS.Graph.Decorators (Focus(..), Decorating')
 import WAGS.Graph.Optionals (GetSetAP, constant)
-import WAGS.Universe.AudioUnit (TConstant)
-import WAGS.Universe.EdgeProfile (NoEdge)
-import WAGS.Universe.Graph (GraphC)
-import WAGS.Universe.Node (NodeC)
-
-type AwaitingFirstVideoGraph
-  = GraphC
-      (NodeC (TConstant EI0) NoEdge)
-      (BaseGraph EI0)
-
-type AwaitingFirstVideoUniverse cb
-  = Universe' EI1 AwaitingFirstVideoGraph cb
 
 type AwaitingFirstVideoLens' :: forall k. (Type -> k) -> k
 type AwaitingFirstVideoLens' constant
@@ -47,5 +34,3 @@ awaitingFirstVideoCreate = awaitingFirstVideo' {dConstant : Identity} :: Awaitin
 
 awaitingFirstVideoConstant = awaitingFirstVideo' {dConstant : Focus} :: AwaitingFirstVideoLens Focus
 
-deltaAwaitingFirstVideo :: AwaitingFirstVideoLens Identity
-deltaAwaitingFirstVideo = mainBus (Identity $ constant 0.0)

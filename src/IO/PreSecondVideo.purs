@@ -1,7 +1,7 @@
 module SambaDeUmaNotaSo.IO.PreSecondVideo where
 
 import Data.Maybe (Maybe)
-import SambaDeUmaNotaSo.Empty (MainFader)
+import SambaDeUmaNotaSo.Chemin (MainFader)
 import SambaDeUmaNotaSo.Types (Windows)
 import WAGS.Universe.AudioUnit (AudioUnitRef)
 

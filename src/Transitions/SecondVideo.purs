@@ -1,17 +1,16 @@
 module SambaDeUmaNotaSo.Transitions.SecondVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
-import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoUniverse, deltaSecondVideo)
+import SambaDeUmaNotaSo.Chemin (SecondVideoUniverse)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -39,8 +38,8 @@ doSecondVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                change deltaSecondVideo
-                  $> acc 
+                changes unit
+                  $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

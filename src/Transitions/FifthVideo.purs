@@ -5,13 +5,13 @@ import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
-import Data.Tuple.Nested ((/\))
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
+import SambaDeUmaNotaSo.Chemin (FifthVideoUniverse)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FifthVideo as IO
-import SambaDeUmaNotaSo.Loops.FifthVideo (FifthVideoUniverse, deltaFifthVideo)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
-import WAGS.Change (change)
+import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
@@ -48,7 +48,7 @@ doFifthVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> videoAndWindows }
-                change deltaFifthVideo
+                changes unit
                   $> acc
                       { quantaGenteExiste = tail rs
                       }
