@@ -177,7 +177,7 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo = "https://github.com/mikesol/purescript-wags.git"
-        , version = "v0.0.2"
+        , version = "v0.0.3"
         }
       , painting =
         { dependencies =
