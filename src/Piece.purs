@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
-
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
@@ -9,15 +8,15 @@ import Data.Vec as V
 import SambaDeUmaNotaSo.Constants (fourMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
-import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate, awaitingFirstVideoMainBus)
-import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate, awaitingSecondVideoMainBus)
-import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate, firstVideoMainBus)
-import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoCreate, fourthVideoMainBus)
-import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate, preFirstVideoMainBus)
-import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate, preSecondVideoMainBus)
-import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate, preThirdVideoMainBus)
-import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate, secondVideoMainBus)
-import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate, thirdVideoMainBus)
+import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
+import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
+import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
+import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoCreate)
+import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate)
+import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate)
+import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate)
+import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
+import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
@@ -36,6 +35,8 @@ import WAGS.Control.Types (Frame0, InitialFrameT)
 import WAGS.Create (create)
 import WAGS.Cursor (cursor)
 import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI, SceneSig, SambaRes)
+import WAGS.Graph.Decorators (This(..))
+import WAGS.Graph.Optionals (speaker)
 import WAGS.Interpret (class AudioInterpret)
 import WAGS.MoveNode (moveNode)
 
@@ -75,7 +76,7 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       ivoid $ create preFirstVideoCreate
-      cursorGain <- cursor preFirstVideoMainBus
+      cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { nTouchesSoFar: 0
           , mostRecentWindowInteraction: V.fill (const Nothing)
@@ -86,7 +87,7 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       ivoid $ create awaitingFirstVideoCreate
-      cursorGain <- cursor awaitingFirstVideoMainBus
+      cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { interpretVideo: interpretVideo d3
           , isVideoWindowTouched: isVideoWindowTouched d3
@@ -101,7 +102,7 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         ivoid $ create firstVideoCreate
-        cursorGain <- cursor firstVideoMainBus
+        cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d3 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
@@ -113,7 +114,7 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       ivoid $ create preSecondVideoCreate
-      cursorGain <- cursor preSecondVideoMainBus
+      cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { nTouchesSoFar: 0
           , mostRecentWindowInteraction: V.fill (const Nothing)
@@ -124,7 +125,7 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       ivoid $ create awaitingSecondVideoCreate
-      cursorGain <- cursor awaitingSecondVideoMainBus
+      cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { interpretVideo: interpretVideo d5
           , isVideoWindowTouched: isVideoWindowTouched d5
@@ -139,7 +140,7 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         ivoid $ create secondVideoCreate
-        cursorGain <- cursor secondVideoMainBus
+        cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d5 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
@@ -151,7 +152,7 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       ivoid $ create preThirdVideoCreate
-      cursorGain <- cursor preThirdVideoMainBus
+      cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { mostRecentWindowInteraction: V.fill (const Nothing)
           , cursorGain
@@ -166,7 +167,7 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         ivoid $ create thirdVideoCreate
-        cursorGain <- cursor thirdVideoMainBus
+        cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d5 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
@@ -182,7 +183,7 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         ivoid $ create fourthVideoCreate
-        cursorGain <- cursor fourthVideoMainBus
+        cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { mostRecentWindowInteraction: V.fill (const Nothing)
             , cursorGain
