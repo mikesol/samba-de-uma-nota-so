@@ -73,7 +73,6 @@ doPreThirdVideo =
                 thirdVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , cursorGain: acc.cursorGain
                   , interpretVideo:
                       ( head
                           $ beatModSeven

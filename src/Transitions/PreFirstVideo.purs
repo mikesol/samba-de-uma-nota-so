@@ -61,7 +61,6 @@ doPreFirstVideo =
                 let
                   fixed =
                     { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                    , cursorGain: acc.cursorGain
                     }
                 awaitingFirstVideoPatch pr
                 withProof pr

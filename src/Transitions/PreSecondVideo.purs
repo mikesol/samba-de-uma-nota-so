@@ -59,7 +59,6 @@ doPreSecondVideo =
                 let
                   fixed =
                     { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                    , cursorGain: acc.cursorGain
                     }
                 awaitingSecondVideoPatch pr
                 withProof pr

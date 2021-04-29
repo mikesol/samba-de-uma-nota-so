@@ -49,5 +49,4 @@ doFirstVideo =
                 withProof pr
                   { nTouchesSoFar: 0
                   , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , cursorGain: acc.cursorGain
                   }

@@ -52,6 +52,5 @@ doAwaitingFirstVideo =
                 withProof pr
                   { interpretVideo: acc.interpretVideo videoSpan
                   , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , cursorGain: acc.cursorGain
                   , videoSpan
                   }

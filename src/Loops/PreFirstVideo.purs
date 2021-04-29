@@ -2,13 +2,17 @@ module SambaDeUmaNotaSo.Loops.PreFirstVideo where
 
 import Prelude
 
-import Data.Functor.Indexed (ivoid)
+import Control.Apply.Indexed ((:*>))
 import Data.Identity (Identity(..))
-import SambaDeUmaNotaSo.Empty (MainBus, MainBusFG, mainBus, mainBusFG)
+import SambaDeUmaNotaSo.Empty (MainBus, mainBus)
+import Type.Data.Peano as N
+import Type.Proxy (Proxy(..))
+import WAGS.Control.Qualified as WAGS
 import WAGS.Create (create)
 import WAGS.Graph.Constructors (Constant)
-import WAGS.Graph.Decorators (Focus(..), Decorating')
+import WAGS.Graph.Decorators (Decorating')
 import WAGS.Graph.Optionals (GetSetAP, constant)
+import WAGS.MoveNode (moveNode)
 
 type PreFirstVideoLens' :: forall k. (Type -> k) -> k
 type PreFirstVideoLens' constant
@@ -31,4 +35,4 @@ preFirstVideo' f = mainBus (preFirstVideo'' f)
 
 preFirstVideoCreate' = preFirstVideo' {dConstant : Identity} :: PreFirstVideoLens Identity
 
-preFirstVideoCreate = ivoid (create preFirstVideoCreate')
+preFirstVideoCreate =   create preFirstVideoCreate' :*>  moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)

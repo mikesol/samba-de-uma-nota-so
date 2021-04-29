@@ -15,11 +15,12 @@ import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (FourthVideoUniverse)
-import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats)
+import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourMeasures, fourteenBeats, thirteenAndAHalfBeats)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoPatch)
+import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
 import WAGS.Change (changes)
@@ -134,5 +135,11 @@ doFourthVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doFifthVideo WAGS.do
+                let
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                fifthVideoPatch pr
+                withProof pr
+                  { videoSpan
+                  , quantaGenteExiste: quantaGenteExiste videoSpan.start
+                  }

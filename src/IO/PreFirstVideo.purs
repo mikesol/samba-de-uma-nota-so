@@ -6,10 +6,8 @@ import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Painting (Painting)
-import SambaDeUmaNotaSo.Chemin (MainFader)
 import SambaDeUmaNotaSo.Env (withWindowAndVideoOnScreen, withWindowAndVideoOnScreen', withWindowOnScreen)
 import SambaDeUmaNotaSo.Types (FirstPartEnv, Windows, VideoSpan)
-import WAGS.Universe.AudioUnit (AudioUnitRef)
 
 isVideoWindowTouched ::
   forall window.
@@ -73,5 +71,4 @@ type InterpretVideoSig
 type Accumulator
   = { nTouchesSoFar :: Int
     , mostRecentWindowInteraction :: Windows (Maybe Number)
-    , cursorGain :: AudioUnitRef MainFader
     }

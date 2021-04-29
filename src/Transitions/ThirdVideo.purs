@@ -107,7 +107,6 @@ doThirdVideo =
                 fourthVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , cursorGain: acc.cursorGain
                   , videoSpan: videoSpan
                   , b7WindowDims: acc.b7WindowDims
                   , rectangleSamba: moveVideo videoSpan.start

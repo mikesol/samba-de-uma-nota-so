@@ -32,7 +32,6 @@ import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
 import WAGS.Control.Types (Frame0, InitialFrameT)
-import WAGS.Create (create)
 import WAGS.Cursor (cursor)
 import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI, SceneSig, SambaRes)
 import WAGS.Graph.Decorators (This(..))
@@ -76,23 +75,17 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       preFirstVideoCreate
-      cursorGain <- cursor (speaker This)
-      moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { nTouchesSoFar: 0
           , mostRecentWindowInteraction: V.fill (const Nothing)
-          , cursorGain
           }
       @|> doPreFirstVideo
   AwaitingFirstVideo ->
     WAGS.do
       startWithBlackBackground
       awaitingFirstVideoCreate
-      cursorGain <- cursor (speaker This)
-      moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { interpretVideo: interpretVideo d3
           , isVideoWindowTouched: isVideoWindowTouched d3
           , mostRecentWindowInteraction: V.fill (const Nothing)
-          , cursorGain
           }
       @|> doAwaitingFirstVideo
   FirstVideo ->
@@ -102,11 +95,8 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         firstVideoCreate
-        cursorGain <- cursor (speaker This)
-        moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d3 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
-            , cursorGain
             , videoSpan
             }
         @|> doFirstVideo
@@ -114,23 +104,17 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       preSecondVideoCreate
-      cursorGain <- cursor (speaker This)
-      moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { nTouchesSoFar: 0
           , mostRecentWindowInteraction: V.fill (const Nothing)
-          , cursorGain
           }
       @|> doPreSecondVideo
   AwaitingSecondVideo ->
     WAGS.do
       startWithBlackBackground
       awaitingSecondVideoCreate
-      cursorGain <- cursor (speaker This)
-      moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { interpretVideo: interpretVideo d5
           , isVideoWindowTouched: isVideoWindowTouched d5
           , mostRecentWindowInteraction: V.fill (const Nothing)
-          , cursorGain
           }
       @|> doAwaitingSecondVideo
   SecondVideo ->
@@ -140,11 +124,8 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         secondVideoCreate
-        cursorGain <- cursor (speaker This)
-        moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d5 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
-            , cursorGain
             , videoSpan
             }
         @|> doSecondVideo
@@ -152,10 +133,7 @@ piece = case startAt of
     WAGS.do
       startWithBlackBackground
       preThirdVideoCreate
-      cursorGain <- cursor (speaker This)
-      moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { mostRecentWindowInteraction: V.fill (const Nothing)
-          , cursorGain
           , b7IsWindowTouched: beatModSeven
           , b7WindowDims: beatModSeven
           }
@@ -167,11 +145,8 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         thirdVideoCreate
-        cursorGain <- cursor (speaker This)
-        moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d5 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
-            , cursorGain
             , videoSpan
             , b7WindowDims: beatModSeven
             }
@@ -183,10 +158,7 @@ piece = case startAt of
       WAGS.do
         startWithBlackBackground
         fourthVideoCreate
-        cursorGain <- cursor (speaker This)
-        moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { mostRecentWindowInteraction: V.fill (const Nothing)
-            , cursorGain
             , videoSpan
             , b7WindowDims: beatModSeven
             , rectangleSamba: moveVideo 0.0

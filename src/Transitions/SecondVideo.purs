@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Transitions.SecondVideo where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -50,7 +49,6 @@ doSecondVideo =
                 preThirdVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , cursorGain: acc.cursorGain
                   , b7IsWindowTouched: beatModSeven
                   , b7WindowDims: beatModSeven
                   }
