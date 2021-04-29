@@ -10,7 +10,8 @@ import Data.List ((:), List(..))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\), type (/\))
-import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
+import Data.Typelevel.Num (class Lt, class Nat, D7, D10, d0, d1, d2, d3, d4, d5, d6)
+import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
@@ -28,6 +29,20 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
+
+colorPalette :: V.Vec D10 RGB
+colorPalette =
+  { r: 254, g: 197, b: 187 }
+    +> { r: 252, g: 213, b: 206 }
+    +> { r: 250, g: 225, b: 221 }
+    +> { r: 248, g: 237, b: 235 }
+    +> { r: 232, g: 232, b: 228 }
+    +> { r: 216, g: 226, b: 220 }
+    +> { r: 236, g: 228, b: 219 }
+    +> { r: 255, g: 229, b: 217 }
+    +> { r: 255, g: 215, b: 186 }
+    +> { r: 254, g: 200, b: 154 }
+    +> V.empty
 
 quantaGenteExiste :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows (RGB -> Painting)) (Windows Painting)
 quantaGenteExiste startsAt =
