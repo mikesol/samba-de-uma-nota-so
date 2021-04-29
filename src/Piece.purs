@@ -27,17 +27,11 @@ import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, moveVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven)
-import Type.Data.Peano as N
-import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
 import WAGS.Control.Types (Frame0, InitialFrameT)
-import WAGS.Cursor (cursor)
 import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI, SceneSig, SambaRes)
-import WAGS.Graph.Decorators (This(..))
-import WAGS.Graph.Optionals (speaker)
 import WAGS.Interpret (class AudioInterpret)
-import WAGS.MoveNode (moveNode)
 
 data StartAt
   = PreFirstVideo
