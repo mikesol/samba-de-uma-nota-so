@@ -5,9 +5,10 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import SambaDeUmaNotaSo.Chemin (FirstVideoUniverse)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.FirstVideo as IO
-import SambaDeUmaNotaSo.Chemin (FirstVideoUniverse)
+import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -44,6 +45,7 @@ doFirstVideo =
         else
           Left
             $ inSitu doPreSecondVideo WAGS.do
+                preSecondVideoPatch pr
                 withProof pr
                   { nTouchesSoFar: 0
                   , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction

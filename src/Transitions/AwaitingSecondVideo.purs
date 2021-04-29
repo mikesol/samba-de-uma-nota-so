@@ -5,10 +5,11 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import SambaDeUmaNotaSo.Chemin (AwaitingSecondVideoUniverse)
 import SambaDeUmaNotaSo.Duration (secondVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
-import SambaDeUmaNotaSo.Chemin (AwaitingSecondVideoUniverse)
+import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -47,6 +48,7 @@ doAwaitingSecondVideo =
             $ inSitu doSecondVideo WAGS.do
                 let
                   videoSpan = { start: e.time, end: secondVocalEnds e.time }
+                secondVideoPatch pr
                 withProof pr
                   { interpretVideo: acc.interpretVideo videoSpan
                   , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction

@@ -14,11 +14,12 @@ import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
+import SambaDeUmaNotaSo.Chemin (ThirdVideoUniverse)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.ThirdVideo as IO
-import SambaDeUmaNotaSo.Chemin (ThirdVideoUniverse)
+import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
@@ -103,6 +104,7 @@ doThirdVideo =
             $ inSitu doFourthVideo WAGS.do
                 let
                   videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                fourthVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain

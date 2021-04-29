@@ -1,17 +1,19 @@
 module SambaDeUmaNotaSo.Transitions.PreThirdVideo where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import SambaDeUmaNotaSo.Chemin (PreThirdVideoUniverse)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Duration (thirdVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideoAsWindows)
 import SambaDeUmaNotaSo.IO.PreThirdVideo as IO
-import SambaDeUmaNotaSo.Chemin (PreThirdVideoUniverse)
+import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
 import WAGS.Change (changes)
@@ -68,6 +70,7 @@ doPreThirdVideo =
             $ inSitu doThirdVideo WAGS.do
                 let
                   videoSpan = { start: e.time, end: thirdVocalEnds e.time }
+                thirdVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain

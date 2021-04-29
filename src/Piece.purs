@@ -75,7 +75,7 @@ piece = case startAt of
   PreFirstVideo ->
     WAGS.do
       startWithBlackBackground
-      ivoid $ create preFirstVideoCreate
+      preFirstVideoCreate
       cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { nTouchesSoFar: 0
@@ -86,7 +86,7 @@ piece = case startAt of
   AwaitingFirstVideo ->
     WAGS.do
       startWithBlackBackground
-      ivoid $ create awaitingFirstVideoCreate
+      awaitingFirstVideoCreate
       cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { interpretVideo: interpretVideo d3
@@ -101,7 +101,7 @@ piece = case startAt of
     in
       WAGS.do
         startWithBlackBackground
-        ivoid $ create firstVideoCreate
+        firstVideoCreate
         cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d3 videoSpan
@@ -113,7 +113,7 @@ piece = case startAt of
   PreSecondVideo ->
     WAGS.do
       startWithBlackBackground
-      ivoid $ create preSecondVideoCreate
+      preSecondVideoCreate
       cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { nTouchesSoFar: 0
@@ -124,7 +124,7 @@ piece = case startAt of
   AwaitingSecondVideo ->
     WAGS.do
       startWithBlackBackground
-      ivoid $ create awaitingSecondVideoCreate
+      awaitingSecondVideoCreate
       cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { interpretVideo: interpretVideo d5
@@ -139,7 +139,7 @@ piece = case startAt of
     in
       WAGS.do
         startWithBlackBackground
-        ivoid $ create secondVideoCreate
+        secondVideoCreate
         cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d5 videoSpan
@@ -151,7 +151,7 @@ piece = case startAt of
   PreThirdVideo ->
     WAGS.do
       startWithBlackBackground
-      ivoid $ create preThirdVideoCreate
+      preThirdVideoCreate
       cursorGain <- cursor (speaker This)
       moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
         $> { mostRecentWindowInteraction: V.fill (const Nothing)
@@ -166,7 +166,7 @@ piece = case startAt of
     in
       WAGS.do
         startWithBlackBackground
-        ivoid $ create thirdVideoCreate
+        thirdVideoCreate
         cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { interpretVideo: interpretVideo d5 videoSpan
@@ -182,7 +182,7 @@ piece = case startAt of
     in
       WAGS.do
         startWithBlackBackground
-        ivoid $ create fourthVideoCreate
+        fourthVideoCreate
         cursorGain <- cursor (speaker This)
         moveNode (Proxy :: _ N.D2) (Proxy :: _ N.D0)
           $> { mostRecentWindowInteraction: V.fill (const Nothing)

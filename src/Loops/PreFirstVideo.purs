@@ -2,8 +2,10 @@ module SambaDeUmaNotaSo.Loops.PreFirstVideo where
 
 import Prelude
 
+import Data.Functor.Indexed (ivoid)
 import Data.Identity (Identity(..))
 import SambaDeUmaNotaSo.Empty (MainBus, MainBusFG, mainBus, mainBusFG)
+import WAGS.Create (create)
 import WAGS.Graph.Constructors (Constant)
 import WAGS.Graph.Decorators (Focus(..), Decorating')
 import WAGS.Graph.Optionals (GetSetAP, constant)
@@ -27,10 +29,6 @@ preFirstVideo' ::
   PreFirstVideoLens dConstant
 preFirstVideo' f = mainBus (preFirstVideo'' f)
 
-preFirstVideoMainBus :: MainBusFG (PreFirstVideoLens' Identity)
-preFirstVideoMainBus = mainBusFG (preFirstVideo'' {dConstant : Identity})
+preFirstVideoCreate' = preFirstVideo' {dConstant : Identity} :: PreFirstVideoLens Identity
 
-preFirstVideoCreate = preFirstVideo' {dConstant : Identity} :: PreFirstVideoLens Identity
-
-preFirstVideoConstant = preFirstVideo' {dConstant : Focus} :: PreFirstVideoLens Focus
-
+preFirstVideoCreate = ivoid (create preFirstVideoCreate')

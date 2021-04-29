@@ -1,13 +1,15 @@
 module SambaDeUmaNotaSo.Transitions.SecondVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import SambaDeUmaNotaSo.Chemin (SecondVideoUniverse)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
-import SambaDeUmaNotaSo.Chemin (SecondVideoUniverse)
+import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven)
 import WAGS.Change (changes)
@@ -45,6 +47,7 @@ doSecondVideo =
         else
           Left
             $ inSitu doPreThirdVideo WAGS.do
+                preThirdVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , cursorGain: acc.cursorGain

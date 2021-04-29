@@ -8,11 +8,12 @@ import Data.Int (floor)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Record as R
+import SambaDeUmaNotaSo.Chemin (PreFirstVideoUniverse)
 import SambaDeUmaNotaSo.Constants (jitterForMod)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreFirstVideo as IO
-import SambaDeUmaNotaSo.Chemin (PreFirstVideoUniverse)
+import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoPatch)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -62,6 +63,7 @@ doPreFirstVideo =
                     { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                     , cursorGain: acc.cursorGain
                     }
+                awaitingFirstVideoPatch pr
                 withProof pr
                   $ R.union
                       ( case (floor (e.time * jitterForMod)) `mod` 7 of
