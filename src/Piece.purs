@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
+
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
@@ -10,6 +11,7 @@ import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
+import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate)
@@ -19,8 +21,9 @@ import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
+import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
-import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
+import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
 import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
@@ -43,6 +46,7 @@ data StartAt
   | PreThirdVideo
   | ThirdVideo
   | FourthVideo
+  | FifthVideo
 
 startAt = PreThirdVideo :: StartAt
 
@@ -158,3 +162,14 @@ piece = case startAt of
             , rectangleSamba: moveVideo 0.0
             }
         @|> doFourthVideo
+  FifthVideo ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        fifthVideoCreate
+          $> { videoSpan
+            , quantaGenteExiste: quantaGenteExiste videoSpan.start
+            }
+        @|> doFifthVideo

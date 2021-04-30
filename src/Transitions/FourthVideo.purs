@@ -10,7 +10,7 @@ import Data.List ((:), List(..))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\), type (/\))
-import Data.Typelevel.Num (class Lt, class Nat, D7, D10, d0, d1, d2, d3, d4, d5, d6)
+import Data.Typelevel.Num (class Lt, class Nat, D10, D7, D16, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15)
 import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
@@ -44,32 +44,56 @@ colorPalette =
     +> { r: 254, g: 200, b: 154 }
     +> V.empty
 
+fcp :: ∀ (n ∷ Type). Nat n => Lt n D10 => n -> RGB
+fcp = V.index colorPalette
+
+palettes :: V.Vec D16 (V.Vec D7 RGB)
+palettes =
+  (fcp d7 +> fcp d5 +> fcp d3 +> fcp d0 +> fcp d9 +> fcp d8 +> fcp d4 +> V.empty)
+    +> (fcp d2 +> fcp d8 +> fcp d9 +> fcp d0 +> fcp d6 +> fcp d7 +> fcp d1 +> V.empty)
+    +> (fcp d0 +> fcp d1 +> fcp d5 +> fcp d8 +> fcp d9 +> fcp d7 +> fcp d4 +> V.empty)
+    +> (fcp d1 +> fcp d6 +> fcp d9 +> fcp d4 +> fcp d0 +> fcp d3 +> fcp d7 +> V.empty)
+    +> (fcp d1 +> fcp d9 +> fcp d4 +> fcp d2 +> fcp d3 +> fcp d7 +> fcp d0 +> V.empty)
+    +> (fcp d1 +> fcp d8 +> fcp d2 +> fcp d0 +> fcp d7 +> fcp d6 +> fcp d5 +> V.empty)
+    +> (fcp d0 +> fcp d8 +> fcp d1 +> fcp d6 +> fcp d4 +> fcp d3 +> fcp d5 +> V.empty)
+    +> (fcp d5 +> fcp d6 +> fcp d3 +> fcp d9 +> fcp d7 +> fcp d1 +> fcp d4 +> V.empty)
+    +> (fcp d6 +> fcp d9 +> fcp d7 +> fcp d0 +> fcp d4 +> fcp d5 +> fcp d2 +> V.empty)
+    +> (fcp d5 +> fcp d6 +> fcp d7 +> fcp d3 +> fcp d9 +> fcp d4 +> fcp d0 +> V.empty)
+    +> (fcp d5 +> fcp d9 +> fcp d6 +> fcp d3 +> fcp d0 +> fcp d8 +> fcp d4 +> V.empty)
+    +> (fcp d7 +> fcp d8 +> fcp d0 +> fcp d5 +> fcp d6 +> fcp d1 +> fcp d4 +> V.empty)
+    +> (fcp d0 +> fcp d4 +> fcp d2 +> fcp d5 +> fcp d8 +> fcp d1 +> fcp d7 +> V.empty)
+    +> (fcp d6 +> fcp d7 +> fcp d3 +> fcp d4 +> fcp d9 +> fcp d0 +> fcp d1 +> V.empty)
+    +> (fcp d6 +> fcp d7 +> fcp d3 +> fcp d0 +> fcp d9 +> fcp d1 +> fcp d4 +> V.empty)
+    +> (fcp d4 +> fcp d6 +> fcp d1 +> fcp d3 +> fcp d7 +> fcp d2 +> fcp d8 +> V.empty)
+    +> V.empty
+
+palette :: ∀ (n ∷ Type). Nat n => Lt n D16 => n -> V.Vec D7 RGB
+palette = V.index palettes
+
 quantaGenteExiste :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows (RGB -> Painting)) (Windows Painting)
 quantaGenteExiste startsAt =
   nonEmptyToCofree (Just (const (V.fill (const mempty))))
-    ( (pos (beats 0.5) /\ ua d0 dummyColors)
-        :| ( (pos (beats 1.0) /\ ua d4 dummyColors)
-              : (pos (beats 1.5) /\ ua d3 dummyColors)
-              : (pos (beats 2.0) /\ ua d5 dummyColors)
-              : (pos (beats 2.5) /\ ua d1 dummyColors)
-              : (pos (beats 3.0) /\ ua d6 dummyColors)
-              : (pos (beats 3.5) /\ ua d0 dummyColors)
-              : (pos (beats 4.0) /\ ua d2 dummyColors)
-              : (pos (beats 4.5) /\ ua d3 dummyColors)
-              : (pos (beats 5.0) /\ ua d1 dummyColors)
-              : (pos (beats 5.5) /\ ua d5 dummyColors)
-              : (pos (beats 6.0) /\ ua d3 dummyColors)
-              : (pos (beats 6.5) /\ ua d4 dummyColors)
-              : (pos (beats 7.0) /\ ua d0 dummyColors)
-              : (pos (beats 7.5) /\ ua d2 dummyColors)
-              : (pos (beats 8.0) /\ ua d6 dummyColors)
+    ( (pos (beats 0.5) /\ ua d0 (palette d0))
+        :| ( (pos (beats 1.0) /\ ua d4 (palette d1))
+              : (pos (beats 1.5) /\ ua d3 (palette d2))
+              : (pos (beats 2.0) /\ ua d5 (palette d3))
+              : (pos (beats 2.5) /\ ua d1 (palette d4))
+              : (pos (beats 3.0) /\ ua d6 (palette d5))
+              : (pos (beats 3.5) /\ ua d0 (palette d6))
+              : (pos (beats 4.0) /\ ua d2 (palette d7))
+              : (pos (beats 4.5) /\ ua d3 (palette d8))
+              : (pos (beats 5.0) /\ ua d1 (palette d9))
+              : (pos (beats 5.5) /\ ua d5 (palette d10))
+              : (pos (beats 6.0) /\ ua d3 (palette d11))
+              : (pos (beats 6.5) /\ ua d4 (palette d12))
+              : (pos (beats 7.0) /\ ua d0 (palette d13))
+              : (pos (beats 7.5) /\ ua d2 (palette d14))
+              : (pos (beats 8.0) /\ ua d6 (palette d15))
               : Nil
           )
     )
   where
   pos v time = (time - startsAt) < v
-
-  dummyColors = V.fill (const { r: 100, g: 100, b: 100 })
 
   ua :: forall w. Nat w => Lt w D7 => w -> Windows RGB -> (Windows Rectangle /\ Windows (RGB -> Painting)) -> Windows Painting
   ua d wrgb (windowDims /\ windowsOnScreen) =
