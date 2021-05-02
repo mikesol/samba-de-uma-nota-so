@@ -7,6 +7,7 @@ import Control.Monad.Reader (ReaderT, ask, lift, runReaderT)
 import Control.Monad.State (StateT, evalStateT, get, gets, modify_)
 import Control.Plus (empty)
 import Data.Array as A
+import Data.Array ((..))
 import Data.Array.NonEmpty (fromArray, fromNonEmpty)
 import Data.Filterable (filter)
 import Data.Int.Bits (shl)
@@ -14,7 +15,7 @@ import Data.List (List(..), notElem, (:))
 import Data.Maybe (Maybe(..), maybe)
 import Data.NonEmpty ((:|), NonEmpty)
 import Data.Ord (abs)
-import Data.Traversable (sequence)
+import Data.Traversable (for_, sequence)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Random.LCG (mkSeed)
@@ -408,5 +409,15 @@ defaultStateCtxt =
     StateImpl
 
 main :: Effect Unit
-main = do
-  log $ show $ (evalGen (evalStateT (runReaderT (foldFree interpret prog) defaultReaderCtxt) defaultStateCtxt) { newSeed: mkSeed 0, size: 10 })
+main =
+  for_ (0 .. 31) \i -> do
+    log $ "Calculating for " <> show i
+    log $ "<<<<"
+    log $ show
+      $ evalGen
+          ( evalStateT
+              (runReaderT (foldFree interpret prog) defaultReaderCtxt)
+              defaultStateCtxt
+          )
+          { newSeed: mkSeed i, size: 10 }
+    log $ ">>>>"
