@@ -154,8 +154,6 @@ type RenderM a
 lift2 :: Gen ~> RenderM
 lift2 = lift <<< lift
 
---interpreter :: ProgramF ~> StateT Gen
---interpreter GetBias f = f <$> getBiasImpl
 getBiasImpl :: RenderM Point
 getBiasImpl = do
   { maxXBias, maxYBias, minXBias, minYBias } <- ask

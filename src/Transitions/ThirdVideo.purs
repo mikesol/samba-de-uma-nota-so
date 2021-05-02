@@ -62,7 +62,6 @@ moveVideo startsAt =
       )
       windowsOnScreen
 
--- | We play the first video and then move onto the pre-second video.
 doThirdVideo ::
   forall proof iu cb.
   StepSig (ThirdVideoUniverse cb) proof iu IO.Accumulator

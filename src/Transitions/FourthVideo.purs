@@ -128,7 +128,6 @@ boomBoom time startsAt canvas = go
         <> middleFrame
     | otherwise = mempty
 
--- | We play the first video and then move onto the pre-second video.
 doFourthVideo ::
   forall proof iu cb.
   StepSig (FourthVideoUniverse cb) proof iu IO.Accumulator
