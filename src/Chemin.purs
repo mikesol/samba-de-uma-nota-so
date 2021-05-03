@@ -117,8 +117,15 @@ type SixthVideoUniverse cb
   = FifthVideoUniverse cb
 
 ---------
-type EndGraph
+type SeventhVideoGraph
   = SixthVideoGraph
 
-type EndUniverse cb
+type SeventhVideoUniverse cb
   = SixthVideoUniverse cb
+
+---------
+type EndGraph
+  = SeventhVideoGraph
+
+type EndUniverse cb
+  = SeventhVideoUniverse cb

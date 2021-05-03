@@ -17,6 +17,7 @@ import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
+import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoCreate)
 import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoCreate)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
@@ -28,8 +29,9 @@ import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
-import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
-import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, moveVideo)
+import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
+import SambaDeUmaNotaSo.Transitions.SixthVideo (deTodaAEscala, doSixthVideo, seventhVideoLoop)
+import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, rectangleSamba)
 import SambaDeUmaNotaSo.Util (beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
@@ -49,6 +51,7 @@ data StartAt
   | FourthVideo
   | FifthVideo
   | SixthVideo
+  | SeventhVideo
 
 startAt = FifthVideo :: StartAt
 
@@ -161,7 +164,7 @@ piece = case startAt of
           $> { mostRecentWindowInteraction: V.fill (const Nothing)
             , videoSpan
             , b7WindowDims: beatModSeven
-            , rectangleSamba: moveVideo 0.0
+            , rectangleSamba: rectangleSamba 0.0
             }
         @|> doFourthVideo
   FifthVideo ->
@@ -186,3 +189,15 @@ piece = case startAt of
             , quaseNada: quaseNada videoSpan.start
             }
         @|> doSixthVideo
+  SeventhVideo ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        seventhVideoCreate
+          $> { videoSpan
+            , deTodaAEscala: deTodaAEscala videoSpan.start
+            , seventhVideoLoop: seventhVideoLoop videoSpan.start
+            }
+        @|> doSeventhVideo

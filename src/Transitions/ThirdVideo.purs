@@ -28,8 +28,8 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 
-moveVideo :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
-moveVideo startsAt =
+rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
+rectangleSamba startsAt =
   nonEmptyToCofree (Just (const (V.fill (const mempty))))
     ( (pos (beats 1.0) /\ ua d0)
         :| ( (pos (beats 1.5) /\ ua d1)
@@ -108,5 +108,5 @@ doThirdVideo =
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , videoSpan: videoSpan
                   , b7WindowDims: acc.b7WindowDims
-                  , rectangleSamba: moveVideo videoSpan.start
+                  , rectangleSamba: rectangleSamba videoSpan.start
                   }
