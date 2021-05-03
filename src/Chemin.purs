@@ -124,6 +124,13 @@ type SeventhVideoUniverse cb
   = SixthVideoUniverse cb
 
 ---------
+type AwaitingEighthVideoGraph
+  = SeventhVideoGraph
+
+type AwaitingEighthVideoUniverse cb
+  = SeventhVideoUniverse cb
+
+---------
 type EndGraph
   = SeventhVideoGraph
 

@@ -17,7 +17,8 @@ import SambaDeUmaNotaSo.Chemin (SeventhVideoUniverse)
 import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen, withWindowDims, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.SeventhVideo as IO
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoPatch)
+import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -88,5 +89,7 @@ doSeventhVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doAwaitingEighthVideo WAGS.do
+                awaitingEighthVideoPatch pr
+                withProof pr
+                  { dotMover: acc.dotMover }
