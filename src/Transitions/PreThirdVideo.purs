@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Transitions.PreThirdVideo where
 
 import Prelude
-
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -21,7 +20,6 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 
--- | We play the first video and then move onto the pre-third video.
 doPreThirdVideo ::
   forall proof iu cb.
   StepSig (PreThirdVideoUniverse cb) proof iu IO.Accumulator

@@ -16,7 +16,7 @@ import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (FourthVideoUniverse)
-import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourMeasures, fourteenBeats, thirteenAndAHalfBeats)
+import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
@@ -175,7 +175,7 @@ doFourthVideo =
           Left
             $ inSitu doFifthVideo WAGS.do
                 let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
                 fifthVideoPatch pr
                 withProof pr
                   { videoSpan

@@ -13,6 +13,8 @@ beatsInMeasure = 4.0 :: Number
 
 measure = beat * beatsInMeasure :: Number
 
+twoMeasures = measure * 2.0 :: Number
+
 fourMeasures = measure * 4.0 :: Number
 
 oneBeat = beat * 1.0 :: Number

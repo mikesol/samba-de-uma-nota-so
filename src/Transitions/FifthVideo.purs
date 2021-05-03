@@ -5,19 +5,20 @@ import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
+import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\))
-import Data.List (List(..), (:))
 import Data.Typelevel.Num (class Lt, class Nat, D16, d0, d1, d10, d11, d12, d13, d14, d15, d2, d3, d4, d5, d6, d7, d8, d9)
 import Data.Vec as V
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (FifthVideoUniverse)
-import SambaDeUmaNotaSo.Constants (beats)
+import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FifthVideo as IO
+import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoPatch)
 import SambaDeUmaNotaSo.SixthVideoTiles (tilesForPiece)
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -103,5 +104,11 @@ doFifthVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doSixthVideo WAGS.do
+                let
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
+                sixthVideoPatch pr
+                withProof pr
+                  { videoSpan
+                  , quaseNada: quaseNada videoSpan.start
+                  }

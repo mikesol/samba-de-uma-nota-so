@@ -1,12 +1,11 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
-
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
 import Data.Vec as V
-import SambaDeUmaNotaSo.Constants (fourMeasures)
+import SambaDeUmaNotaSo.Constants (fourMeasures, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
@@ -18,16 +17,18 @@ import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
+import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoCreate)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
-import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
+import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
 import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
+import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, moveVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
@@ -47,8 +48,9 @@ data StartAt
   | ThirdVideo
   | FourthVideo
   | FifthVideo
+  | SixthVideo
 
-startAt = PreThirdVideo :: StartAt
+startAt = FifthVideo :: StartAt
 
 startWithBlackBackground ::
   forall audio engine m.
@@ -164,7 +166,7 @@ piece = case startAt of
         @|> doFourthVideo
   FifthVideo ->
     let
-      videoSpan = { start: 0.0, end: fourMeasures }
+      videoSpan = { start: 0.0, end: twoMeasures }
     in
       WAGS.do
         startWithBlackBackground
@@ -173,3 +175,14 @@ piece = case startAt of
             , quantaGenteExiste: quantaGenteExiste videoSpan.start
             }
         @|> doFifthVideo
+  SixthVideo ->
+    let
+      videoSpan = { start: 0.0, end: twoMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        sixthVideoCreate
+          $> { videoSpan
+            , quaseNada: quaseNada videoSpan.start
+            }
+        @|> doSixthVideo

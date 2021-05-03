@@ -110,8 +110,15 @@ type FifthVideoUniverse cb
   = FourthVideoUniverse cb
 
 ---------
+type SixthVideoGraph
+  = FifthVideoGraph
+
+type SixthVideoUniverse cb
+  = FifthVideoUniverse cb
+
+---------
 type EndGraph
-  = AwaitingSecondVideoGraph
+  = SixthVideoGraph
 
 type EndUniverse cb
-  = AwaitingSecondVideoUniverse cb
+  = SixthVideoUniverse cb
