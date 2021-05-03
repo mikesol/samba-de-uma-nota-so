@@ -5,12 +5,13 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import Graphics.Canvas (Rectangle)
 import SambaDeUmaNotaSo.Chemin (SecondVideoUniverse)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
-import SambaDeUmaNotaSo.Util (beatModSeven)
+import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
@@ -49,6 +50,6 @@ doSecondVideo =
                 preThirdVideoPatch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , b7IsWindowTouched: beatModSeven
-                  , b7WindowDims: beatModSeven
+                  , b7IsWindowTouched: beatModSeven e.time :: BeatMod7' Boolean
+                  , b7WindowDims: beatModSeven e.time :: BeatMod7' Rectangle
                   }

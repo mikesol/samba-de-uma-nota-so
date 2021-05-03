@@ -141,15 +141,15 @@ type BeatMod7' a
 type BeatMod7
   = forall a. (BeatMod7F a) (Cofree (BeatMod7F a) a)
 
-beatModSeven :: BeatMod7
-beatModSeven =
+beatModSeven :: Number -> BeatMod7
+beatModSeven startsAt =
   nonEmptyToCofree Nothing
-    ( ((\time -> time % sevenBeats < oneBeat) /\ (flip V.index d0))
-        :| ((\time -> time % sevenBeats < twoBeats) /\ (flip V.index d1))
-        : ((\time -> time % sevenBeats < threeBeats) /\ (flip V.index d2))
-        : ((\time -> time % sevenBeats < fourBeats) /\ (flip V.index d3))
-        : ((\time -> time % sevenBeats < fiveBeats) /\ (flip V.index d4))
-        : ((\time -> time % sevenBeats < sixBeats) /\ (flip V.index d5))
-        : ((\time -> time % sevenBeats >= sixBeats) /\ (flip V.index d6))
+    ( ((\time -> (time - startsAt) % sevenBeats < oneBeat) /\ (flip V.index d0))
+        :| ((\time -> (time - startsAt) % sevenBeats < twoBeats) /\ (flip V.index d1))
+        : ((\time -> (time - startsAt) % sevenBeats < threeBeats) /\ (flip V.index d2))
+        : ((\time -> (time - startsAt) % sevenBeats < fourBeats) /\ (flip V.index d3))
+        : ((\time -> (time - startsAt) % sevenBeats < fiveBeats) /\ (flip V.index d4))
+        : ((\time -> (time - startsAt) % sevenBeats < sixBeats) /\ (flip V.index d5))
+        : ((\time -> (time - startsAt) % sevenBeats >= sixBeats) /\ (flip V.index d6))
         : Nil
     )

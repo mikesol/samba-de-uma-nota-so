@@ -1,19 +1,20 @@
 module SambaDeUmaNotaSo.Transitions.SixthVideo where
 
 import Prelude
-import Color (rgb)
+import Color (Color, rgb, rgba)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
+import Math ((%))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested ((/\), type (/\))
+import Data.Tuple.Nested ((/\))
 import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d11, d13, d15, d17, d19, d2, d21, d23, d25, d27, d29, d3, d31, d32, d4, d5, d7, d9)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
-import Graphics.Painting (Painting, fillColor, filled, rectangle)
+import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (SixthVideoUniverse)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
@@ -33,46 +34,46 @@ import Web.HTML.HTMLElement (DOMRect)
 deTodaAEscala :: Number -> NonEmptyToCofree DOMRect Painting
 deTodaAEscala startsAt =
   nonEmptyToCofree (Just (const mempty))
-    ( (pos (beats 0.5) /\ ua (V.take d1 tiles7))
-        :| ( (pos (beats 1.0) /\ ua (V.take d3 tiles7))
-              : (pos (beats 1.5) /\ ua (V.take d5 tiles7))
-              : (pos (beats 2.0) /\ ua (V.take d7 tiles7))
-              : (pos (beats 2.5) /\ ua (V.take d9 tiles7))
-              : (pos (beats 3.0) /\ ua (V.take d11 tiles7))
-              : (pos (beats 3.5) /\ ua (V.take d13 tiles7))
-              : (pos (beats 4.0) /\ ua (V.take d15 tiles7))
-              : (pos (beats 4.5) /\ ua (V.take d17 tiles7))
-              : (pos (beats 5.0) /\ ua (V.take d19 tiles7))
-              : (pos (beats 5.5) /\ ua (V.take d21 tiles7))
-              : (pos (beats 6.0) /\ ua (V.take d23 tiles7))
-              : (pos (beats 6.5) /\ ua (V.take d25 tiles7))
-              : (pos (beats 7.0) /\ ua (V.take d27 tiles7))
-              : (pos (beats 7.5) /\ ua (V.take d29 tiles7))
-              : (pos (beats 8.0) /\ ua (V.take d32 tiles7))
-              : (pos (beats 8.5) /\ ua (V.drop d1 tiles7))
-              : (pos (beats 9.0) /\ ua (V.take d3 tiles7))
-              : (pos (beats 9.5) /\ ua (V.take d5 tiles7))
-              : (pos (beats 10.0) /\ ua (V.take d7 tiles7))
-              : (pos (beats 10.5) /\ ua (V.take d9 tiles7))
-              : (pos (beats 11.0) /\ ua (V.take d11 tiles7))
-              : (pos (beats 11.5) /\ ua (V.take d13 tiles7))
-              : (pos (beats 12.0) /\ ua (V.take d15 tiles7))
-              : (pos (beats 12.5) /\ ua (V.take d17 tiles7))
-              : (pos (beats 13.0) /\ ua (V.take d19 tiles7))
-              : (pos (beats 13.5) /\ ua (V.take d21 tiles7))
-              : (pos (beats 14.0) /\ ua (V.take d23 tiles7))
-              : (pos (beats 14.5) /\ ua (V.take d25 tiles7))
-              : (pos (beats 15.0) /\ ua (V.take d27 tiles7))
-              : (pos (beats 15.5) /\ ua (V.take d29 tiles7))
-              : (pos (beats 16.0) /\ ua (V.take d31 tiles7))
+    ( (pos (beats 0.5) /\ go (V.take d1 tiles7))
+        :| ( (pos (beats 1.0) /\ go (V.take d3 tiles7))
+              : (pos (beats 1.5) /\ go (V.take d5 tiles7))
+              : (pos (beats 2.0) /\ go (V.take d7 tiles7))
+              : (pos (beats 2.5) /\ go (V.take d9 tiles7))
+              : (pos (beats 3.0) /\ go (V.take d11 tiles7))
+              : (pos (beats 3.5) /\ go (V.take d13 tiles7))
+              : (pos (beats 4.0) /\ go (V.take d15 tiles7))
+              : (pos (beats 4.5) /\ go (V.take d17 tiles7))
+              : (pos (beats 5.0) /\ go (V.take d19 tiles7))
+              : (pos (beats 5.5) /\ go (V.take d21 tiles7))
+              : (pos (beats 6.0) /\ go (V.take d23 tiles7))
+              : (pos (beats 6.5) /\ go (V.take d25 tiles7))
+              : (pos (beats 7.0) /\ go (V.take d27 tiles7))
+              : (pos (beats 7.5) /\ go (V.take d29 tiles7))
+              : (pos (beats 8.0) /\ go (V.take d32 tiles7))
+              : (pos (beats 8.5) /\ go (V.drop d1 tiles7))
+              : (pos (beats 9.0) /\ go (V.drop d3 tiles7))
+              : (pos (beats 9.5) /\ go (V.drop d5 tiles7))
+              : (pos (beats 10.0) /\ go (V.drop d7 tiles7))
+              : (pos (beats 10.5) /\ go (V.drop d9 tiles7))
+              : (pos (beats 11.0) /\ go (V.drop d11 tiles7))
+              : (pos (beats 11.5) /\ go (V.drop d13 tiles7))
+              : (pos (beats 12.0) /\ go (V.drop d15 tiles7))
+              : (pos (beats 12.5) /\ go (V.drop d17 tiles7))
+              : (pos (beats 13.0) /\ go (V.drop d19 tiles7))
+              : (pos (beats 13.5) /\ go (V.drop d21 tiles7))
+              : (pos (beats 14.0) /\ go (V.drop d23 tiles7))
+              : (pos (beats 14.5) /\ go (V.drop d25 tiles7))
+              : (pos (beats 15.0) /\ go (V.drop d27 tiles7))
+              : (pos (beats 15.5) /\ go (V.drop d29 tiles7))
+              : (pos (beats 16.0) /\ go (V.drop d31 tiles7))
               : Nil
           )
     )
   where
   pos v time = (time - startsAt) < v
 
-  ua :: forall n. V.Vec n TileBuilder2 -> DOMRect -> Painting
-  ua l dr =
+  go :: forall n. V.Vec n TileBuilder2 -> DOMRect -> Painting
+  go l dr =
     fold
       $ l
       # map
@@ -87,33 +88,78 @@ deTodaAEscala startsAt =
                 )
           )
 
-seventhVideoLoop :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
+data Intensity
+  = Bright
+  | Mid
+  | Dim
+
+i2c :: Intensity -> Color
+i2c = case _ of
+  Bright -> rgba 255 255 255 1.0
+  Mid -> rgba 200 200 200 0.6
+  Dim -> rgba 155 155 155 0.4
+
+dotMover :: Number -> NonEmptyToCofree DOMRect Painting
+dotMover startsAt =
+  nonEmptyToCofree Nothing
+    ( (pos (beats 0.5) /\ go 0.125 0.125 Bright)
+        :| ( (pos (beats 1.0) /\ go 0.125 0.375 Dim)
+              : (pos (beats 1.5) /\ go 0.125 0.625 Dim)
+              : (pos (beats 2.0) /\ go 0.125 0.875 Bright)
+              : (pos (beats 2.5) /\ go 0.375 0.125 Dim)
+              : (pos (beats 3.0) /\ go 0.375 0.375 Dim)
+              : (pos (beats 3.5) /\ go 0.375 0.625 Bright)
+              : (pos (beats 4.0) /\ go 0.375 0.875 Dim)
+              : (pos (beats 4.5) /\ go 0.625 0.125 Dim)
+              : (pos (beats 5.0) /\ go 0.625 0.375 Bright)
+              : (pos (beats 5.5) /\ go 0.625 0.625 Dim)
+              : (pos (beats 6.0) /\ go 0.625 0.875 Dim)
+              : (pos (beats 6.5) /\ go 0.875 0.125 Mid)
+              : (pos (beats 7.0) /\ go 0.875 0.375 Dim)
+              : (pos (beats 7.5) /\ go 0.875 0.625 Mid)
+              : (pos' (beats 7.5) /\ go 0.875 0.875 Dim)
+              : Nil
+          )
+    )
+  where
+  pos v time = ((time - startsAt) % beats 8.0) < v
+
+  pos' v time = ((time - startsAt) % beats 8.0) >= v
+
+  go :: Number -> Number -> Intensity -> DOMRect -> Painting
+  go y x i dr =
+    filled
+      (fillColor (i2c i))
+      ( circle
+          (x * dr.width)
+          (y * dr.height)
+          (min dr.width dr.height / 20.0)
+      )
+
+seventhVideoLoop :: Number -> NonEmptyToCofree (Windows Rectangle) Painting
 seventhVideoLoop startsAt =
-  nonEmptyToCofree (Just (const (V.fill (const mempty))))
-    ( (pos (beats 8.0) /\ (const (V.fill (const mempty))))
-        :| ( (pos (beats 9.5) /\ ua d0)
-              : (pos (beats 11.0) /\ ua d1)
-              : (pos (beats 12.5) /\ ua d2)
-              : (pos (beats 14.0) /\ ua d3)
-              : (pos (beats 15.0) /\ ua d4)
-              : (pos (beats 16.0) /\ ua d5)
+  nonEmptyToCofree (Just (const mempty))
+    ( (pos (beats 8.0) /\ (const mempty))
+        :| ( (pos (beats 9.5) /\ go d0)
+              : (pos (beats 11.0) /\ go d1)
+              : (pos (beats 12.5) /\ go d2)
+              : (pos (beats 14.0) /\ go d3)
+              : (pos (beats 15.0) /\ go d4)
+              : (pos (beats 16.0) /\ go d5)
               : Nil
           )
     )
   where
   pos v time = (time - startsAt) < v
 
-  ua :: forall w. Nat w => Lt w D7 => w -> (Windows Rectangle /\ Windows Painting) -> Windows Painting
-  ua d (windowDims /\ windowsOnScreen) =
-    V.updateAt d
-      ( let
-          rct = V.index windowDims d
-        in
-          filled
-            (fillColor (rgb 255 255 255))
-            (rectangle rct.x rct.y rct.width rct.height)
-      )
-      windowsOnScreen
+  go :: forall w. Nat w => Lt w D7 => w -> (Windows Rectangle) -> Painting
+  go d windowDims =
+    let
+      rct = V.index windowDims d
+    in
+      filled
+        (fillColor (rgb 255 255 255))
+        (rectangle rct.x rct.y rct.width rct.height)
 
 doSixthVideo ::
   forall proof iu cb.
@@ -165,4 +211,5 @@ doSixthVideo =
                   { videoSpan
                   , deTodaAEscala: deTodaAEscala videoSpan.start
                   , seventhVideoLoop: seventhVideoLoop videoSpan.start
+                  , dotMover: dotMover videoSpan.start
                   }

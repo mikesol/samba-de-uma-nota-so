@@ -5,6 +5,7 @@ import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
 import Data.Vec as V
+import Graphics.Canvas (Rectangle)
 import SambaDeUmaNotaSo.Constants (fourMeasures, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
@@ -30,9 +31,9 @@ import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
-import SambaDeUmaNotaSo.Transitions.SixthVideo (deTodaAEscala, doSixthVideo, seventhVideoLoop)
+import SambaDeUmaNotaSo.Transitions.SixthVideo (deTodaAEscala, doSixthVideo, dotMover, seventhVideoLoop)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, rectangleSamba)
-import SambaDeUmaNotaSo.Util (beatModSeven)
+import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
 import WAGS.Control.Types (Frame0, InitialFrameT)
@@ -137,8 +138,8 @@ piece = case startAt of
       startWithBlackBackground
       preThirdVideoCreate
         $> { mostRecentWindowInteraction: V.fill (const Nothing)
-          , b7IsWindowTouched: beatModSeven
-          , b7WindowDims: beatModSeven
+          , b7IsWindowTouched: beatModSeven 0.0 :: BeatMod7' Boolean
+          , b7WindowDims: beatModSeven 0.0 :: BeatMod7' Rectangle
           }
       @|> doPreThirdVideo
   ThirdVideo ->
@@ -151,7 +152,7 @@ piece = case startAt of
           $> { interpretVideo: interpretVideo d5 videoSpan
             , mostRecentWindowInteraction: V.fill (const Nothing)
             , videoSpan
-            , b7WindowDims: beatModSeven
+            , b7WindowDims: beatModSeven 0.0 :: BeatMod7' Rectangle
             }
         @|> doThirdVideo
   FourthVideo ->
@@ -163,7 +164,7 @@ piece = case startAt of
         fourthVideoCreate
           $> { mostRecentWindowInteraction: V.fill (const Nothing)
             , videoSpan
-            , b7WindowDims: beatModSeven
+            , b7WindowDims: beatModSeven 0.0 :: BeatMod7' Rectangle
             , rectangleSamba: rectangleSamba 0.0
             }
         @|> doFourthVideo
@@ -199,5 +200,6 @@ piece = case startAt of
           $> { videoSpan
             , deTodaAEscala: deTodaAEscala videoSpan.start
             , seventhVideoLoop: seventhVideoLoop videoSpan.start
+            , dotMover: dotMover videoSpan.start
             }
         @|> doSeventhVideo

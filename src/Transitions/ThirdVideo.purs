@@ -31,27 +31,27 @@ import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
 rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 rectangleSamba startsAt =
   nonEmptyToCofree (Just (const (V.fill (const mempty))))
-    ( (pos (beats 1.0) /\ ua d0)
-        :| ( (pos (beats 1.5) /\ ua d1)
-              : (pos (beats 2.5) /\ ua d2)
-              : (pos (beats 3.5) /\ ua d3)
-              : (pos (beats 5.0) /\ ua d4)
-              : (pos (beats 5.5) /\ ua d5)
-              : (pos (beats 6.5) /\ ua d6)
-              : (pos (beats 7.5) /\ ua d0)
-              : (pos (beats 8.0) /\ ua d1)
-              : (pos (beats 9.0) /\ ua d2)
-              : (pos (beats 9.5) /\ ua d3)
-              : (pos (beats 10.5) /\ ua d4)
-              : (pos (beats 11.5) /\ ua d5)
+    ( (pos (beats 1.0) /\ go d0)
+        :| ( (pos (beats 1.5) /\ go d1)
+              : (pos (beats 2.5) /\ go d2)
+              : (pos (beats 3.5) /\ go d3)
+              : (pos (beats 5.0) /\ go d4)
+              : (pos (beats 5.5) /\ go d5)
+              : (pos (beats 6.5) /\ go d6)
+              : (pos (beats 7.5) /\ go d0)
+              : (pos (beats 8.0) /\ go d1)
+              : (pos (beats 9.0) /\ go d2)
+              : (pos (beats 9.5) /\ go d3)
+              : (pos (beats 10.5) /\ go d4)
+              : (pos (beats 11.5) /\ go d5)
               : Nil
           )
     )
   where
   pos v time = (time - startsAt) < v
 
-  ua :: forall w. Nat w => Lt w D7 => w -> (Windows Rectangle /\ Windows Painting) -> Windows Painting
-  ua d (windowDims /\ windowsOnScreen) =
+  go :: forall w. Nat w => Lt w D7 => w -> (Windows Rectangle /\ Windows Painting) -> Windows Painting
+  go d (windowDims /\ windowsOnScreen) =
     V.updateAt d
       ( let
           rct = V.index windowDims d

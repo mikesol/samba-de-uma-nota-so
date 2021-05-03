@@ -14,8 +14,8 @@ import Data.Typelevel.Num (class Lt, class Nat, D16, d0, d1, d10, d11, d12, d13,
 import Data.Vec as V
 import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (SeventhVideoUniverse)
-import SambaDeUmaNotaSo.Constants (beats)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen)
+import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
+import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen, withWindowDims, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.SeventhVideo as IO
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
@@ -34,36 +34,55 @@ doSeventhVideo =
     pr <- proof
     let
       ctxt =
-        withAugmentedEnv
-          { canvas: e.world.canvas
-          , interaction: if e.active then asTouch e.trigger else Nothing
-          , time: e.time
-          }
+        withWindowDims
+          $ withAugmentedEnv
+              { canvas: e.world.canvas
+              , interaction: if e.active then asTouch e.trigger else Nothing
+              , time: e.time
+              }
     withProof pr
       $ if acc.videoSpan.end > e.time then
           Right
             $ WAGS.do
                 let
-                  rs =
+                  deTodaAEscala' =
                     acc.deTodaAEscala
                       { time: e.time
                       , value: e.world.canvas
                       }
 
-                  tiles = head rs
+                  dotMover' =
+                    acc.dotMover
+                      { time: e.time
+                      , value: e.world.canvas
+                      }
+
+                  seventhVideoLoop' =
+                    acc.seventhVideoLoop
+                      { time: e.time
+                      , value: ctxt.windowDims
+                      }
+
+                  tiles = head deTodaAEscala'
 
                   middleFrame = filled (fillColor (rgb 255 255 255)) (rectangle (e.world.canvas.width / 3.0) (e.world.canvas.height / 3.0) (1.0 * e.world.canvas.width / 3.0) (1.0 * e.world.canvas.height / 3.0))
+
+                  halfway = e.time - acc.videoSpan.start < twoMeasures
                 ivoid
                   $ modifyRes
                   $ const
                       { painting:
                           ctxt.background
-                            <> middleFrame
+                            <> (if halfway then middleFrame else mempty)
+                            <> head seventhVideoLoop'
+                            <> (if halfway then mempty else (head dotMover'))
                             <> tiles
                       }
                 changes unit
                   $> acc
-                      { deTodaAEscala = tail rs
+                      { deTodaAEscala = tail deTodaAEscala'
+                      , dotMover = tail dotMover'
+                      , seventhVideoLoop = tail seventhVideoLoop'
                       }
         else
           Left

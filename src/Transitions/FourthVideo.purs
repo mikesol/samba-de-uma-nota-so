@@ -73,30 +73,30 @@ palette = V.index palettes
 quantaGenteExiste :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows (RGB -> Painting)) (Windows Painting)
 quantaGenteExiste startsAt =
   nonEmptyToCofree (Just (const (V.fill (const mempty))))
-    ( (pos (beats 0.5) /\ ua d0 (palette d0))
-        :| ( (pos (beats 1.0) /\ ua d4 (palette d1))
-              : (pos (beats 1.5) /\ ua d3 (palette d2))
-              : (pos (beats 2.0) /\ ua d5 (palette d3))
-              : (pos (beats 2.5) /\ ua d1 (palette d4))
-              : (pos (beats 3.0) /\ ua d6 (palette d5))
-              : (pos (beats 3.5) /\ ua d0 (palette d6))
-              : (pos (beats 4.0) /\ ua d2 (palette d7))
-              : (pos (beats 4.5) /\ ua d3 (palette d8))
-              : (pos (beats 5.0) /\ ua d1 (palette d9))
-              : (pos (beats 5.5) /\ ua d5 (palette d10))
-              : (pos (beats 6.0) /\ ua d3 (palette d11))
-              : (pos (beats 6.5) /\ ua d4 (palette d12))
-              : (pos (beats 7.0) /\ ua d0 (palette d13))
-              : (pos (beats 7.5) /\ ua d2 (palette d14))
-              : (pos (beats 8.0) /\ ua d6 (palette d15))
+    ( (pos (beats 0.5) /\ go d0 (palette d0))
+        :| ( (pos (beats 1.0) /\ go d4 (palette d1))
+              : (pos (beats 1.5) /\ go d3 (palette d2))
+              : (pos (beats 2.0) /\ go d5 (palette d3))
+              : (pos (beats 2.5) /\ go d1 (palette d4))
+              : (pos (beats 3.0) /\ go d6 (palette d5))
+              : (pos (beats 3.5) /\ go d0 (palette d6))
+              : (pos (beats 4.0) /\ go d2 (palette d7))
+              : (pos (beats 4.5) /\ go d3 (palette d8))
+              : (pos (beats 5.0) /\ go d1 (palette d9))
+              : (pos (beats 5.5) /\ go d5 (palette d10))
+              : (pos (beats 6.0) /\ go d3 (palette d11))
+              : (pos (beats 6.5) /\ go d4 (palette d12))
+              : (pos (beats 7.0) /\ go d0 (palette d13))
+              : (pos (beats 7.5) /\ go d2 (palette d14))
+              : (pos (beats 8.0) /\ go d6 (palette d15))
               : Nil
           )
     )
   where
   pos v time = (time - startsAt) < v
 
-  ua :: forall w. Nat w => Lt w D7 => w -> Windows RGB -> (Windows Rectangle /\ Windows (RGB -> Painting)) -> Windows Painting
-  ua d wrgb (windowDims /\ windowsOnScreen) =
+  go :: forall w. Nat w => Lt w D7 => w -> Windows RGB -> (Windows Rectangle /\ Windows (RGB -> Painting)) -> Windows Painting
+  go d wrgb (windowDims /\ windowsOnScreen) =
     V.updateAt d
       ( let
           rct = V.index windowDims d

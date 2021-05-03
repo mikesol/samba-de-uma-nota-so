@@ -73,7 +73,7 @@ doPreThirdVideo =
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , interpretVideo:
                       ( head
-                          $ beatModSeven
+                          $ beatModSeven e.time
                               { time: e.time
                               , value: interpretVideoAsWindows
                               }
