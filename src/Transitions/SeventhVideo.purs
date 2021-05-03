@@ -68,6 +68,8 @@ doSeventhVideo =
                   middleFrame = filled (fillColor (rgb 255 255 255)) (rectangle (e.world.canvas.width / 3.0) (e.world.canvas.height / 3.0) (1.0 * e.world.canvas.width / 3.0) (1.0 * e.world.canvas.height / 3.0))
 
                   halfway = e.time - acc.videoSpan.start < twoMeasures
+
+                  _ /\ dotNow = head dotMover' Nothing
                 ivoid
                   $ modifyRes
                   $ const
@@ -75,7 +77,7 @@ doSeventhVideo =
                           ctxt.background
                             <> (if halfway then middleFrame else mempty)
                             <> head seventhVideoLoop'
-                            <> (if halfway then mempty else (head dotMover'))
+                            <> (if halfway then mempty else dotNow)
                             <> tiles
                       }
                 changes unit

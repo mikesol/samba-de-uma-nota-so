@@ -7,14 +7,14 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
-import Math ((%))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested ((/\), type (/\))
 import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d11, d13, d15, d17, d19, d2, d21, d23, d25, d27, d29, d3, d31, d32, d4, d5, d7, d9)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
-import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
+import Graphics.Painting (Painting, Point, circle, fillColor, filled, rectangle)
+import Math (pow, sqrt, (%))
 import SambaDeUmaNotaSo.Chemin (SixthVideoUniverse)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
@@ -99,7 +99,7 @@ i2c = case _ of
   Mid -> rgba 200 200 200 0.6
   Dim -> rgba 155 155 155 0.4
 
-dotMover :: Number -> NonEmptyToCofree DOMRect Painting
+dotMover :: Number -> NonEmptyToCofree DOMRect (Maybe Point -> Boolean /\ Painting)
 dotMover startsAt =
   nonEmptyToCofree Nothing
     ( (pos (beats 0.5) /\ go 0.125 0.125 Bright)
@@ -126,15 +126,24 @@ dotMover startsAt =
 
   pos' v time = ((time - startsAt) % beats 8.0) >= v
 
-  go :: Number -> Number -> Intensity -> DOMRect -> Painting
-  go y x i dr =
-    filled
-      (fillColor (i2c i))
-      ( circle
-          (x * dr.width)
-          (y * dr.height)
-          (min dr.width dr.height / 20.0)
-      )
+  go :: Number -> Number -> Intensity -> DOMRect -> Maybe Point -> Boolean /\ Painting
+  go y x i dr pt =
+    maybe false (\p -> sqrt (((xp - p.x) `pow` 2.0) + ((yp - p.y) `pow` 2.0)) < (crad * 1.4)) pt
+      /\ filled
+          (fillColor (i2c i))
+          ( circle
+              (x * dr.width)
+              (y * dr.height)
+              crad
+          )
+    where
+    mindim = min dr.width dr.height
+
+    crad = mindim / 20.0
+
+    xp = x * dr.width
+
+    yp = y * dr.height
 
 seventhVideoLoop :: Number -> NonEmptyToCofree (Windows Rectangle) Painting
 seventhVideoLoop startsAt =
