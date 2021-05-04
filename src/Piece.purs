@@ -27,10 +27,10 @@ import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
 import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoCreate)
 import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoCreate)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
-import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo)
+import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo, dotInteractions)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
-import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
+import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo, instrumentalAnimation)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
@@ -41,6 +41,7 @@ import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (deTodaAEscala, doSixthVideo, dotMover, seventhVideoLoop)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, rectangleSamba)
+import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental)
 import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
@@ -62,6 +63,7 @@ data StartAt
   | SeventhVideo
   | AwaitingEighthVideo
   | EighthVideo
+  | ToInstrumental
 
 startAt = FifthVideo :: StartAt
 
@@ -221,18 +223,27 @@ piece = case startAt of
   EighthVideo ->
     let
       videoSpan = { start: 0.0, end: fourMeasures }
-
-      -- todo: copied from file. make utility?
-      curriedEvh = nextEVH (td2harmChain TDThree)
-
-      f evh = evh :< (f <<< curriedEvh evh)
     in
       WAGS.do
         startWithBlackBackground
         eighthVideoCreate
           $> { videoSpan
             , mostRecentWindowInteraction: V.fill $ const Nothing
-            , dotInteractions: f NoSingers
+            , dotInteractions: dotInteractions TDThree
             , mainVideo: TDThree
             }
         @|> doEighthVideo
+  ToInstrumental ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        eighthVideoCreate
+          $> { videoSpan
+            , mostRecentWindowInteraction: V.fill $ const Nothing
+            , dotInteractions: dotInteractions TDThree
+            , mainVideo: TDThree
+            , instrumentalAnimation: instrumentalAnimation 0.0
+            }
+        @|> doToInstrumental

@@ -5,19 +5,34 @@ import Color (rgb)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
+import Data.List (List(..))
 import Data.Maybe (Maybe(..))
+import Data.NonEmpty ((:|))
+import Data.Tuple.Nested ((/\))
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (EighthVideoUniverse)
+import SambaDeUmaNotaSo.Constants (beats, eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.EighthVideo as IO
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
+import SambaDeUmaNotaSo.Loops.ToInstrumental (toInstrumentalPatch)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
-import SambaDeUmaNotaSo.Util (scaleUnitPoint)
+import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental)
+import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, scaleUnitPoint)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
+
+instrumentalAnimation :: Number -> NonEmptyToCofree DOMRect Painting
+instrumentalAnimation startsAt =
+  nonEmptyToCofree (Just (const mempty))
+    ( (pos (beats 8.0) /\ (const mempty))
+        :| Nil
+    )
+  where
+  pos v time = (time - startsAt) < v
 
 eighthVideoFrame :: TouchedDot -> DOMRect -> Painting
 eighthVideoFrame td dr = filled (fillColor (rgb 255 255 255)) (rectangle pt.x pt.y (dr.width * 0.25) (dr.height * 0.25))
@@ -61,8 +76,17 @@ doEighthVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doToInstrumental WAGS.do
+                let
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
+                toInstrumentalPatch pr
+                withProof pr
+                  { videoSpan
+                  , mostRecentWindowInteraction: acc.mostRecentWindowInteraction
+                  , dotInteractions: acc.dotInteractions
+                  , mainVideo: acc.mainVideo
+                  , instrumentalAnimation: instrumentalAnimation videoSpan.start
+                  }
 
 {-
 { videoSpan

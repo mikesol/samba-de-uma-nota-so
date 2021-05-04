@@ -1,23 +1,31 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo where
 
 import Prelude
-import Data.Either (Either(..))
 import Control.Comonad.Cofree (head, tail, (:<))
+import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Vec as V
 import SambaDeUmaNotaSo.Chemin (AwaitingEighthVideoUniverse)
 import SambaDeUmaNotaSo.Duration (postBridgeEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withWindowDims)
+import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..), StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.AwaitingEighthVideo as IO
 import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), nextEVH)
-import SambaDeUmaNotaSo.IO.SeventhVideo (td2harmChain)
+import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2harmChain)
+import SambaDeUmaNotaSo.IO.ToInstrumental (DotInteractions)
 import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..), StepSig, asTouch)
+
+dotInteractions :: TouchedDot -> DotInteractions
+dotInteractions touchedDot = f NoSingers
+  where
+  curriedEvh = nextEVH (td2harmChain touchedDot)
+
+  f evh = evh :< (f <<< curriedEvh evh)
 
 doAwaitingEighthVideo ::
   forall proof iu cb.
@@ -67,14 +75,10 @@ doAwaitingEighthVideo =
             $ inSitu doEighthVideo WAGS.do
                 let
                   videoSpan = { start: e.time, end: postBridgeEnds e.time }
-
-                  curriedEvh = nextEVH (td2harmChain touchedDot)
-
-                  f evh = evh :< (f <<< curriedEvh evh)
                 eighthVideoPatch pr
                 withProof pr
                   { videoSpan
                   , mostRecentWindowInteraction: V.fill $ const Nothing
-                  , dotInteractions: f NoSingers
+                  , dotInteractions: dotInteractions touchedDot
                   , mainVideo: touchedDot
                   }

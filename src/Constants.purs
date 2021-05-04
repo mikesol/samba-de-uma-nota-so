@@ -17,6 +17,8 @@ twoMeasures = measure * 2.0 :: Number
 
 fourMeasures = measure * 4.0 :: Number
 
+eightMeasures = measure * 8.0 :: Number
+
 oneBeat = beat * 1.0 :: Number
 
 oneAndAHalfBeats = beat * 1.5 :: Number
