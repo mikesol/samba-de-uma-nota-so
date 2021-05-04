@@ -1,4 +1,4 @@
-module WAGS.Example.KitchenSink.TLP.LoopSig where
+module SambaDeUmaNotaSo.FrameSig where
 
 import Prelude
 

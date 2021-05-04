@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
+import Control.Comonad.Cofree ((:<))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
@@ -8,9 +9,14 @@ import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import SambaDeUmaNotaSo.Constants (fourMeasures, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
+import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SceneSig, SambaRes)
+import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), nextEVH)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
+import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..), td2harmChain)
+import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
+import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoCreate)
@@ -21,8 +27,10 @@ import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
 import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoCreate)
 import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoCreate)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
+import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
+import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
@@ -37,7 +45,6 @@ import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
 import WAGS.Control.Types (Frame0, InitialFrameT)
-import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI, SceneSig, SambaRes)
 import WAGS.Interpret (class AudioInterpret)
 
 data StartAt
@@ -53,6 +60,8 @@ data StartAt
   | FifthVideo
   | SixthVideo
   | SeventhVideo
+  | AwaitingEighthVideo
+  | EighthVideo
 
 startAt = FifthVideo :: StartAt
 
@@ -203,3 +212,27 @@ piece = case startAt of
             , dotMover: dotMover videoSpan.start
             }
         @|> doSeventhVideo
+  AwaitingEighthVideo ->
+    WAGS.do
+      startWithBlackBackground
+      awaitingEighthVideoCreate
+        $> { dotMover: dotMover 0.0 }
+      @|> doAwaitingEighthVideo
+  EighthVideo ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+
+      -- todo: copied from file. make utility?
+      curriedEvh = nextEVH (td2harmChain TDThree)
+
+      f evh = evh :< (f <<< curriedEvh evh)
+    in
+      WAGS.do
+        startWithBlackBackground
+        eighthVideoCreate
+          $> { videoSpan
+            , mostRecentWindowInteraction: V.fill $ const Nothing
+            , dotInteractions: f NoSingers
+            , mainVideo: TDThree
+            }
+        @|> doEighthVideo

@@ -22,3 +22,21 @@ firstVocalEnds t = startsAtWithoutAdjustment + adjustmentIfTooClose + sectionLen
 secondVocalEnds = firstVocalEnds :: Number -> Number
 
 thirdVocalEnds = firstVocalEnds :: Number -> Number
+
+postBridgeEnds :: Number -> Number
+postBridgeEnds t = sectionLength
+  where
+  -- how many four-measure chunks will have passed at the end of this timestamp
+  nMeasures = ceil (t / fourMeasures)
+
+  -- timestamp of _end_ without any adjustment
+  endsAtWithoutAdjustment = nMeasures * fourMeasures
+
+  -- how long this sectin will last if there is no adjustment
+  sectionLengthWithoutAdjustment = (endsAtWithoutAdjustment - t)
+
+  -- If we are right up against a new measure, elongate by one measure
+  adjustmentIfTooClose = if sectionLengthWithoutAdjustment < (2.0 * beat) then fourMeasures else 0.0
+
+  -- Full section length
+  sectionLength = sectionLengthWithoutAdjustment + adjustmentIfTooClose

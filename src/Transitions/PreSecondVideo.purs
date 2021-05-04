@@ -18,7 +18,7 @@ import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | For the first video, we wait for three interactions and then choose a random
 -- | rectangle that will house the first video.

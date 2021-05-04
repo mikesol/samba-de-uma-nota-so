@@ -1,29 +1,23 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo where
 
 import Prelude
-import Color (rgb)
-import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
-import Data.Foldable (fold)
+import Control.Comonad.Cofree (head, tail, (:<))
 import Data.Functor.Indexed (ivoid)
-import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
-import Data.Tuple.Nested ((/\))
-import Data.Typelevel.Num (class Lt, class Nat, D16, d0, d1, d10, d11, d12, d13, d14, d15, d2, d3, d4, d5, d6, d7, d8, d9)
 import Data.Vec as V
-import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (AwaitingEighthVideoUniverse)
-import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen, withWindowDims, withWindowOnScreen)
+import SambaDeUmaNotaSo.Duration (postBridgeEnds)
+import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withWindowDims)
 import SambaDeUmaNotaSo.IO.AwaitingEighthVideo as IO
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
-import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
+import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), nextEVH)
+import SambaDeUmaNotaSo.IO.SeventhVideo (td2harmChain)
+import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoPatch)
+import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Example.KitchenSink.TLP.LoopSig (SambaTrigger(..), StepSig, asTouch)
-import Web.HTML.HTMLElement (DOMRect)
+import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..), StepSig, asTouch)
 
 doAwaitingEighthVideo ::
   forall proof iu cb.
@@ -47,7 +41,7 @@ doAwaitingEighthVideo =
           , value: e.world.canvas
           }
 
-      { isTouched, dot } =
+      { isTouched, dot, touchedDot } =
         head dotMover'
           ( case e.trigger of
               Interaction xy
@@ -70,5 +64,17 @@ doAwaitingEighthVideo =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doEighthVideo WAGS.do
+                let
+                  videoSpan = { start: e.time, end: postBridgeEnds e.time }
+
+                  curriedEvh = nextEVH (td2harmChain touchedDot)
+
+                  f evh = evh :< (f <<< curriedEvh evh)
+                eighthVideoPatch pr
+                withProof pr
+                  { videoSpan
+                  , mostRecentWindowInteraction: V.fill $ const Nothing
+                  , dotInteractions: f NoSingers
+                  , mainVideo: touchedDot
+                  }

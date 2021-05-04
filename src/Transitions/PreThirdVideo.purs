@@ -18,7 +18,7 @@ import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 doPreThirdVideo ::
   forall proof iu cb.

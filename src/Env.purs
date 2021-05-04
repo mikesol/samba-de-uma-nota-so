@@ -16,7 +16,7 @@ import SambaDeUmaNotaSo.Util (argb, bindBetween, calcSlope, isRectangleTouched, 
 import Type.Proxy (Proxy(..))
 import WAGS.Control.Functions (env)
 import WAGS.Control.Types (FrameT)
-import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI, SambaTrigger(..))
+import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SambaTrigger(..))
 import WAGS.Interpret (class AudioInterpret)
 import Web.HTML.HTMLElement (DOMRect)
 
@@ -237,6 +237,5 @@ withBridgeWindowOnScreen i' =
     i = withWindowDims i'
 
     curriedFn0 = map paintBridgeWindowOnScreen i.windowDims
-
   in
     R.insert (Proxy :: _ "windowsOnScreen") curriedFn0 i

@@ -1,12 +1,11 @@
 module SambaDeUmaNotaSo.Drawing where
 
 import Prelude
-
 import Color (rgb, rgba)
 import Graphics.Painting (Painting, Point, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Constants (beat)
 import SambaDeUmaNotaSo.Util (lastBeat)
-import WAGS.Example.KitchenSink.TLP.LoopSig (SambaSceneI)
+import SambaDeUmaNotaSo.FrameSig (SambaSceneI)
 
 blackBackground :: Number -> Number -> Painting
 blackBackground width height = filled (fillColor (rgb 0 0 0)) (rectangle 0.0 0.0 width height)

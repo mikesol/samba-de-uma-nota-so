@@ -30,7 +30,7 @@ import Heterogeneous.Mapping (hmap)
 import SambaDeUmaNotaSo.Action (Action(..))
 import SambaDeUmaNotaSo.ClickPlayModal (clickPlay)
 import SambaDeUmaNotaSo.Piece (piece)
-import WAGS.Example.KitchenSink.TLP.LoopSig (SambaTrigger(..))
+import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..))
 import WAGS.Interpret (AudioContext, FFIAudio(..), close, context, defaultFFIAudio, makeUnitCache)
 import WAGS.Run (run)
 import Web.HTML as HTML

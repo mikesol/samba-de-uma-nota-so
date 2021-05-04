@@ -15,7 +15,7 @@ import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | We play the first video and then move onto the pre-second video.
 doSecondVideo ::

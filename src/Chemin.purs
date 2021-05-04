@@ -131,8 +131,22 @@ type AwaitingEighthVideoUniverse cb
   = SeventhVideoUniverse cb
 
 ---------
+type EighthVideoGraph
+  = AwaitingEighthVideoGraph
+
+type EighthVideoUniverse cb
+  = AwaitingEighthVideoUniverse cb
+
+---------
+type ToInstrumentalGraph
+  = EighthVideoGraph
+
+type ToInstrumentalUniverse cb
+  = EighthVideoUniverse cb
+
+---------
 type EndGraph
-  = SeventhVideoGraph
+  = ToInstrumentalGraph
 
 type EndUniverse cb
-  = SeventhVideoUniverse cb
+  = ToInstrumentalUniverse cb

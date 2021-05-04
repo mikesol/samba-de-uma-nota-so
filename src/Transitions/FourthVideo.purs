@@ -27,7 +27,7 @@ import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import WAGS.Example.KitchenSink.TLP.LoopSig (StepSig, asTouch)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
 
 colorPalette :: V.Vec D10 RGB

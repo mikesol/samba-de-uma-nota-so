@@ -5,8 +5,8 @@ import Color (Color, rgb)
 import Control.Comonad.Cofree (Cofree, (:<))
 import Data.Int (toNumber)
 import Data.Int as DInt
-import Data.Maybe (Maybe(..))
 import Data.List ((:), List(..))
+import Data.Maybe (Maybe(..))
 import Data.NonEmpty (NonEmpty, (:|))
 import Data.Tuple.Nested (type (/\), (/\))
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
@@ -14,9 +14,10 @@ import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Point)
-import Math (floor, (%))
+import Math (floor, pow, sqrt, (%))
 import SambaDeUmaNotaSo.Constants (beat, end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, sevenBeats, start, fiveBeats, fourBeats, oneBeat, sixBeats, threeBeats, twoBeats)
 import SambaDeUmaNotaSo.Types (RGB, Windows)
+import Web.HTML.HTMLElement (DOMRect)
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
 calcSlope x0 y0 x1 y1 x =
@@ -153,3 +154,9 @@ beatModSeven startsAt =
         : ((\time -> (time - startsAt) % sevenBeats >= sixBeats) /\ (flip V.index d6))
         : Nil
     )
+
+distance :: Point -> Point -> Number
+distance p0 p1 = sqrt (((p0.x - p1.x) `pow` 2.0) + ((p0.y - p1.y) `pow` 2.0))
+
+scaleUnitPoint :: Point -> DOMRect -> Point
+scaleUnitPoint { x, y } { width, height } = { x: x * width, y: y * height }
