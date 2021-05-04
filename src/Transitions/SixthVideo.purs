@@ -9,7 +9,7 @@ import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..), maybe)
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested ((/\), type (/\))
+import Data.Tuple.Nested ((/\))
 import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d11, d13, d15, d17, d19, d2, d21, d23, d25, d27, d29, d3, d31, d32, d4, d5, d7, d9)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
@@ -18,6 +18,7 @@ import Math (pow, sqrt, (%))
 import SambaDeUmaNotaSo.Chemin (SixthVideoUniverse)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
+import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..), td2pt)
 import SambaDeUmaNotaSo.IO.SixthVideo as IO
 import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoPatch)
 import SambaDeUmaNotaSo.SeventhVideoTiles (tiles7)
@@ -99,25 +100,29 @@ i2c = case _ of
   Mid -> rgba 200 200 200 0.6
   Dim -> rgba 155 155 155 0.4
 
-dotMover :: Number -> NonEmptyToCofree DOMRect (Maybe Point -> Boolean /\ Painting)
+dotMover ::
+  Number ->
+  NonEmptyToCofree
+    DOMRect
+    (Maybe Point -> { isTouched :: Boolean, dot :: Painting, touchedDot :: TouchedDot })
 dotMover startsAt =
   nonEmptyToCofree Nothing
-    ( (pos (beats 0.5) /\ go 0.125 0.125 Bright)
-        :| ( (pos (beats 1.0) /\ go 0.125 0.375 Dim)
-              : (pos (beats 1.5) /\ go 0.125 0.625 Dim)
-              : (pos (beats 2.0) /\ go 0.125 0.875 Bright)
-              : (pos (beats 2.5) /\ go 0.375 0.125 Dim)
-              : (pos (beats 3.0) /\ go 0.375 0.375 Dim)
-              : (pos (beats 3.5) /\ go 0.375 0.625 Bright)
-              : (pos (beats 4.0) /\ go 0.375 0.875 Dim)
-              : (pos (beats 4.5) /\ go 0.625 0.125 Dim)
-              : (pos (beats 5.0) /\ go 0.625 0.375 Bright)
-              : (pos (beats 5.5) /\ go 0.625 0.625 Dim)
-              : (pos (beats 6.0) /\ go 0.625 0.875 Dim)
-              : (pos (beats 6.5) /\ go 0.875 0.125 Mid)
-              : (pos (beats 7.0) /\ go 0.875 0.375 Dim)
-              : (pos (beats 7.5) /\ go 0.875 0.625 Mid)
-              : (pos' (beats 7.5) /\ go 0.875 0.875 Dim)
+    ( (pos (beats 0.5) /\ go Bright TDOne)
+        :| ( (pos (beats 1.0) /\ go Dim TDTwo)
+              : (pos (beats 1.5) /\ go Dim TDThree)
+              : (pos (beats 2.0) /\ go Bright TDFour)
+              : (pos (beats 2.5) /\ go Dim TDFive)
+              : (pos (beats 3.0) /\ go Dim TDSix)
+              : (pos (beats 3.5) /\ go Bright TDSeven)
+              : (pos (beats 4.0) /\ go Dim TDEight)
+              : (pos (beats 4.5) /\ go Dim TDNine)
+              : (pos (beats 5.0) /\ go Bright TDTen)
+              : (pos (beats 5.5) /\ go Dim TDEleven)
+              : (pos (beats 6.0) /\ go Dim TDTwelve)
+              : (pos (beats 6.5) /\ go Mid TDThirteen)
+              : (pos (beats 7.0) /\ go Dim TDFourteen)
+              : (pos (beats 7.5) /\ go Mid TDFifteen)
+              : (pos' (beats 7.5) /\ go Dim TDSixteen)
               : Nil
           )
     )
@@ -126,17 +131,26 @@ dotMover startsAt =
 
   pos' v time = ((time - startsAt) % beats 8.0) >= v
 
-  go :: Number -> Number -> Intensity -> DOMRect -> Maybe Point -> Boolean /\ Painting
-  go y x i dr pt =
-    maybe false (\p -> sqrt (((xp - p.x) `pow` 2.0) + ((yp - p.y) `pow` 2.0)) < (crad * 1.4)) pt
-      /\ filled
+  go ::
+    Intensity ->
+    TouchedDot ->
+    DOMRect ->
+    Maybe Point -> { isTouched :: Boolean, dot :: Painting, touchedDot :: TouchedDot }
+  go i td dr pt =
+    { isTouched: maybe false (\p -> sqrt (((xp - p.x) `pow` 2.0) + ((yp - p.y) `pow` 2.0)) < (crad * 1.4)) pt
+    , dot:
+        filled
           (fillColor (i2c i))
           ( circle
               (x * dr.width)
               (y * dr.height)
               crad
           )
+    , touchedDot: td
+    }
     where
+    { x, y } = td2pt td
+
     mindim = min dr.width dr.height
 
     crad = mindim / 20.0
