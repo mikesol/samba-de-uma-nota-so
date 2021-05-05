@@ -2,8 +2,9 @@ module SambaDeUmaNotaSo.IO.EighthVideo where
 
 import Prelude
 import Control.Comonad.Cofree (Cofree)
+import Control.Plus (empty)
 import Data.Maybe (Maybe, maybe)
-import Data.Typelevel.Num (class Lt, class Nat, D1, D2, D3, D4, D5, D6, d0, d1, d2, d3, d4, d5)
+import Data.Typelevel.Num (D1, D2, D3, D4, D5, D6, d0, d1, d2, d3, d4, d5)
 import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Painting (Point)
@@ -16,12 +17,12 @@ type HarmonyInfo
   = { td :: TouchedDot, time :: Number }
 
 data EighthVideoHarmony
-  = NoSingers
-  | OneSinger (V.Vec D1 HarmonyInfo)
-  | TwoSingers (V.Vec D2 HarmonyInfo)
-  | ThreeSingers (V.Vec D3 HarmonyInfo)
-  | FourSingers (V.Vec D4 HarmonyInfo)
-  | FiveSingers (V.Vec D5 HarmonyInfo)
+  = NoSingers TouchedDot
+  | OneSinger TouchedDot (V.Vec D1 HarmonyInfo)
+  | TwoSingers TouchedDot (V.Vec D2 HarmonyInfo)
+  | ThreeSingers TouchedDot (V.Vec D3 HarmonyInfo)
+  | FourSingers TouchedDot (V.Vec D4 HarmonyInfo)
+  | FiveSingers TouchedDot (V.Vec D5 HarmonyInfo)
   | SixSingers (V.Vec D6 HarmonyInfo)
 
 nextEVH ::
@@ -31,35 +32,45 @@ nextEVH ::
   EighthVideoHarmony
 nextEVH dotz x i = maybe x (go x <<< { time: i.time, dr: i.dr, pt: _ }) i.pt
   where
-  go NoSingers { time, pt, dr } = if touching pt dr d0 then (OneSinger $ { time, td: V.index dotz d0 } +> V.empty) else x
+  go (NoSingers _) { time, pt, dr } = let td = V.index dotz d0 in if touching pt dr td then (OneSinger td $ { time, td } +> V.empty) else x
 
-  go (OneSinger v) { time, pt, dr } = if touching pt dr d1 then (TwoSingers $ { time, td: V.index dotz d1 } +> v) else x
+  go (OneSinger _ v) { time, pt, dr } = let td = V.index dotz d1 in if touching pt dr td then (TwoSingers td $ { time, td } +> v) else x
 
-  go (TwoSingers v) { time, pt, dr } = if touching pt dr d2 then (ThreeSingers $ { time, td: V.index dotz d2 } +> v) else x
+  go (TwoSingers _ v) { time, pt, dr } = let td = V.index dotz d2 in if touching pt dr td then (ThreeSingers td $ { time, td } +> v) else x
 
-  go (ThreeSingers v) { time, pt, dr } = if touching pt dr d3 then (FourSingers $ { time, td: V.index dotz d3 } +> v) else x
+  go (ThreeSingers _ v) { time, pt, dr } = let td = V.index dotz d3 in if touching pt dr td then (FourSingers td $ { time, td } +> v) else x
 
-  go (FourSingers v) { time, pt, dr } = if touching pt dr d4 then (FiveSingers $ { time, td: V.index dotz d4 } +> v) else x
+  go (FourSingers _ v) { time, pt, dr } = let td = V.index dotz d4 in if touching pt dr td then (FiveSingers td $ { time, td } +> v) else x
 
-  go (FiveSingers v) { time, pt, dr } = if touching pt dr d5 then (SixSingers $ { time, td: V.index dotz d5 } +> v) else x
+  go (FiveSingers _ v) { time, pt, dr } = let td = V.index dotz d5 in if touching pt dr td then (SixSingers $ { time, td } +> v) else x
 
   go (SixSingers _) _ = x
 
   -- todo: is td2pt every time wasteful?
   -- as this only happens on screen touches, it's probably ok...
   -- maybe optimize it if those prove to be laggy
-  touching :: forall n. Nat n => Lt n D6 => Point -> DOMRect -> n -> Boolean
-  touching pt dr n = distance pt (scaleUnitPoint (td2pt (V.index dotz n)) dr) < ((min dr.width dr.height) / 15.0)
+  touching :: Point -> DOMRect -> TouchedDot -> Boolean
+  touching pt dr td = distance pt (scaleUnitPoint (td2pt td) dr) < ((min dr.width dr.height) / 15.0)
 
 harmonyToVec :: forall a. (forall n. V.Vec n HarmonyInfo -> a) -> EighthVideoHarmony -> a
 harmonyToVec f = case _ of
-  NoSingers -> f V.empty
-  OneSinger v -> f v
-  TwoSingers v -> f v
-  ThreeSingers v -> f v
-  FourSingers v -> f v
-  FiveSingers v -> f v
+  NoSingers _ -> f V.empty
+  OneSinger _ v -> f v
+  TwoSingers _ v -> f v
+  ThreeSingers _ v -> f v
+  FourSingers _ v -> f v
+  FiveSingers _ v -> f v
   SixSingers v -> f v
+
+harmonyToNext :: EighthVideoHarmony -> Maybe TouchedDot
+harmonyToNext = case _ of
+  NoSingers v -> pure v
+  OneSinger v _ -> pure v
+  TwoSingers v _ -> pure v
+  ThreeSingers v _ -> pure v
+  FourSingers v _ -> pure v
+  FiveSingers v _ -> pure v
+  SixSingers _ -> empty
 
 type FDotInteractions
   = (->) { time :: Number, pt :: Maybe Point, dr :: DOMRect }

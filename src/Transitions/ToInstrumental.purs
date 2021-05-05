@@ -4,15 +4,15 @@ import Prelude
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
-import Data.Foldable (fold)
+import Data.Foldable (fold, foldMap)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Vec as V
-import Graphics.Painting (Painting, fillColor, filled, rectangle)
+import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
-import SambaDeUmaNotaSo.IO.EighthVideo (HarmonyInfo, harmonyToVec)
+import SambaDeUmaNotaSo.IO.EighthVideo (HarmonyInfo, harmonyToNext, harmonyToVec)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
 import SambaDeUmaNotaSo.IO.ToInstrumental as IO
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
@@ -21,6 +21,20 @@ import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import Web.HTML.HTMLElement (DOMRect)
+
+makeDot :: DOMRect -> TouchedDot -> Painting
+makeDot dr td =
+  filled
+    (fillColor (rgb 255 255 255))
+    ( circle
+        (x * dr.width)
+        (y * dr.height)
+        (mwh / 20.0)
+    )
+  where
+  { x, y } = td2pt td
+
+  mwh = min dr.width dr.height
 
 eighthVideoFrame :: TouchedDot -> DOMRect -> Painting
 eighthVideoFrame td dr = filled (fillColor (rgb 255 255 255)) (rectangle pt.x pt.y (dr.width * 0.25) (dr.height * 0.25))
@@ -65,7 +79,8 @@ doToInstrumental =
                       , dr: e.world.canvas
                       }
 
-                  -- harmonyToVec :: forall a. (forall n. V.Vec n HarmonyInfo -> a) -> EighthVideoHarmony -> a
+                  hdi = head dotInteractions'
+
                   instrumentalAnimation' =
                     acc.instrumentalAnimation
                       { time: e.time, value: e.world.canvas
@@ -77,7 +92,8 @@ doToInstrumental =
                           ctxt.background
                             <> eighthVideoFrame acc.mainVideo e.world.canvas
                             <> fold visualCtxt.windowsOnScreen
-                            <> (harmonyToVec (frameToPainting e.world.canvas) (head dotInteractions'))
+                            <> (foldMap (makeDot e.world.canvas) (harmonyToNext hdi))
+                            <> (harmonyToVec (frameToPainting e.world.canvas) hdi)
                             <> head instrumentalAnimation'
                       }
                 changes unit
