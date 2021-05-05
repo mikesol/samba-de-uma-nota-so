@@ -8,7 +8,11 @@ module.exports = {
   },
   resolve: {
     alias: {
-      config: path.join(__dirname, "config", process.env.NODE_ENV || "local"),
+      config: path.join(
+        __dirname,
+        "config",
+        process.env.SAMBA_CONFIG || "local"
+      ),
     },
   },
   module: {

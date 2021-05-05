@@ -11,9 +11,8 @@ import SambaDeUmaNotaSo.Duration (postBridgeEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withWindowDims)
 import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..), StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.AwaitingEighthVideo as IO
-import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), nextEVH)
+import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), DotInteractions, nextEVH)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2harmChain)
-import SambaDeUmaNotaSo.IO.ToInstrumental (DotInteractions)
 import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import WAGS.Change (changes)
@@ -21,7 +20,7 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
 dotInteractions :: TouchedDot -> DotInteractions
-dotInteractions touchedDot = f NoSingers
+dotInteractions touchedDot = tail $ f NoSingers
   where
   curriedEvh = nextEVH (td2harmChain touchedDot)
 

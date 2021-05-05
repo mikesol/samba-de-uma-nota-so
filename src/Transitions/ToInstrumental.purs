@@ -7,10 +7,12 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import Data.Vec as V
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
+import SambaDeUmaNotaSo.IO.EighthVideo (HarmonyInfo, harmonyToVec)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
 import SambaDeUmaNotaSo.IO.ToInstrumental as IO
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
@@ -26,6 +28,9 @@ eighthVideoFrame td dr = filled (fillColor (rgb 255 255 255)) (rectangle pt.x pt
   ptShifted = (td2pt td)
 
   pt = scaleUnitPoint { x: ptShifted.x - 0.125, y: ptShifted.y - 0.125 } dr
+
+frameToPainting :: DOMRect -> (forall n. V.Vec n HarmonyInfo -> Painting)
+frameToPainting canvas = fold <<< map (flip eighthVideoFrame canvas <<< _.td)
 
 doToInstrumental ::
   forall proof iu cb.
@@ -49,6 +54,18 @@ doToInstrumental =
                 let
                   visualCtxt = withWindowOnScreen ctxt
 
+                  {-
+    , dotInteractions ::
+        Cofree ((->) { time :: Number, pt :: Maybe Point, dr :: DOMRect }) EighthVideoHarmony
+-}
+                  dotInteractions' =
+                    acc.dotInteractions
+                      { time: e.time
+                      , pt: if e.active then asTouch e.trigger else Nothing
+                      , dr: e.world.canvas
+                      }
+
+                  -- harmonyToVec :: forall a. (forall n. V.Vec n HarmonyInfo -> a) -> EighthVideoHarmony -> a
                   instrumentalAnimation' =
                     acc.instrumentalAnimation
                       { time: e.time, value: e.world.canvas
@@ -60,12 +77,14 @@ doToInstrumental =
                           ctxt.background
                             <> eighthVideoFrame acc.mainVideo e.world.canvas
                             <> fold visualCtxt.windowsOnScreen
+                            <> (harmonyToVec (frameToPainting e.world.canvas) (head dotInteractions'))
                             <> head instrumentalAnimation'
                       }
                 changes unit
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , instrumentalAnimation = tail instrumentalAnimation'
+                      , dotInteractions = tail dotInteractions'
                       }
         else
           Left

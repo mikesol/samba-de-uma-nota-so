@@ -13,7 +13,7 @@ import SambaDeUmaNotaSo.Util (distance, scaleUnitPoint)
 import Web.HTML.HTMLElement (DOMRect)
 
 type HarmonyInfo
-  = { pt :: Point, time :: Number }
+  = { td :: TouchedDot, time :: Number }
 
 data EighthVideoHarmony
   = NoSingers
@@ -31,17 +31,17 @@ nextEVH ::
   EighthVideoHarmony
 nextEVH dotz x i = maybe x (go x <<< { time: i.time, dr: i.dr, pt: _ }) i.pt
   where
-  go NoSingers { time, pt, dr } = if touching pt dr d0 then (OneSinger $ { time, pt } +> V.empty) else x
+  go NoSingers { time, pt, dr } = if touching pt dr d0 then (OneSinger $ { time, td: V.index dotz d0 } +> V.empty) else x
 
-  go (OneSinger v) { time, pt, dr } = if touching pt dr d1 then (TwoSingers $ { time, pt } +> v) else x
+  go (OneSinger v) { time, pt, dr } = if touching pt dr d1 then (TwoSingers $ { time, td: V.index dotz d1 } +> v) else x
 
-  go (TwoSingers v) { time, pt, dr } = if touching pt dr d2 then (ThreeSingers $ { time, pt } +> v) else x
+  go (TwoSingers v) { time, pt, dr } = if touching pt dr d2 then (ThreeSingers $ { time, td: V.index dotz d2 } +> v) else x
 
-  go (ThreeSingers v) { time, pt, dr } = if touching pt dr d3 then (FourSingers $ { time, pt } +> v) else x
+  go (ThreeSingers v) { time, pt, dr } = if touching pt dr d3 then (FourSingers $ { time, td: V.index dotz d3 } +> v) else x
 
-  go (FourSingers v) { time, pt, dr } = if touching pt dr d4 then (FiveSingers $ { time, pt } +> v) else x
+  go (FourSingers v) { time, pt, dr } = if touching pt dr d4 then (FiveSingers $ { time, td: V.index dotz d4 } +> v) else x
 
-  go (FiveSingers v) { time, pt, dr } = if touching pt dr d5 then (SixSingers $ { time, pt } +> v) else x
+  go (FiveSingers v) { time, pt, dr } = if touching pt dr d5 then (SixSingers $ { time, td: V.index dotz d5 } +> v) else x
 
   go (SixSingers _) _ = x
 
@@ -61,11 +61,16 @@ harmonyToVec f = case _ of
   FiveSingers v -> f v
   SixSingers v -> f v
 
+type FDotInteractions
+  = (->) { time :: Number, pt :: Maybe Point, dr :: DOMRect }
+
+type DotInteractions
+  = FDotInteractions (Cofree FDotInteractions EighthVideoHarmony)
+
 -- | We go back to the normal player
 type Accumulator
   = { mostRecentWindowInteraction :: Windows (Maybe Number)
-    , dotInteractions ::
-        Cofree ((->) { time :: Number, pt :: Maybe Point, dr :: DOMRect }) EighthVideoHarmony
+    , dotInteractions :: DotInteractions
     , videoSpan :: VideoSpan
     , mainVideo :: TouchedDot
     }
