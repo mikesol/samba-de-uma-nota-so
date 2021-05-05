@@ -1,10 +1,12 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail, (:<))
 import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
+import Data.Typelevel.Num (d0)
 import Data.Vec as V
 import SambaDeUmaNotaSo.Chemin (AwaitingEighthVideoUniverse)
 import SambaDeUmaNotaSo.Duration (postBridgeEnds)
@@ -20,9 +22,11 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
 dotInteractions :: TouchedDot -> DotInteractions
-dotInteractions touchedDot = tail $ f (NoSingers touchedDot)
+dotInteractions touchedDot = tail $ f (NoSingers (V.index hc d0))
   where
-  curriedEvh = nextEVH (td2harmChain touchedDot)
+  hc = td2harmChain touchedDot
+
+  curriedEvh = nextEVH hc
 
   f evh = evh :< (f <<< curriedEvh evh)
 

@@ -32,17 +32,17 @@ nextEVH ::
   EighthVideoHarmony
 nextEVH dotz x i = maybe x (go x <<< { time: i.time, dr: i.dr, pt: _ }) i.pt
   where
-  go (NoSingers _) { time, pt, dr } = let td = V.index dotz d0 in if touching pt dr td then (OneSinger td $ { time, td } +> V.empty) else x
+  go (NoSingers _) { time, pt, dr } = let td = V.index dotz d0 in (if touching pt dr td then (OneSinger (V.index dotz d1) $ { time, td } +> V.empty) else x)
 
-  go (OneSinger _ v) { time, pt, dr } = let td = V.index dotz d1 in if touching pt dr td then (TwoSingers td $ { time, td } +> v) else x
+  go (OneSinger _ v) { time, pt, dr } = let td = V.index dotz d1 in (if touching pt dr td then (TwoSingers (V.index dotz d2) $ { time, td } +> v) else x)
 
-  go (TwoSingers _ v) { time, pt, dr } = let td = V.index dotz d2 in if touching pt dr td then (ThreeSingers td $ { time, td } +> v) else x
+  go (TwoSingers _ v) { time, pt, dr } = let td = V.index dotz d2 in (if touching pt dr td then (ThreeSingers (V.index dotz d3) $ { time, td } +> v) else x)
 
-  go (ThreeSingers _ v) { time, pt, dr } = let td = V.index dotz d3 in if touching pt dr td then (FourSingers td $ { time, td } +> v) else x
+  go (ThreeSingers _ v) { time, pt, dr } = let td = V.index dotz d3 in (if touching pt dr td then (FourSingers (V.index dotz d4) $ { time, td } +> v) else x)
 
-  go (FourSingers _ v) { time, pt, dr } = let td = V.index dotz d4 in if touching pt dr td then (FiveSingers td $ { time, td } +> v) else x
+  go (FourSingers _ v) { time, pt, dr } = let td = V.index dotz d4 in (if touching pt dr td then (FiveSingers (V.index dotz d5) $ { time, td } +> v) else x)
 
-  go (FiveSingers _ v) { time, pt, dr } = let td = V.index dotz d5 in if touching pt dr td then (SixSingers $ { time, td } +> v) else x
+  go (FiveSingers _ v) { time, pt, dr } = let td = V.index dotz d5 in (if touching pt dr td then (SixSingers $ { time, td } +> v) else x)
 
   go (SixSingers _) _ = x
 

@@ -68,10 +68,6 @@ doToInstrumental =
                 let
                   visualCtxt = withWindowOnScreen ctxt
 
-                  {-
-    , dotInteractions ::
-        Cofree ((->) { time :: Number, pt :: Maybe Point, dr :: DOMRect }) EighthVideoHarmony
--}
                   dotInteractions' =
                     acc.dotInteractions
                       { time: e.time
