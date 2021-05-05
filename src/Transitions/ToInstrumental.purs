@@ -62,7 +62,7 @@ doToInstrumental =
               , time: e.time
               }
     withProof pr
-      $ if true then ----------------------------------- change to (acc.videoSpan.end > e.time) 
+      $ if (acc.videoSpan.end > e.time) then
           Right
             $ WAGS.do
                 let
