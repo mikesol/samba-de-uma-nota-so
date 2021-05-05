@@ -6,6 +6,11 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
+  resolve: {
+    alias: {
+      config: path.join(__dirname, "config", process.env.NODE_ENV || "local"),
+    },
+  },
   module: {
     rules: [
       {

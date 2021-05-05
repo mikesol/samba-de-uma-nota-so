@@ -1,18 +1,17 @@
 module SambaDeUmaNotaSo.Piece where
 
 import Prelude
-import Control.Comonad.Cofree ((:<))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d3, d5)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
+import SambaDeUmaNotaSo.Config (config)
 import SambaDeUmaNotaSo.Constants (fourMeasures, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SceneSig, SambaRes)
-import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), nextEVH)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
-import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..), td2harmChain)
+import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..))
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
@@ -27,10 +26,11 @@ import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoCreate)
 import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoCreate)
 import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoCreate)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoCreate)
+import SambaDeUmaNotaSo.ToInstrumentalWedges (instrumentalAnimation)
 import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo, dotInteractions)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
-import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo, instrumentalAnimation)
+import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
@@ -65,7 +65,8 @@ data StartAt
   | EighthVideo
   | ToInstrumental
 
-startAt = FifthVideo :: StartAt
+startAt :: StartAt
+startAt = if config.env == "production" then PreFirstVideo else ToInstrumental
 
 startWithBlackBackground ::
   forall audio engine m.
