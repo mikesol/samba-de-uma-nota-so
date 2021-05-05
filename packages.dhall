@@ -191,7 +191,7 @@ let additions =
           , "web-html"
           ]
         , repo = "https://github.com/mikesol/purescript-painting.git"
-        , version = "main"
+        , version = "v0.0.0"
         }
       , convertable-options =
         { dependencies = [ "console", "effect", "maybe", "record" ]
