@@ -6,16 +6,20 @@ import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold, foldMap)
 import Data.Functor.Indexed (ivoid)
+import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Vec as V
 import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
+import SambaDeUmaNotaSo.Constants (fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.EighthVideo (HarmonyInfo, harmonyToNext, harmonyToVec)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
 import SambaDeUmaNotaSo.IO.ToInstrumental as IO
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
+import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Patch)
+import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
 import SambaDeUmaNotaSo.Util (scaleUnitPoint)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -100,5 +104,18 @@ doToInstrumental =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doInstrumental0 WAGS.do
+                let
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                instrumental0Patch pr
+                withProof pr
+                  { videoSpan
+                  , activeZones:
+                      { wedges: V.fill (const Nil)
+                      , ring0: Nil
+                      , ring1: Nil
+                      , center: Nil
+                      , background: Nil
+                      }
+                  , instruments: instrumental0Painting videoSpan.start
+                  }

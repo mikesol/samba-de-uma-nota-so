@@ -15,7 +15,7 @@ import Data.Tuple.Nested ((/\))
 import Data.Typelevel.Num (class Lt, class Nat, D12, D16, d0, d1, d10, d11, d12, d13, d14, d15, d2, d3, d4, d5, d6, d7, d8, d9)
 import Data.Vec (Vec, (+>))
 import Data.Vec as V
-import Graphics.Painting (Painting, arc, circle, fillColor, filled, lineWidth, outlineColor, outlined, rectangle, translate, withMove)
+import Graphics.Painting (Painting, Point, arc, circle, fillColor, filled, lineWidth, outlineColor, outlined, rectangle, translate, withMove)
 import Math ((%), pi)
 import Record as R
 import SambaDeUmaNotaSo.Constants (beats)
@@ -93,33 +93,52 @@ background = do
   trans <- translation backgroundLens
   pure $ trans $ filled (fillColor clr) (rectangle 0.0 0.0 width height)
 
+circleConst = 0.06 :: Number
+
 innerCircle :: IPContext Painting
 innerCircle = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive centerLens
   trans <- translation backgroundLens
-  pure $ trans $ filled (fillColor clr) (circle halfW halfH (mwh * 0.06))
+  pure $ trans $ filled (fillColor clr) (circle halfW halfH (mwh * circleConst))
+
+ring0ConstLo = 0.21 :: Number
+
+ring0ConstHi = 0.27 :: Number
+
+ring0Const = 0.25 :: Number
 
 ring0 :: IPContext Painting
 ring0 = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive ring0Lens
   trans <- translation backgroundLens
-  pure $ trans $ outlined (outlineColor clr <> lineWidth (mwh * 0.05)) (circle halfW halfH (mwh * 0.25))
+  pure $ trans $ outlined (outlineColor clr <> lineWidth (mwh * 0.05)) (circle halfW halfH (mwh * ring0Const))
+
+ring1Const = 0.34 :: Number
+
+ring1ConstLo = 0.31 :: Number
+
+ring1ConstHi = 0.38 :: Number
 
 ring1 :: IPContext Painting
 ring1 = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive ring1Lens
   trans <- translation backgroundLens
-  pure $ trans $ outlined (outlineColor clr <> lineWidth (mwh * 0.05)) (circle halfW halfH (mwh * 0.34))
+  pure $ trans
+    $ outlined
+        (outlineColor clr <> lineWidth (mwh * 0.05))
+        (circle halfW halfH (mwh * ring1Const))
+
+wedgeConst = 0.45 :: Number
 
 singleWedge :: Int -> (forall a. WLSig a) -> IPContext Painting
 singleWedge n l = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive l
   trans <- translation l
-  pure $ (trans $ filled (fillColor clr) (withMove halfW halfH true (arc halfW halfH (pi * st) (pi * ed) (1.000 * mwh * 0.45))))
+  pure (trans $ filled (fillColor clr) (withMove halfW halfH true (arc halfW halfH (pi * st) (pi * ed) (1.000 * mwh * wedgeConst))))
   where
   st = toNumber n / 6.0
 
@@ -135,13 +154,13 @@ translation lenz = do
   let
     tdiff = time - startsAt
 
-    pt = lenz translations
+    p = lenz translations
   pure
     ( if tdiff < b24 then
         identity
       else
-        translate (calcSlope b24 0.0 b32 (pt.x * width) tdiff)
-          (calcSlope b24 0.0 b32 (pt.y * height) tdiff)
+        translate (calcSlope b24 0.0 b32 (p.x * width) tdiff)
+          (calcSlope b24 0.0 b32 (p.y * height) tdiff)
     )
 
 instrumental0Painting'' :: IPContext Painting
@@ -192,6 +211,18 @@ instrumental0Painting startsAt =
 
   paint :: forall n. Nat n => Lt n D16 => n -> { time :: Number, value :: { | Ctxt' } } -> Painting
   paint = paint' startsAt
+
+pt :: Number -> Number -> Point
+pt = { x: _, y: _ }
+
+someTranslations :: Instrumental0 Point
+someTranslations =
+  { wedges: pt (-0.7343) (0.9671) +> pt (0.7153) (-0.6566) +> pt (0.7060) (-0.7074) +> pt (0.3915) (-0.2038) +> pt (0.5390) (0.5737) +> pt (-0.9913) (0.9995) +> pt (-0.1358) (-0.7051) +> pt (-0.3857) (-0.7286) +> pt (0.6366) (0.8522) +> pt (-0.5209) (-0.1628) +> pt (-0.2952) (-0.6049) +> pt (-0.5316) (-0.7936) +> V.empty
+  , ring0: pt (0.8905) (0.7014)
+  , ring1: pt (0.5990) (0.9714)
+  , center: pt (-0.8821) (-0.8183)
+  , background: pt (-0.7891) (-0.1839)
+  }
 
 colorStore :: V.Vec D16 (Instrumental0 FauxColor)
 colorStore =

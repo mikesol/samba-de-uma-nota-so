@@ -145,8 +145,15 @@ type ToInstrumentalUniverse cb
   = EighthVideoUniverse cb
 
 ---------
-type EndGraph
+type Instrumental0Graph
   = ToInstrumentalGraph
 
-type EndUniverse cb
+type Instrumental0Universe cb
   = ToInstrumentalUniverse cb
+
+---------
+type EndGraph
+  = Instrumental0Graph
+
+type EndUniverse cb
+  = Instrumental0Universe cb

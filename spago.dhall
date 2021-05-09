@@ -6,6 +6,7 @@ You can edit this file as you like.
 , dependencies =
   [ "behaviors"
   , "canvas"
+  , "cartesian"
   , "colors"
   , "console"
   , "effect"
