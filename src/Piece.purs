@@ -12,6 +12,7 @@ import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SceneSig, SambaRes)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..))
+import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
@@ -19,6 +20,7 @@ import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoCreate)
+import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Create)
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate)
@@ -34,6 +36,7 @@ import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
+import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
 import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
@@ -41,7 +44,7 @@ import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (deTodaAEscala, doSixthVideo, dotMover, seventhVideoLoop)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, rectangleSamba)
-import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental)
+import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental, startingActiveZones)
 import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
 import WAGS.Control.Qualified as WAGS
@@ -64,9 +67,10 @@ data StartAt
   | AwaitingEighthVideo
   | EighthVideo
   | ToInstrumental
+  | Instrumental0
 
 startAt :: StartAt
-startAt = if config.env == "production" then PreFirstVideo else ToInstrumental
+startAt = if config.env == "production" then PreFirstVideo else Instrumental0
 
 startWithBlackBackground ::
   forall audio engine m.
@@ -248,3 +252,15 @@ piece = case startAt of
             , instrumentalAnimation: instrumentalAnimation 0.0
             }
         @|> doToInstrumental
+  Instrumental0 ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        instrumental0Create
+          $> { videoSpan
+            , activeZones: startingActiveZones
+            , instruments: instrumental0Painting 0.0
+            }
+        @|> doInstrumental0

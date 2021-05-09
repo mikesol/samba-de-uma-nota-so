@@ -50,6 +50,14 @@ eighthVideoFrame td dr = filled (fillColor (rgb 255 255 255)) (rectangle pt.x pt
 frameToPainting :: DOMRect -> (forall n. V.Vec n HarmonyInfo -> Painting)
 frameToPainting canvas = fold <<< map (flip eighthVideoFrame canvas <<< _.td)
 
+startingActiveZones =
+  { wedges: V.fill (const Nil)
+  , ring0: Nil
+  , ring1: Nil
+  , center: Nil
+  , background: Nil
+  }
+
 doToInstrumental ::
   forall proof iu cb.
   StepSig (ToInstrumentalUniverse cb) proof iu IO.Accumulator
@@ -110,12 +118,6 @@ doToInstrumental =
                 instrumental0Patch pr
                 withProof pr
                   { videoSpan
-                  , activeZones:
-                      { wedges: V.fill (const Nil)
-                      , ring0: Nil
-                      , ring1: Nil
-                      , center: Nil
-                      , background: Nil
-                      }
+                  , activeZones: startingActiveZones
                   , instruments: instrumental0Painting videoSpan.start
                   }
