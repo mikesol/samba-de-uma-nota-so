@@ -2,9 +2,11 @@ module SambaDeUmaNotaSo.Util where
 
 import Prelude
 import Color (Color, rgb)
-import Control.Comonad.Cofree (Cofree, (:<))
+import Control.Comonad.Cofree (Cofree, hoistCofree, (:<))
+import Control.Semigroupoid (composeFlipped)
 import Data.Int (toNumber)
 import Data.Int as DInt
+import Data.Lens (_2, over)
 import Data.List ((:), List(..))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty (NonEmpty, (:|))
@@ -124,14 +126,29 @@ lastBeat t = (floor (t / beat)) * beat
 type NonEmptyToCofree a b
   = { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
 
+type NonEmptyToCofree' a
+  = Number -> Cofree ((->) Number) a
+
+nonEmptyToCofree' :: forall a. Maybe a -> NonEmpty List ((Number -> Boolean) /\ a) -> Number -> Cofree ((->) Number) a
+nonEmptyToCofree' a b c =
+  hoistCofree (\ftu n -> ftu { time: n, value: unit })
+    (nonEmptyToCofree (map pure a) (map (over _2 pure) b) { time: c, value: unit })
+
 nonEmptyToCofree :: forall a b. Maybe (a -> b) -> NonEmpty List ((Number -> Boolean) /\ (a -> b)) -> { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
-nonEmptyToCofree maybeOtherwise (h :| t) = go (h : t)
+nonEmptyToCofree a b =
+  nonEmptyToCofreeFull
+    (map (composeFlipped _.value) a)
+    (map (over _2 (composeFlipped _.value)) b)
+
+nonEmptyToCofreeFull :: forall a b. Maybe ({ time :: Number, value :: a } -> b) -> NonEmpty List ((Number -> Boolean) /\ ({ time :: Number, value :: a } -> b)) -> { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
+nonEmptyToCofreeFull maybeOtherwise (h :| t) = go (h : t)
   where
+  go :: List ((Number -> Boolean) /\ ({ time :: Number, value :: a } -> b)) -> { time :: Number, value :: a } -> Cofree ((->) { time :: Number, value :: a }) b
   go Nil = case maybeOtherwise of
-    Just f -> let q { value } = f value :< q in q
+    Just f -> let q i = f i :< q in q
     Nothing -> go (h : t)
 
-  go ((tf /\ vf) : b) = let q i@{ time, value } = if tf time then (vf value :< q) else go b i in q
+  go ((tf /\ vf) : b) = let q i@{ time } = if tf time then (vf i :< q) else go b i in q
 
 type BeatMod7F a
   = (->) { time :: Number, value :: Windows a }
