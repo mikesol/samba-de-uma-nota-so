@@ -8,29 +8,16 @@ import Graphics.Painting (Painting, Point)
 import SambaDeUmaNotaSo.Types (VideoSpan)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree)
 import Web.HTML.HTMLElement (DOMRect)
+import SambaDeUmaNotaSo.IO.InstrumentalShared as IS
 
 type Ctxt'
-  = ( canvas :: DOMRect
-    , halfW :: Number
-    , halfH :: Number
-    , mwh :: Number
-    , asdr :: Number -> Number
-    , startsAt :: Number
-    , translations :: Instrumental0 Point
-    , activeZones :: Instrumental0 (List Number)
-    )
+  = IS.Ctxt' Instrumental0
 
 type Ctxt
-  = { time :: Number
-    , timeDiff :: Number
-    , timeDiffQuantizedToHalfBeat :: Number
-    , colors :: Instrumental0 FauxColor
-    , startsAt :: Number
-    | Ctxt'
-    }
+  = IS.Ctxt Instrumental0
 
 type FauxColor
-  = { r :: Int, g :: Int, b :: Int, a :: Number }
+  = IS.FauxColor
 
 mapInstrumental0 :: forall a b. (a -> b) -> Instrumental0 a -> Instrumental0 b
 mapInstrumental0 f { wedges, center, ring0, ring1, background } = { wedges: map f wedges, center: f center, ring0: f ring0, ring1: f ring1, background: f background }
