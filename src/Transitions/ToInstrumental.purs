@@ -11,10 +11,11 @@ import Data.Maybe (Maybe(..))
 import Data.Vec as V
 import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
-import SambaDeUmaNotaSo.Constants (fourMeasures)
+import SambaDeUmaNotaSo.Constants (eightMeasures, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.EighthVideo (HarmonyInfo, harmonyToNext, harmonyToVec)
+import SambaDeUmaNotaSo.IO.Instrumental0 (Instrumental0)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
 import SambaDeUmaNotaSo.IO.ToInstrumental as IO
 import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
@@ -50,6 +51,7 @@ eighthVideoFrame td dr = filled (fillColor (rgb 255 255 255)) (rectangle pt.x pt
 frameToPainting :: DOMRect -> (forall n. V.Vec n HarmonyInfo -> Painting)
 frameToPainting canvas = fold <<< map (flip eighthVideoFrame canvas <<< _.td)
 
+startingActiveZones :: forall n. Instrumental0 (List n)
 startingActiveZones =
   { wedges: V.fill (const Nil)
   , ring0: Nil
@@ -114,7 +116,7 @@ doToInstrumental =
           Left
             $ inSitu doInstrumental0 WAGS.do
                 let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
                 instrumental0Patch pr
                 withProof pr
                   { videoSpan

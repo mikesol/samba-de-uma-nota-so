@@ -21,6 +21,8 @@ type Ctxt'
 
 type Ctxt
   = { time :: Number
+    , timeDiff :: Number
+    , timeDiffQuantizedToHalfBeat :: Number
     , colors :: Instrumental0 FauxColor
     , startsAt :: Number
     | Ctxt'

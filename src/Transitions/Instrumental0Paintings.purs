@@ -16,7 +16,8 @@ import Data.Typelevel.Num (class Lt, class Nat, D12, D16, d0, d1, d10, d11, d12,
 import Data.Vec (Vec, (+>))
 import Data.Vec as V
 import Graphics.Painting (Painting, Point, arc, circle, fillColor, filled, lineWidth, outlineColor, outlined, rectangle, translate, withMove)
-import Math ((%), pi)
+import Math (pi, (%))
+import Math as Math
 import Record as R
 import SambaDeUmaNotaSo.Constants (beats)
 import SambaDeUmaNotaSo.IO.Instrumental0 (Instrumental0, FauxColor, Ctxt', Ctxt)
@@ -90,8 +91,8 @@ background :: IPContext Painting
 background = do
   { canvas: { width, height } } <- ask
   clr <- idleActive backgroundLens
-  trans <- translation backgroundLens
-  pure $ trans $ filled (fillColor clr) (rectangle 0.0 0.0 width height)
+  --trans <- translation backgroundLens
+  pure $ filled (fillColor clr) (rectangle 0.0 0.0 width height)
 
 circleConst = 0.06 :: Number
 
@@ -99,7 +100,7 @@ innerCircle :: IPContext Painting
 innerCircle = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive centerLens
-  trans <- translation backgroundLens
+  trans <- translation centerLens
   pure $ trans $ filled (fillColor clr) (circle halfW halfH (mwh * circleConst))
 
 ring0ConstLo = 0.21 :: Number
@@ -112,7 +113,7 @@ ring0 :: IPContext Painting
 ring0 = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive ring0Lens
-  trans <- translation backgroundLens
+  trans <- translation ring0Lens
   pure $ trans $ outlined (outlineColor clr <> lineWidth (mwh * 0.05)) (circle halfW halfH (mwh * ring0Const))
 
 ring1Const = 0.34 :: Number
@@ -125,7 +126,7 @@ ring1 :: IPContext Painting
 ring1 = do
   { halfW, halfH, mwh } <- ask
   clr <- idleActive ring1Lens
-  trans <- translation backgroundLens
+  trans <- translation ring1Lens
   pure $ trans
     $ outlined
         (outlineColor clr <> lineWidth (mwh * 0.05))
@@ -146,39 +147,52 @@ singleWedge n l = do
 
 b24 = beats 24.0 :: Number
 
-b32 = beats 24.0 :: Number
+b32 = beats 32.0 :: Number
+
+halfBeat = beats 0.5 :: Number
 
 translation :: (forall a. WLSig a) -> IPContext (Painting -> Painting)
 translation lenz = do
-  { time, startsAt, canvas: { width, height }, translations } <- ask
+  { timeDiff, timeDiffQuantizedToHalfBeat, startsAt, canvas: { width, height }, translations } <- ask
   let
-    tdiff = time - startsAt
-
     p = lenz translations
   pure
-    ( if tdiff < b24 then
+    ( if timeDiff < b24 then
         identity
       else
-        translate (calcSlope b24 0.0 b32 (p.x * width) tdiff)
-          (calcSlope b24 0.0 b32 (p.y * height) tdiff)
+        translate
+          (calcSlope b24 0.0 b32 (p.x * 1.5 * width) timeDiffQuantizedToHalfBeat)
+          (calcSlope b24 0.0 b32 (p.y * 1.5 * height) timeDiffQuantizedToHalfBeat)
     )
 
 instrumental0Painting'' :: IPContext Painting
 instrumental0Painting'' =
   map fold
     $ sequence
-        ( (V.toArray (V.zipWithE ($) (map singleWedge (V.fill identity)) wls))
-            <> [ background
-              , innerCircle
+        ( [ background ] <> (V.toArray (V.zipWithE ($) (map singleWedge (V.fill identity)) wls))
+            <> [ innerCircle
               , ring0
               , ring1
               ]
         )
 
+quantizeToHalfBeat :: Number -> Number
+quantizeToHalfBeat n = halfBeat * Math.round (n / halfBeat)
+
 i0p :: Number -> Instrumental0 FauxColor -> { time :: Number, value :: { | Ctxt' } } -> Painting
 i0p startsAt colors { time, value } =
-  runReader instrumental0Painting''
-    (R.union value { time, colors, startsAt })
+  let
+    timeDiff = time - startsAt
+  in
+    runReader instrumental0Painting''
+      ( R.union value
+          { time
+          , colors
+          , startsAt
+          , timeDiff
+          , timeDiffQuantizedToHalfBeat: quantizeToHalfBeat timeDiff
+          }
+      )
 
 paint' :: forall n. Nat n => Lt n D16 => Number -> n -> { time :: Number, value :: { | Ctxt' } } -> Painting
 paint' startsAt = i0p startsAt <<< V.index colorStore
@@ -187,8 +201,7 @@ instrumental0Painting :: Number -> NonEmptyToCofree { | Ctxt' } Painting
 instrumental0Painting startsAt =
   nonEmptyToCofreeFull Nothing
     ( pos 0.5 /\ paint d0
-        :| ( (pos 0.5 /\ paint d0)
-              : (pos 1.0 /\ paint d1)
+        :| ( (pos 1.0 /\ paint d1)
               : (pos 1.5 /\ paint d2)
               : (pos 2.0 /\ paint d3)
               : (pos 2.5 /\ paint d4)
@@ -202,7 +215,7 @@ instrumental0Painting startsAt =
               : (pos 6.5 /\ paint d12)
               : (pos 7.0 /\ paint d13)
               : (pos 7.5 /\ paint d14)
-              : (pos 8.0 /\ paint d15)
+              : ((\t -> ((t - startsAt) % (beats 8.0)) >= (beats 7.5)) /\ paint d15)
               : Nil
           )
     )

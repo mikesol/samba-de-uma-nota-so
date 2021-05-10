@@ -7,7 +7,7 @@ import Data.Typelevel.Num (d3, d5)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import SambaDeUmaNotaSo.Config (config)
-import SambaDeUmaNotaSo.Constants (fourMeasures, twoMeasures)
+import SambaDeUmaNotaSo.Constants (eightMeasures, fourMeasures, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SceneSig, SambaRes)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
@@ -254,7 +254,7 @@ piece = case startAt of
         @|> doToInstrumental
   Instrumental0 ->
     let
-      videoSpan = { start: 0.0, end: fourMeasures }
+      videoSpan = { start: 0.0, end: eightMeasures }
     in
       WAGS.do
         startWithBlackBackground
