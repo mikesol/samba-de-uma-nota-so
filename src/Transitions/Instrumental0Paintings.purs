@@ -9,19 +9,23 @@ import Data.Lens (lens, view)
 import Data.Lens.Record (prop)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NonEmpty ((:|))
 import Data.Traversable (sequence)
 import Data.Tuple.Nested ((/\))
-import Data.Typelevel.Num (class Lt, class Nat, D12, D16, d0, d1, d10, d11, d12, d13, d14, d15, d2, d3, d4, d5, d6, d7, d8, d9)
+import Data.Typelevel.Num (class Lt, class Nat, class Pos, class Succ, D1, D12, D64, d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24, d25, d26, d27, d28, d29, d30, d31, d32, d33, d34, d35, d36, d37, d38, d39, d40, d41, d42, d43, d44, d45, d46, d47, d48, d49, d50, d51, d52, d53, d54, d55, d56, d57, d58, d59, d60, d61, d62, d63)
 import Data.Vec (Vec, (+>))
 import Data.Vec as V
 import Graphics.Painting (Painting, Point, arc, circle, fillColor, filled, lineWidth, outlineColor, outlined, rectangle, translate, withMove)
-import Math (pi, (%))
+import Math (pi)
 import Math as Math
+import Record (set)
 import Record as R
 import SambaDeUmaNotaSo.Constants (beats)
-import SambaDeUmaNotaSo.IO.Instrumental0 (Instrumental0, FauxColor, Ctxt', Ctxt)
-import SambaDeUmaNotaSo.Util (NonEmptyToCofree, calcSlope, nonEmptyToCofreeFull)
+import SambaDeUmaNotaSo.IO.Instrumental0 (Ctxt, Ctxt', FauxColor, Instrumental0, mapInstrumental0)
+import SambaDeUmaNotaSo.Util (NonEmptyToCofree, calcSlopeExp, nonEmptyToCofreeFull)
+import Test.QuickCheck (class Arbitrary, arbitrary, mkSeed)
+import Test.QuickCheck.Gen (Gen, chooseInt, evalGen)
 import Type.Proxy (Proxy(..))
 
 type IPContext a
@@ -153,7 +157,7 @@ halfBeat = beats 0.5 :: Number
 
 translation :: (forall a. WLSig a) -> IPContext (Painting -> Painting)
 translation lenz = do
-  { timeDiff, timeDiffQuantizedToHalfBeat, startsAt, canvas: { width, height }, translations } <- ask
+  { timeDiff, timeDiffQuantizedToHalfBeat, canvas: { width, height }, translations } <- ask
   let
     p = lenz translations
   pure
@@ -161,8 +165,8 @@ translation lenz = do
         identity
       else
         translate
-          (calcSlope b24 0.0 b32 (p.x * 1.5 * width) timeDiffQuantizedToHalfBeat)
-          (calcSlope b24 0.0 b32 (p.y * 1.5 * height) timeDiffQuantizedToHalfBeat)
+          (calcSlopeExp b24 0.0 b32 (p.x * 1.5 * width) 2.5 timeDiffQuantizedToHalfBeat)
+          (calcSlopeExp b24 0.0 b32 (p.y * 1.5 * height) 2.5 timeDiffQuantizedToHalfBeat)
     )
 
 instrumental0Painting'' :: IPContext Painting
@@ -194,12 +198,12 @@ i0p startsAt colors { time, value } =
           }
       )
 
-paint' :: forall n. Nat n => Lt n D16 => Number -> n -> { time :: Number, value :: { | Ctxt' } } -> Painting
+paint' :: forall n. Nat n => Lt n D64 => Number -> n -> { time :: Number, value :: { | Ctxt' } } -> Painting
 paint' startsAt = i0p startsAt <<< V.index colorStore
 
 instrumental0Painting :: Number -> NonEmptyToCofree { | Ctxt' } Painting
 instrumental0Painting startsAt =
-  nonEmptyToCofreeFull Nothing
+  nonEmptyToCofreeFull (Just (paint d63))
     ( pos 0.5 /\ paint d0
         :| ( (pos 1.0 /\ paint d1)
               : (pos 1.5 /\ paint d2)
@@ -215,14 +219,62 @@ instrumental0Painting startsAt =
               : (pos 6.5 /\ paint d12)
               : (pos 7.0 /\ paint d13)
               : (pos 7.5 /\ paint d14)
-              : ((\t -> ((t - startsAt) % (beats 8.0)) >= (beats 7.5)) /\ paint d15)
+              : (pos 8.0 /\ paint d15)
+              : (pos 8.5 /\ paint d16)
+              : (pos 9.0 /\ paint d17)
+              : (pos 9.5 /\ paint d18)
+              : (pos 10.0 /\ paint d19)
+              : (pos 10.5 /\ paint d20)
+              : (pos 11.0 /\ paint d21)
+              : (pos 11.5 /\ paint d22)
+              : (pos 12.0 /\ paint d23)
+              : (pos 12.5 /\ paint d24)
+              : (pos 13.0 /\ paint d25)
+              : (pos 13.5 /\ paint d26)
+              : (pos 14.0 /\ paint d27)
+              : (pos 14.5 /\ paint d28)
+              : (pos 15.0 /\ paint d29)
+              : (pos 15.5 /\ paint d30)
+              : (pos 16.0 /\ paint d31)
+              : (pos 16.5 /\ paint d32)
+              : (pos 17.0 /\ paint d33)
+              : (pos 17.5 /\ paint d34)
+              : (pos 18.0 /\ paint d35)
+              : (pos 18.5 /\ paint d36)
+              : (pos 19.0 /\ paint d37)
+              : (pos 19.5 /\ paint d38)
+              : (pos 20.0 /\ paint d39)
+              : (pos 20.5 /\ paint d40)
+              : (pos 21.0 /\ paint d41)
+              : (pos 21.5 /\ paint d42)
+              : (pos 22.0 /\ paint d43)
+              : (pos 22.5 /\ paint d44)
+              : (pos 23.0 /\ paint d45)
+              : (pos 23.5 /\ paint d46)
+              : (pos 24.0 /\ paint d47)
+              : (pos 24.5 /\ paint d48)
+              : (pos 25.0 /\ paint d49)
+              : (pos 25.5 /\ paint d50)
+              : (pos 26.0 /\ paint d51)
+              : (pos 26.5 /\ paint d52)
+              : (pos 27.0 /\ paint d53)
+              : (pos 27.5 /\ paint d54)
+              : (pos 28.0 /\ paint d55)
+              : (pos 28.5 /\ paint d56)
+              : (pos 29.0 /\ paint d57)
+              : (pos 29.5 /\ paint d58)
+              : (pos 30.0 /\ paint d59)
+              : (pos 30.5 /\ paint d60)
+              : (pos 31.0 /\ paint d61)
+              : (pos 31.5 /\ paint d62)
+              : (pos 32.0 /\ paint d63)
               : Nil
           )
     )
   where
-  pos v t = ((t - startsAt) % (beats 8.0)) < (beats v)
+  pos v t = (t - startsAt) < (beats v)
 
-  paint :: forall n. Nat n => Lt n D16 => n -> { time :: Number, value :: { | Ctxt' } } -> Painting
+  paint :: forall n. Nat n => Lt n D64 => n -> { time :: Number, value :: { | Ctxt' } } -> Painting
   paint = paint' startsAt
 
 pt :: Number -> Number -> Point
@@ -237,102 +289,132 @@ someTranslations =
   , background: pt (-0.7891) (-0.1839)
   }
 
-colorStore :: V.Vec D16 (Instrumental0 FauxColor)
+type ColorMap
+  = Instrumental0 NTFauxColor
+
+type ColorScheme
+  = V.Vec D64 ColorMap
+
+newtype NTFauxColor
+  = NTFauxColor FauxColor
+
+derive instance newtypeNTFauxColor :: Newtype NTFauxColor _
+
+instance arbitraryNTFauxColor :: Arbitrary NTFauxColor where
+  arbitrary = NTFauxColor <$> ({ r: _, g: _, b: _, a: 1.0 } <$> chooseInt 0 255 <*> chooseInt 0 255 <*> chooseInt 0 255)
+
+-- extendToRight
+e2r :: forall a n m. Nat n => Nat m => Pos n => Pos m => Succ n m => (a -> a) -> Vec n a -> Vec m a
+e2r f v = V.snoc (f (V.last v)) v
+
+e2rM :: forall a n m m'. Nat n => Nat m => Pos n => Pos m => Succ n m => Monad m' => (a -> m' a) -> m' (Vec n a) -> m' (Vec m a)
+e2rM f v' = do
+  v <- v'
+  V.snoc <$> (f (V.last v)) <*> pure v
+
+md :: forall a. Nat a => Lt a D12 => a -> ColorMap -> Gen ColorMap
+md a cm = do
+  wedge <- arbitrary
+  pure $ cm { wedges = V.updateAt a wedge cm.wedges }
+
+modAll :: ColorMap -> Gen ColorMap
+modAll cm = do
+  allButBackground :: ColorMap <- arbitrary
+  pure $ allButBackground { background = cm.background }
+
+modCircle :: ColorMap -> Gen ColorMap
+modCircle = apply (map (set (Proxy :: _ "center")) arbitrary) <<< pure
+
+modRing0 :: ColorMap -> Gen ColorMap
+modRing0 = apply (map (set (Proxy :: _ "ring0")) arbitrary) <<< pure
+
+modRing1 :: ColorMap -> Gen ColorMap
+modRing1 = apply (map (set (Proxy :: _ "ring1")) arbitrary) <<< pure
+
+modBackground :: ColorMap -> Gen ColorMap
+modBackground = apply (map (set (Proxy :: _ "background")) arbitrary) <<< pure
+
+colorStoreShuffle :: Gen (V.Vec D1 ColorMap) -> Gen (V.Vec D64 ColorMap)
+colorStoreShuffle =
+  (e2rM pure) -- 1
+    >>> (e2rM $ pure) -- 2
+    >>> (e2rM $ md d0 >=> md d4 >=> md d10) -- 3
+    >>> (e2rM $ pure) -- 4
+    >>> (e2rM $ pure) -- 5
+    >>> (e2rM $ md d2 >=> md d5) -- 6
+    >>> (e2rM $ pure) -- 7
+    >>> (e2rM $ md d3 >=> md d7 >=> md d11) -- 8
+    >>> (e2rM $ pure) -- 9
+    >>> (e2rM $ pure) -- 10
+    >>> (e2rM $ md d1 >=> md d6 >=> md d8) -- 11
+    >>> (e2rM $ pure) -- 12
+    >>> (e2rM $ pure) -- 13
+    >>> (e2rM $ md d9 >=> md d0) -- 14
+    >>> (e2rM $ pure) -- 15
+    >>> (e2rM $ (md d4 >=> md d2 >=> md d7 >=> modCircle)) -- 16
+    >>> (e2rM $ pure) -- 17
+    >>> (e2rM $ pure) -- 18
+    >>> (e2rM $ (md d3 >=> md d5 >=> md d11 >=> modRing0)) -- 19
+    >>> (e2rM $ pure) -- 20
+    >>> (e2rM $ pure) -- 21
+    >>> (e2rM $ (md d8 >=> md d6 >=> modRing1)) -- 22
+    >>> (e2rM $ pure) -- 23
+    >>> (e2rM $ (md d10 >=> md d7 >=> md d1 >=> modCircle >=> modRing1)) -- 24
+    >>> (e2rM $ pure) -- 25
+    >>> (e2rM $ pure) -- 26
+    >>> (e2rM $ (md d2 >=> md d5 >=> md d9 >=> modCircle >=> modRing1)) -- 27
+    >>> (e2rM $ pure) -- 28
+    >>> (e2rM $ pure) -- 29
+    >>> (e2rM $ (md d4 >=> md d8 >=> modCircle >=> modRing0 >=> modRing1)) -- 30
+    >>> (e2rM $ pure) -- 31
+    >>> (e2rM $ (md d0 >=> modCircle)) -- 32
+    >>> (e2rM $ md d1) -- 33
+    >>> (e2rM $ md d2) -- 34
+    >>> (e2rM $ (md d3 >=> modRing0)) -- 35
+    >>> (e2rM $ md d4) -- 36
+    >>> (e2rM $ md d5) -- 37
+    >>> (e2rM $ (md d6 >=> modRing1)) -- 38
+    >>> (e2rM $ md d7) -- 39
+    >>> (e2rM $ (md d8 >=> md d9 >=> modCircle)) -- 40
+    >>> (e2rM $ md d9 >=> md d10) -- 41
+    >>> (e2rM $ md d10 >=> md d11) -- 42
+    >>> (e2rM $ (md d11 >=> md d0 >=> modRing0)) -- 43
+    >>> (e2rM $ md d0 >=> md d1) -- 44
+    >>> (e2rM $ md d1 >=> md d3) -- 45
+    >>> (e2rM $ (md d2 >=> md d4 >=> modRing1)) -- 46
+    >>> (e2rM $ md d3 >=> md d5) -- 47
+    >>> (e2rM $ (md d4 >=> md d6 >=> md d9 >=> modCircle)) -- 48
+    >>> (e2rM $ md d5 >=> md d7 >=> md d10) -- 49
+    >>> (e2rM $ md d6 >=> md d8 >=> md d11) -- 50
+    >>> (e2rM $ (md d7 >=> md d9 >=> md d0 >=> modRing0)) -- 51
+    >>> (e2rM $ md d8 >=> md d10 >=> md d1) -- 52
+    >>> (e2rM $ md d9 >=> md d11 >=> md d2) -- 53
+    >>> (e2rM $ (md d10 >=> md d0 >=> md d3 >=> md d6 >=> modRing1)) -- 54
+    >>> (e2rM $ md d11 >=> md d1 >=> md d4 >=> md d7) -- 55
+    >>> (e2rM $ modAll) -- 56
+    >>> (e2rM $ modAll) -- 57
+    >>> (e2rM $ modAll) -- 58
+    >>> (e2rM $ modAll) -- 59
+    >>> (e2rM $ modAll) -- 60
+    >>> (e2rM $ modAll) -- 61
+    >>> (e2rM $ modAll) -- 62
+    >>> (e2rM $ modAll) -- 63
+
+colorStore :: V.Vec D64 (Instrumental0 FauxColor)
 colorStore =
-  { wedges: frgba 250 125 77 1.0 +> frgba 217 192 214 1.0 +> frgba 205 94 153 1.0 +> frgba 137 191 52 1.0 +> frgba 235 145 1 1.0 +> frgba 194 184 93 1.0 +> frgba 195 83 48 1.0 +> frgba 86 94 109 1.0 +> frgba 138 87 28 1.0 +> frgba 222 61 155 1.0 +> frgba 246 10 248 1.0 +> frgba 219 19 173 1.0 +> V.empty
-  , ring0: frgba 64 89 201 1.0
-  , ring1: frgba 205 141 17 1.0
-  , center: frgba 142 45 228 1.0
-  , background: frgba 17 5 3 1.0
-  }
-    +> { wedges: frgba 79 126 249 1.0 +> frgba 69 151 103 1.0 +> frgba 29 52 4 1.0 +> frgba 100 111 4 1.0 +> frgba 60 145 38 1.0 +> frgba 123 134 72 1.0 +> frgba 156 24 95 1.0 +> frgba 228 250 250 1.0 +> frgba 139 47 228 1.0 +> frgba 140 215 170 1.0 +> frgba 98 68 116 1.0 +> frgba 105 77 99 1.0 +> V.empty
-      , ring0: frgba 151 182 120 1.0
-      , ring1: frgba 211 35 229 1.0
-      , center: frgba 164 115 22 1.0
-      , background: frgba 219 170 171 1.0
-      }
-    +> { wedges: frgba 70 225 251 1.0 +> frgba 151 103 30 1.0 +> frgba 250 140 108 1.0 +> frgba 192 143 24 1.0 +> frgba 162 69 189 1.0 +> frgba 198 239 150 1.0 +> frgba 56 120 181 1.0 +> frgba 100 161 225 1.0 +> frgba 170 211 0 1.0 +> frgba 243 216 150 1.0 +> frgba 59 98 136 1.0 +> frgba 165 208 106 1.0 +> V.empty
-      , ring0: frgba 132 240 242 1.0
-      , ring1: frgba 253 52 247 1.0
-      , center: frgba 119 59 35 1.0
-      , background: frgba 158 169 96 1.0
-      }
-    +> { wedges: frgba 20 15 96 1.0 +> frgba 246 132 228 1.0 +> frgba 168 6 193 1.0 +> frgba 135 136 235 1.0 +> frgba 197 182 140 1.0 +> frgba 199 102 94 1.0 +> frgba 199 67 176 1.0 +> frgba 234 251 251 1.0 +> frgba 186 33 244 1.0 +> frgba 185 249 46 1.0 +> frgba 182 24 237 1.0 +> frgba 223 104 100 1.0 +> V.empty
-      , ring0: frgba 221 121 4 1.0
-      , ring1: frgba 216 105 163 1.0
-      , center: frgba 114 118 74 1.0
-      , background: frgba 147 67 126 1.0
-      }
-    +> { wedges: frgba 162 182 2 1.0 +> frgba 134 85 158 1.0 +> frgba 96 168 219 1.0 +> frgba 82 53 184 1.0 +> frgba 94 168 161 1.0 +> frgba 73 40 27 1.0 +> frgba 85 180 33 1.0 +> frgba 109 228 23 1.0 +> frgba 6 152 124 1.0 +> frgba 41 16 255 1.0 +> frgba 214 171 79 1.0 +> frgba 46 158 177 1.0 +> V.empty
-      , ring0: frgba 177 119 59 1.0
-      , ring1: frgba 134 233 195 1.0
-      , center: frgba 214 48 70 1.0
-      , background: frgba 113 14 54 1.0
-      }
-    +> { wedges: frgba 205 1 171 1.0 +> frgba 176 240 140 1.0 +> frgba 103 41 39 1.0 +> frgba 73 103 54 1.0 +> frgba 231 102 233 1.0 +> frgba 48 65 140 1.0 +> frgba 247 228 113 1.0 +> frgba 81 221 21 1.0 +> frgba 234 126 9 1.0 +> frgba 217 202 114 1.0 +> frgba 201 147 102 1.0 +> frgba 154 149 118 1.0 +> V.empty
-      , ring0: frgba 124 64 41 1.0
-      , ring1: frgba 189 213 197 1.0
-      , center: frgba 74 225 127 1.0
-      , background: frgba 221 196 142 1.0
-      }
-    +> { wedges: frgba 123 153 124 1.0 +> frgba 1 183 164 1.0 +> frgba 79 243 230 1.0 +> frgba 127 27 186 1.0 +> frgba 198 109 169 1.0 +> frgba 180 154 157 1.0 +> frgba 22 15 193 1.0 +> frgba 81 144 37 1.0 +> frgba 63 106 89 1.0 +> frgba 157 76 193 1.0 +> frgba 8 248 190 1.0 +> frgba 134 202 117 1.0 +> V.empty
-      , ring0: frgba 81 163 243 1.0
-      , ring1: frgba 222 186 86 1.0
-      , center: frgba 128 192 214 1.0
-      , background: frgba 239 225 84 1.0
-      }
-    +> { wedges: frgba 228 249 23 1.0 +> frgba 225 108 54 1.0 +> frgba 56 117 242 1.0 +> frgba 35 254 192 1.0 +> frgba 27 154 235 1.0 +> frgba 207 66 47 1.0 +> frgba 141 227 140 1.0 +> frgba 148 135 241 1.0 +> frgba 208 94 210 1.0 +> frgba 133 139 107 1.0 +> frgba 16 177 136 1.0 +> frgba 78 15 194 1.0 +> V.empty
-      , ring0: frgba 53 35 156 1.0
-      , ring1: frgba 75 20 219 1.0
-      , center: frgba 99 72 152 1.0
-      , background: frgba 84 104 243 1.0
-      }
-    +> { wedges: frgba 91 53 120 1.0 +> frgba 56 198 88 1.0 +> frgba 43 49 242 1.0 +> frgba 224 77 139 1.0 +> frgba 111 199 242 1.0 +> frgba 90 75 87 1.0 +> frgba 121 119 87 1.0 +> frgba 149 133 64 1.0 +> frgba 147 79 0 1.0 +> frgba 195 121 63 1.0 +> frgba 110 227 216 1.0 +> frgba 188 79 4 1.0 +> V.empty
-      , ring0: frgba 96 170 62 1.0
-      , ring1: frgba 45 27 104 1.0
-      , center: frgba 151 235 78 1.0
-      , background: frgba 13 52 86 1.0
-      }
-    +> { wedges: frgba 139 56 212 1.0 +> frgba 133 77 32 1.0 +> frgba 252 167 88 1.0 +> frgba 51 237 55 1.0 +> frgba 103 126 138 1.0 +> frgba 176 176 207 1.0 +> frgba 59 150 17 1.0 +> frgba 179 184 118 1.0 +> frgba 70 123 17 1.0 +> frgba 183 192 79 1.0 +> frgba 128 143 236 1.0 +> frgba 103 160 221 1.0 +> V.empty
-      , ring0: frgba 210 170 70 1.0
-      , ring1: frgba 34 16 86 1.0
-      , center: frgba 63 154 46 1.0
-      , background: frgba 220 116 208 1.0
-      }
-    +> { wedges: frgba 43 238 43 1.0 +> frgba 140 149 191 1.0 +> frgba 78 4 81 1.0 +> frgba 169 53 83 1.0 +> frgba 112 70 202 1.0 +> frgba 22 7 168 1.0 +> frgba 49 15 154 1.0 +> frgba 44 166 156 1.0 +> frgba 156 27 66 1.0 +> frgba 222 248 13 1.0 +> frgba 115 16 208 1.0 +> frgba 111 115 176 1.0 +> V.empty
-      , ring0: frgba 188 16 233 1.0
-      , ring1: frgba 49 64 228 1.0
-      , center: frgba 134 72 253 1.0
-      , background: frgba 186 20 4 1.0
-      }
-    +> { wedges: frgba 131 64 181 1.0 +> frgba 127 212 171 1.0 +> frgba 87 50 123 1.0 +> frgba 211 145 173 1.0 +> frgba 28 162 202 1.0 +> frgba 46 212 90 1.0 +> frgba 176 159 164 1.0 +> frgba 23 211 153 1.0 +> frgba 105 122 147 1.0 +> frgba 123 57 209 1.0 +> frgba 143 63 96 1.0 +> frgba 77 44 253 1.0 +> V.empty
-      , ring0: frgba 142 216 182 1.0
-      , ring1: frgba 46 142 69 1.0
-      , center: frgba 161 236 236 1.0
-      , background: frgba 239 102 194 1.0
-      }
-    +> { wedges: frgba 248 116 105 1.0 +> frgba 125 171 168 1.0 +> frgba 168 106 53 1.0 +> frgba 135 210 15 1.0 +> frgba 22 82 216 1.0 +> frgba 56 34 155 1.0 +> frgba 93 59 74 1.0 +> frgba 152 218 145 1.0 +> frgba 22 65 128 1.0 +> frgba 43 238 229 1.0 +> frgba 121 162 36 1.0 +> frgba 55 0 7 1.0 +> V.empty
-      , ring0: frgba 221 99 203 1.0
-      , ring1: frgba 137 181 107 1.0
-      , center: frgba 220 18 194 1.0
-      , background: frgba 90 104 161 1.0
-      }
-    +> { wedges: frgba 242 136 192 1.0 +> frgba 44 96 205 1.0 +> frgba 45 22 35 1.0 +> frgba 24 125 176 1.0 +> frgba 249 197 243 1.0 +> frgba 0 154 238 1.0 +> frgba 200 83 112 1.0 +> frgba 80 180 164 1.0 +> frgba 137 3 227 1.0 +> frgba 220 73 124 1.0 +> frgba 118 191 34 1.0 +> frgba 224 43 156 1.0 +> V.empty
-      , ring0: frgba 51 108 78 1.0
-      , ring1: frgba 0 115 121 1.0
-      , center: frgba 215 237 39 1.0
-      , background: frgba 28 28 107 1.0
-      }
-    +> { wedges: frgba 33 63 82 1.0 +> frgba 98 34 6 1.0 +> frgba 134 48 182 1.0 +> frgba 4 114 66 1.0 +> frgba 126 253 40 1.0 +> frgba 142 182 213 1.0 +> frgba 68 170 152 1.0 +> frgba 141 144 146 1.0 +> frgba 112 101 59 1.0 +> frgba 55 15 3 1.0 +> frgba 161 111 229 1.0 +> frgba 119 156 63 1.0 +> V.empty
-      , ring0: frgba 174 165 64 1.0
-      , ring1: frgba 82 97 155 1.0
-      , center: frgba 156 169 1 1.0
-      , background: frgba 237 43 89 1.0
-      }
-    +> { wedges: frgba 63 162 182 1.0 +> frgba 219 251 159 1.0 +> frgba 205 198 125 1.0 +> frgba 204 67 10 1.0 +> frgba 130 135 170 1.0 +> frgba 135 83 61 1.0 +> frgba 31 60 183 1.0 +> frgba 35 211 79 1.0 +> frgba 27 162 84 1.0 +> frgba 192 13 184 1.0 +> frgba 159 73 39 1.0 +> frgba 137 210 91 1.0 +> V.empty
-      , ring0: frgba 202 225 103 1.0
-      , ring1: frgba 254 149 249 1.0
-      , center: frgba 65 143 200 1.0
-      , background: frgba 180 107 241 1.0
-      }
-    +> V.empty
+  (map <<< mapInstrumental0) unwrap
+    ( evalGen
+        ( colorStoreShuffle
+            ( pure
+                $ V.singleton
+                    ( { wedges: map wrap (frgba 250 125 77 1.0 +> frgba 217 192 214 1.0 +> frgba 205 94 153 1.0 +> frgba 137 191 52 1.0 +> frgba 235 145 1 1.0 +> frgba 194 184 93 1.0 +> frgba 195 83 48 1.0 +> frgba 86 94 109 1.0 +> frgba 138 87 28 1.0 +> frgba 222 61 155 1.0 +> frgba 246 10 248 1.0 +> frgba 219 19 173 1.0 +> V.empty)
+                      , ring0: wrap $ frgba 64 89 201 1.0
+                      , ring1: wrap $ frgba 205 141 17 1.0
+                      , center: wrap $ frgba 142 45 228 1.0
+                      , background: wrap $ frgba 17 5 3 1.0
+                      }
+                    )
+            )
+        )
+        { newSeed: mkSeed 0, size: 10 }
+    )

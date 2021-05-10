@@ -91,6 +91,13 @@ lenses =
     : ExLens (prop (Proxy :: _ "background"))
     : Nil
 
+twoPi = 2.0 * pi :: Number
+
+bumpAngle :: Number -> Number
+bumpAngle n
+  | n < 0.0 = n + twoPi
+  | otherwise = n
+
 touchMap :: Point -> DOMRect -> Number -> Instrumental0 (List Number) -> Instrumental0 (List Number)
 touchMap pt dr time ln = go
   where
@@ -102,7 +109,7 @@ touchMap pt dr time ln = go
     touching
       { c: pt
       , mag: distance pt { x: halfW, y: halfH }
-      , ang: angle (Cartesian (pt.x - halfW) (pt.y - halfH))
+      , ang: bumpAngle (angle (Cartesian (pt.x - halfW) (pt.y - halfH)))
       }
       time
       (sensor dr)

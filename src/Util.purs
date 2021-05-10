@@ -33,6 +33,22 @@ calcSlope x0 y0 x1 y1 x =
     in
       m * x + b
 
+calcSlopeExp :: Number -> Number -> Number -> Number -> Number -> Number -> Number
+calcSlopeExp x0 y0 x1 y1 exp x' =
+  if x1 == x0 || y1 == y0 then
+    y0
+  else
+    let
+      dx = x1 - x0
+
+      x = ((((x' - x0) / dx) `pow` exp) * dx) + x0
+
+      m = (y1 - y0) / dx
+
+      b = y0 - m * x0
+    in
+      m * x + b
+
 argb :: Number -> RGB -> Number -> RGB -> Number -> RGB
 argb t0 c0 t1 c1 t =
   { r: cs c0.r c1.r

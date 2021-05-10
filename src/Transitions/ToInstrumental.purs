@@ -11,7 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Vec as V
 import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
-import SambaDeUmaNotaSo.Constants (eightMeasures, fourMeasures)
+import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.EighthVideo (HarmonyInfo, harmonyToNext, harmonyToVec)
