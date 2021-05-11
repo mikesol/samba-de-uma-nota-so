@@ -16,7 +16,7 @@ import Data.Tuple.Nested ((/\))
 import Data.Typelevel.Num (class Lt, class Nat, class Pos, class Succ, D1, D5, D64, d0, d1, d10, d11, d12, d13, d14, d15, d16, d17, d18, d19, d2, d20, d21, d22, d23, d24, d25, d26, d27, d28, d29, d3, d30, d31, d32, d33, d34, d35, d36, d37, d38, d39, d4, d40, d41, d42, d43, d44, d45, d46, d47, d48, d49, d5, d50, d51, d52, d53, d54, d55, d56, d57, d58, d59, d6, d60, d61, d62, d63, d7, d8, d9)
 import Data.Vec (Vec, (+>))
 import Data.Vec as V
-import Graphics.Painting (Painting, Point, circle, fillColor, filled, rectangle)
+import Graphics.Painting (Painting, Point, Shape, circle, fillColor, filled, lineWidth, outlineColor, outlined, rectangle)
 import Record (set)
 import Record as R
 import SambaDeUmaNotaSo.Constants (beats)
@@ -47,7 +47,7 @@ instance mixNumber :: Mix Number where
 instance mixInt :: Mix Int where
   mix v i0 i1 = round $ (mix v (toNumber i0) (toNumber i1))
 
-idleActive :: (forall n. Instrumental1 n -> n) -> IPContext Color
+idleActive :: (forall n. Instrumental1 n -> n) -> IPContext (Shape -> Painting)
 idleActive l = do
   { onOff, colors } <- ask
   let
@@ -56,8 +56,8 @@ idleActive l = do
     fc = l colors
   pure
     $ case oo of
-        false -> toRGBA (fc { a = 0.3 })
-        true -> toRGBA fc
+        false -> outlined (outlineColor (toRGBA fc) <> lineWidth 5.0)
+        true -> filled (fillColor (toRGBA fc))
 
 toRGBA :: FauxColor -> Color
 toRGBA { r, g, b, a } = rgba r g b a
@@ -74,7 +74,7 @@ ball :: IPContext Painting
 ball = do
   { canvas: { width, height }, mwh, ballPos } <- ask
   clr <- idleActive ballLens
-  pure $ filled (fillColor clr) (circle (width * ballPos) (height * 0.33) (mwh * circleConst))
+  pure $ clr (circle (width * ballPos) (height * 0.33) (mwh * circleConst))
 
 boxConst = 0.45 :: Number
 
@@ -84,7 +84,7 @@ singleBox n l = do
   clr <- idleActive l
   let
     x = (1.0 + (3.0 * (toNumber n))) * width / 16.0
-  pure (filled (fillColor clr) (rectangle x boxY eighthW eighthH))
+  pure (clr (rectangle x boxY eighthW eighthH))
 
 instrumental1Painting'' :: IPContext Painting
 instrumental1Painting'' =
@@ -117,54 +117,23 @@ paint' startsAt n = i0p startsAt coloring ballPos
 
   ballPos = V.index ballPosStore n
 
-bp0 = 1.0 / 16.0 :: Number
+bp0 = 2.0 / 16.0 :: Number
 
-bp1 = 4.0 / 16.0 :: Number
+bp1 = 5.0 / 16.0 :: Number
 
-bp2 = 7.0 / 16.0 :: Number
+bp2 = 8.0 / 16.0 :: Number
 
-bp3 = 10.0 / 16.0 :: Number
+bp3 = 11.0 / 16.0 :: Number
 
-bp4 = 13.0 / 16.0 :: Number
+bp4 = 14.0 / 16.0 :: Number
 
 infixr 5 V.concat as <+>
 
 rpl :: forall s a. Nat s => s -> a -> V.Vec s a
 rpl = V.replicate
 
--- [3,2,2,2,2,1,2,2,3,2,2,1,4,2,2,3,2,2,2,2,1,2,2,3,2,2,1,2,2,4]
 ballPosStore :: V.Vec D64 Number
-ballPosStore =
-  rpl d3 bp0
-    <+> rpl d2 bp1
-    <+> rpl d2 bp2
-    <+> rpl d2 bp3
-    <+> rpl d2 bp4
-    <+> rpl d1 bp0
-    <+> rpl d2 bp1
-    <+> rpl d2 bp2
-    <+> rpl d3 bp3
-    <+> rpl d2 bp4
-    <+> rpl d2 bp0
-    <+> rpl d1 bp1
-    <+> rpl d4 bp2
-    <+> rpl d2 bp3
-    <+> rpl d2 bp4
-    <+> rpl d3 bp0
-    <+> rpl d2 bp1
-    <+> rpl d2 bp2
-    <+> rpl d2 bp3
-    <+> rpl d2 bp4
-    <+> rpl d1 bp0
-    <+> rpl d2 bp1
-    <+> rpl d2 bp2
-    <+> rpl d3 bp3
-    <+> rpl d2 bp4
-    <+> rpl d2 bp0
-    <+> rpl d1 bp1
-    <+> rpl d2 bp2
-    <+> rpl d2 bp3
-    <+> rpl d4 bp4
+ballPosStore = rpl d2 bp0 <+> rpl d2 bp1 <+> rpl d2 bp2 <+> rpl d2 bp3 <+> rpl d2 bp4 <+> rpl d2 bp0 <+> rpl d2 bp1 <+> rpl d2 bp2 <+> rpl d2 bp3 <+> rpl d2 bp4 <+> rpl d2 bp0 <+> rpl d2 bp1 <+> rpl d2 bp2 <+> rpl d2 bp3 <+> rpl d2 bp4 <+> rpl d2 bp0 <+> rpl d2 bp1 <+> rpl d2 bp2 <+> rpl d2 bp3 <+> rpl d2 bp4 <+> rpl d2 bp0 <+> rpl d2 bp1 <+> rpl d2 bp2 <+> rpl d2 bp3 <+> rpl d2 bp4 <+> rpl d2 bp0 <+> rpl d2 bp1 <+> rpl d2 bp2 <+> rpl d2 bp3 <+> rpl d2 bp4 <+> rpl d2 bp0 <+> rpl d2 bp1
 
 instrumental1Painting :: Number -> NonEmptyToCofree { | Ctxt' } Painting
 instrumental1Painting startsAt =
@@ -271,71 +240,75 @@ e2rM f v' = do
 modBall :: ColorMap -> Gen ColorMap
 modBall = apply (map (set (Proxy :: _ "ball")) arbitrary) <<< pure
 
+-- modifying the ball felt too busy, turning off...
+doNotModBall :: ColorMap -> Gen ColorMap
+doNotModBall = pure
+
 colorStoreShuffle :: Gen (V.Vec D1 ColorMap) -> Gen (V.Vec D64 ColorMap)
 colorStoreShuffle =
   (e2rM pure) -- 1
     >>> (e2rM $ pure) -- 2
-    >>> (e2rM $ modBall) -- 3
+    >>> (e2rM $ doNotModBall) -- 3
     >>> (e2rM $ pure) -- 4
     >>> (e2rM $ pure) -- 5
-    >>> (e2rM $ modBall) -- 6
+    >>> (e2rM $ doNotModBall) -- 6
     >>> (e2rM $ pure) -- 7
-    >>> (e2rM $ modBall) -- 8
+    >>> (e2rM $ doNotModBall) -- 8
     >>> (e2rM $ pure) -- 9
     >>> (e2rM $ pure) -- 10
-    >>> (e2rM $ modBall) -- 11
+    >>> (e2rM $ doNotModBall) -- 11
     >>> (e2rM $ pure) -- 12
     >>> (e2rM $ pure) -- 13
-    >>> (e2rM $ modBall) -- 14
+    >>> (e2rM $ doNotModBall) -- 14
     >>> (e2rM $ pure) -- 15
-    >>> (e2rM $ modBall) -- 16
+    >>> (e2rM $ doNotModBall) -- 16
     >>> (e2rM $ pure) -- 17
     >>> (e2rM $ pure) -- 18
-    >>> (e2rM $ modBall) -- 19
+    >>> (e2rM $ doNotModBall) -- 19
     >>> (e2rM $ pure) -- 20
     >>> (e2rM $ pure) -- 21
-    >>> (e2rM $ modBall) -- 22
+    >>> (e2rM $ doNotModBall) -- 22
     >>> (e2rM $ pure) -- 23
-    >>> (e2rM $ modBall) -- 24
+    >>> (e2rM $ doNotModBall) -- 24
     >>> (e2rM $ pure) -- 25
     >>> (e2rM $ pure) -- 26
-    >>> (e2rM $ modBall) -- 27
+    >>> (e2rM $ doNotModBall) -- 27
     >>> (e2rM $ pure) -- 28
     >>> (e2rM $ pure) -- 29
-    >>> (e2rM $ modBall) -- 30
+    >>> (e2rM $ doNotModBall) -- 30
     >>> (e2rM $ pure) -- 31
-    >>> (e2rM $ modBall) -- 32
+    >>> (e2rM $ doNotModBall) -- 32
     >>> (e2rM $ pure) -- 33
     >>> (e2rM $ pure) -- 34
-    >>> (e2rM $ modBall) -- 35
+    >>> (e2rM $ doNotModBall) -- 35
     >>> (e2rM $ pure) -- 36
     >>> (e2rM $ pure) -- 37
-    >>> (e2rM $ modBall) -- 38
+    >>> (e2rM $ doNotModBall) -- 38
     >>> (e2rM $ pure) -- 39
-    >>> (e2rM $ modBall) -- 40
+    >>> (e2rM $ doNotModBall) -- 40
     >>> (e2rM $ pure) -- 41
     >>> (e2rM $ pure) -- 42
     >>> (e2rM $ pure) -- 43
     >>> (e2rM $ pure) -- 44
     >>> (e2rM $ pure) -- 45
-    >>> (e2rM $ modBall) -- 46
+    >>> (e2rM $ doNotModBall) -- 46
     >>> (e2rM $ pure) -- 47
-    >>> (e2rM $ modBall) -- 48
+    >>> (e2rM $ doNotModBall) -- 48
     >>> (e2rM $ pure) -- 49
     >>> (e2rM $ pure) -- 50
-    >>> (e2rM $ modBall) -- 51
+    >>> (e2rM $ doNotModBall) -- 51
     >>> (e2rM $ pure) -- 52
     >>> (e2rM $ pure) -- 53
-    >>> (e2rM $ modBall) -- 54
+    >>> (e2rM $ doNotModBall) -- 54
     >>> (e2rM $ pure) -- 55
-    >>> (e2rM $ modBall) -- 56
-    >>> (e2rM $ modBall) -- 57
-    >>> (e2rM $ modBall) -- 58
-    >>> (e2rM $ modBall) -- 59
-    >>> (e2rM $ modBall) -- 60
-    >>> (e2rM $ modBall) -- 61
-    >>> (e2rM $ modBall) -- 62
-    >>> (e2rM $ modBall) -- 63
+    >>> (e2rM $ doNotModBall) -- 56
+    >>> (e2rM $ doNotModBall) -- 57
+    >>> (e2rM $ doNotModBall) -- 58
+    >>> (e2rM $ doNotModBall) -- 59
+    >>> (e2rM $ doNotModBall) -- 60
+    >>> (e2rM $ doNotModBall) -- 61
+    >>> (e2rM $ doNotModBall) -- 62
+    >>> (e2rM $ doNotModBall) -- 63
 
 colorStore :: V.Vec D64 (Instrumental1 FauxColor)
 colorStore =
@@ -344,8 +317,8 @@ colorStore =
         ( colorStoreShuffle
             ( pure
                 $ V.singleton
-                    ( { boxes: map wrap (frgba 250 125 77 1.0 +> frgba 217 192 214 1.0 +> frgba 205 94 153 1.0 +> frgba 137 191 52 1.0 +> frgba 235 145 1 1.0 +> V.empty)
-                      , ball: wrap $ frgba 64 89 201 1.0
+                    ( { boxes: map wrap (frgba 250 125 77 1.0 +> frgba 86 192 214 1.0 +> frgba 205 94 153 1.0 +> frgba 137 191 52 1.0 +> frgba 235 145 1 1.0 +> V.empty)
+                      , ball: wrap $ frgba 187 139 201 1.0
                       }
                     )
             )

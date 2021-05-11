@@ -74,7 +74,7 @@ data StartAt
   | Instrumental1
 
 startAt :: StartAt
-startAt = if config.env == "production" then PreFirstVideo else Instrumental0
+startAt = if config.env == "production" then PreFirstVideo else Instrumental1
 
 startWithBlackBackground ::
   forall audio engine m.

@@ -43,7 +43,7 @@ touching pt pb ln = go
       if view lenz pb pt then over lenz not ln else go b
 
 boxify :: Number -> Number -> Number -> Int -> Point -> Boolean
-boxify bh ew eh i' pt = isRectangleTouched (Just pt) { x: (1.0 + (3.0 * i)) * ew, y: bh, width: ew, height: eh }
+boxify bh ew eh i' pt = isRectangleTouched (Just pt) { x: (1.0 + (3.0 * i)) * ew / 2.0, y: bh, width: ew, height: eh }
   where
   i = toNumber i'
 
