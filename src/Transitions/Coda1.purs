@@ -49,7 +49,7 @@ doCoda1 =
 
                   beforeTag = e.time - acc.videoSpan.start < elevenAndAHalfBeats
 
-                  rs = acc.rectangleSamba { time: e.time, value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen }
+                  rs = acc.codaSamba { time: e.time, value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen }
 
                   videoAndWindows = if beforeTag then fold (head rs) else finalDot e.world.canvas
                 ivoid
@@ -58,7 +58,7 @@ doCoda1 =
                 changes unit
                   $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
-                      , rectangleSamba = tail rs
+                      , codaSamba = tail rs
                       }
         else
           Left

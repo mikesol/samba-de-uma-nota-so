@@ -3,7 +3,7 @@ module SambaDeUmaNotaSo.Piece where
 import Prelude
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import Data.Typelevel.Num (d3, d5)
+import Data.Typelevel.Num (d3, d4, d5)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import SambaDeUmaNotaSo.Config (config)
@@ -17,6 +17,8 @@ import SambaDeUmaNotaSo.Instrumental1Paintings (instrumental1Painting)
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
+import SambaDeUmaNotaSo.Loops.Coda0 (coda0Create)
+import SambaDeUmaNotaSo.Loops.Coda1 (coda1Create)
 import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
@@ -34,6 +36,8 @@ import SambaDeUmaNotaSo.ToInstrumentalWedges (instrumentalAnimation)
 import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo, dotInteractions)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
+import SambaDeUmaNotaSo.Transitions.Coda0 (codaSamba, doCoda0)
+import SambaDeUmaNotaSo.Transitions.Coda1 (doCoda1)
 import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
@@ -72,9 +76,11 @@ data StartAt
   | ToInstrumental
   | Instrumental0
   | Instrumental1
+  | Coda0
+  | Coda1
 
 startAt :: StartAt
-startAt = if config.env == "production" then PreFirstVideo else Instrumental1
+startAt = if config.env == "production" then PreFirstVideo else Coda0
 
 startWithBlackBackground ::
   forall audio engine m.
@@ -281,3 +287,27 @@ piece = case startAt of
             , mostRecentWindowInteraction: V.fill (const Nothing)
             }
         @|> doInstrumental1
+  Coda0 ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        coda0Create
+          $> { mostRecentWindowInteraction: V.fill (const Nothing)
+            , interpretVideo: interpretVideo d4 videoSpan -- d4 choisi au pif...
+            , videoSpan: videoSpan
+            }
+        @|> doCoda0
+  Coda1 ->
+    let
+      videoSpan = { start: 0.0, end: fourMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        coda1Create
+          $> { mostRecentWindowInteraction: V.fill (const Nothing)
+            , videoSpan: videoSpan
+            , codaSamba: codaSamba videoSpan.start
+            }
+        @|> doCoda1

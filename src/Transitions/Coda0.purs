@@ -26,8 +26,8 @@ import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
-rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
-rectangleSamba startsAt =
+codaSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
+codaSamba startsAt =
   nonEmptyToCofree (Just (const (V.fill (const mempty))))
     ( (pos (beats 1.0) /\ go d0)
         :| ( (pos (beats 1.5) /\ go d1)
@@ -95,5 +95,5 @@ doCoda0 =
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                   , videoSpan: videoSpan
-                  , rectangleSamba: rectangleSamba videoSpan.start
+                  , codaSamba: codaSamba videoSpan.start
                   }

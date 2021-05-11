@@ -10,5 +10,5 @@ import SambaDeUmaNotaSo.Util (NonEmptyToCofree)
 type Accumulator
   = { mostRecentWindowInteraction :: Windows (Maybe Number)
     , videoSpan :: VideoSpan
-    , rectangleSamba :: NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
+    , codaSamba :: NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
     }
