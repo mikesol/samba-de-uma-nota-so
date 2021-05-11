@@ -10,7 +10,7 @@ import SambaDeUmaNotaSo.Config (config)
 import SambaDeUmaNotaSo.Constants (eightMeasures, fourMeasures, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
 import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SceneSig, SambaRes)
-import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
+import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, interpretVideoNoDim, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..))
 import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
 import SambaDeUmaNotaSo.Instrumental1Paintings (instrumental1Painting)
@@ -295,7 +295,7 @@ piece = case startAt of
         startWithBlackBackground
         coda0Create
           $> { mostRecentWindowInteraction: V.fill (const Nothing)
-            , interpretVideo: interpretVideo d4 videoSpan -- d4 choisi au pif...
+            , interpretVideo: interpretVideoNoDim d4 videoSpan -- d4 choisi au pif...
             , videoSpan: videoSpan
             }
         @|> doCoda0

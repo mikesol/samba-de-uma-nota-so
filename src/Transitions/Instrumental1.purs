@@ -19,7 +19,7 @@ import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWin
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Instrumental1 (Instrumental1)
 import SambaDeUmaNotaSo.IO.Instrumental1 as IO
-import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo)
+import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideoNoDim)
 import SambaDeUmaNotaSo.Loops.Coda0 (coda0Patch)
 import SambaDeUmaNotaSo.Transitions.Coda0 (doCoda0)
 import SambaDeUmaNotaSo.Util (isRectangleTouched)
@@ -160,6 +160,6 @@ doInstrumental1 =
                 coda0Patch pr
                 withProof pr
                   { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , interpretVideo: interpretVideo d4 videoSpan -- d4 choisi au pif...
+                  , interpretVideo: interpretVideoNoDim d4 videoSpan -- d4 choisi au pif...
                   , videoSpan: videoSpan
                   }
