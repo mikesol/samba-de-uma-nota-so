@@ -21,7 +21,7 @@ import Record (set)
 import Record as R
 import SambaDeUmaNotaSo.Constants (beats)
 import SambaDeUmaNotaSo.IO.Instrumental1 (Ctxt, Ctxt', FauxColor, Instrumental1, mapInstrumental1)
-import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofreeFull)
+import SambaDeUmaNotaSo.Util (NonEmptyToCofree, calcSlope, nonEmptyToCofreeFull)
 import Test.QuickCheck (class Arbitrary, arbitrary, mkSeed)
 import Test.QuickCheck.Gen (Gen, chooseInt, evalGen)
 import Type.Proxy (Proxy(..))
@@ -47,17 +47,23 @@ instance mixNumber :: Mix Number where
 instance mixInt :: Mix Int where
   mix v i0 i1 = round $ (mix v (toNumber i0) (toNumber i1))
 
+b24 = beats 24.0 :: Number
+
+b32 = beats 32.0 :: Number
+
+fade :: FauxColor -> IPContext FauxColor
+fade fc = do
+  { timePassed } <- ask
+  pure (fc { a = if timePassed < b24 then 1.0 else calcSlope b24 1.0 b32 0.0 timePassed })
+
 idleActive :: (forall n. Instrumental1 n -> n) -> IPContext (Shape -> Painting)
 idleActive l = do
   { onOff, colors } <- ask
-  let
-    oo = l onOff
-
-    fc = l colors
+  fadedFC <- fade (l colors)
   pure
-    $ case oo of
-        false -> outlined (outlineColor (toRGBA fc) <> lineWidth 5.0)
-        true -> filled (fillColor (toRGBA fc))
+    $ case l onOff of
+        false -> outlined (outlineColor (toRGBA fadedFC) <> lineWidth 5.0)
+        true -> filled (fillColor (toRGBA fadedFC))
 
 toRGBA :: FauxColor -> Color
 toRGBA { r, g, b, a } = rgba r g b a
@@ -106,6 +112,7 @@ i0p startsAt colors ballPos { time, value } =
         { time
         , colors
         , startsAt
+        , timePassed: time - startsAt
         , ballPos
         }
     )

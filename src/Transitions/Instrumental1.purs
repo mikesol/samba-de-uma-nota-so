@@ -3,6 +3,7 @@ module SambaDeUmaNotaSo.Transitions.Instrumental1 where
 import Prelude
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
+import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Int (toNumber)
 import Data.Lens (ALens', Lens', cloneLens, lens, over, view)
@@ -13,11 +14,14 @@ import Data.Typelevel.Num (class Lt, class Nat, D5, d0, d1, d2, d3, d4)
 import Data.Vec as V
 import Graphics.Painting (Point)
 import SambaDeUmaNotaSo.Chemin (Instrumental1Universe)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
+import SambaDeUmaNotaSo.Constants (fourMeasures)
+import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Instrumental1 (Instrumental1)
 import SambaDeUmaNotaSo.IO.Instrumental1 as IO
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo)
+import SambaDeUmaNotaSo.Loops.Coda0 (coda0Patch)
+import SambaDeUmaNotaSo.Transitions.Coda0 (doCoda0)
 import SambaDeUmaNotaSo.Util (isRectangleTouched)
 import Type.Proxy (Proxy(..))
 import WAGS.Change (changes)
@@ -90,24 +94,29 @@ doInstrumental1 =
     e <- modEnv
     pr <- proof
     let
-      ctxt =
-        withAugmentedEnv
-          { canvas: e.world.canvas
-          , interaction: if e.active then asTouch e.trigger else Nothing
-          , time: e.time
-          }
+      interaction = if e.active then asTouch e.trigger else Nothing
     withProof pr
       $ if (acc.videoSpan.end > e.time) then
           Right
             $ WAGS.do
                 let
-                  interaction = if e.active then asTouch e.trigger else Nothing
-
                   onOff =
                     maybe
                       acc.onOff
                       (\pt -> touchMap pt e.world.canvas acc.onOff)
                       interaction
+
+                  ctxt =
+                    withFirstPartEnv acc.mostRecentWindowInteraction
+                      $ withAugmentedEnv
+                          { canvas: e.world.canvas
+                          -- if we've consumed the interaction above, we do not
+                          -- consume it here
+                          , interaction: if onOff == acc.onOff then interaction else Nothing
+                          , time: e.time
+                          }
+
+                  visualCtxt = withWindowOnScreen ctxt
 
                   instruments' =
                     acc.instruments
@@ -126,14 +135,31 @@ doInstrumental1 =
                   $ const
                       { painting:
                           ctxt.background
+                            <> fold visualCtxt.windowsOnScreen
                             <> head instruments'
                       }
                 changes unit
                   $> acc
                       { instruments = tail instruments'
                       , onOff = onOff
+                      , mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doCoda0 WAGS.do
+                let
+                  videoSpan = { start: e.time, end: e.time + fourMeasures }
+
+                  ctxt =
+                    withFirstPartEnv acc.mostRecentWindowInteraction
+                      $ withAugmentedEnv
+                          { canvas: e.world.canvas
+                          , interaction
+                          , time: e.time
+                          }
+                coda0Patch pr
+                withProof pr
+                  { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                  , interpretVideo: interpretVideo d4 videoSpan -- d4 choisi au pif...
+                  , videoSpan: videoSpan
+                  }

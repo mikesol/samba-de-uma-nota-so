@@ -159,8 +159,22 @@ type Instrumental1Universe cb
   = Instrumental0Universe cb
 
 ---------
-type EndGraph
+type Coda0Graph
   = Instrumental1Graph
 
-type EndUniverse cb
+type Coda0Universe cb
   = Instrumental1Universe cb
+
+---------
+type Coda1Graph
+  = Coda0Graph
+
+type Coda1Universe cb
+  = Coda0Universe cb
+
+---------
+type EndGraph
+  = Coda1Graph
+
+type EndUniverse cb
+  = Coda1Universe cb

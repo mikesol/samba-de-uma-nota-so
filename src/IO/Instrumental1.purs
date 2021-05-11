@@ -1,11 +1,12 @@
 module SambaDeUmaNotaSo.IO.Instrumental1 where
 
 import Prelude
+import Data.Maybe (Maybe)
 import Data.Typelevel.Num (D5)
 import Data.Vec as V
 import Graphics.Painting (Painting)
 import SambaDeUmaNotaSo.IO.InstrumentalShared as IS
-import SambaDeUmaNotaSo.Types (VideoSpan)
+import SambaDeUmaNotaSo.Types (VideoSpan, Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree)
 import Web.HTML.HTMLElement (DOMRect)
 
@@ -21,6 +22,7 @@ type Ctxt'
 type Ctxt
   = { time :: Number
     , startsAt :: Number
+    , timePassed :: Number
     , colors :: Instrumental1 FauxColor
     , ballPos :: Number
     | Ctxt'
@@ -41,4 +43,5 @@ type Accumulator
   = { videoSpan :: VideoSpan
     , onOff :: Instrumental1 Boolean
     , instruments :: NonEmptyToCofree { | Ctxt' } Painting
+    , mostRecentWindowInteraction :: Windows (Maybe Number)
     }

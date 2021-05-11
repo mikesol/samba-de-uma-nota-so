@@ -142,10 +142,12 @@ doInstrumental0 =
     e <- modEnv
     pr <- proof
     let
+      interaction = if e.active then asTouch e.trigger else Nothing
+
       ctxt =
         withAugmentedEnv
           { canvas: e.world.canvas
-          , interaction: if e.active then asTouch e.trigger else Nothing
+          , interaction
           , time: e.time
           }
     withProof pr
@@ -153,8 +155,6 @@ doInstrumental0 =
           Right
             $ WAGS.do
                 let
-                  interaction = if e.active then asTouch e.trigger else Nothing
-
                   activeZones =
                     maybe
                       acc.activeZones
@@ -196,5 +196,6 @@ doInstrumental0 =
                 withProof pr
                   { videoSpan
                   , onOff: startingOnOff
+                  , mostRecentWindowInteraction: V.fill (const Nothing)
                   , instruments: instrumental1Painting videoSpan.start
                   }

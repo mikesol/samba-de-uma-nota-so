@@ -278,5 +278,6 @@ piece = case startAt of
           $> { videoSpan
             , onOff: startingOnOff
             , instruments: instrumental1Painting 0.0
+            , mostRecentWindowInteraction: V.fill (const Nothing)
             }
         @|> doInstrumental1
