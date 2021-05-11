@@ -152,8 +152,15 @@ type Instrumental0Universe cb
   = ToInstrumentalUniverse cb
 
 ---------
-type EndGraph
+type Instrumental1Graph
   = Instrumental0Graph
 
-type EndUniverse cb
+type Instrumental1Universe cb
   = Instrumental0Universe cb
+
+---------
+type EndGraph
+  = Instrumental1Graph
+
+type EndUniverse cb
+  = Instrumental1Universe cb

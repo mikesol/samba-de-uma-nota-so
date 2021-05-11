@@ -13,6 +13,7 @@ import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SceneSig, SambaRes)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..))
 import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
+import SambaDeUmaNotaSo.Instrumental1Paintings (instrumental1Painting)
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoCreate)
@@ -21,6 +22,7 @@ import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoCreate)
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoCreate)
 import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Create)
+import SambaDeUmaNotaSo.Loops.Instrumental1 (instrumental1Create)
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (preFirstVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoCreate)
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoCreate)
@@ -36,7 +38,8 @@ import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo, quaseNada)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo, quantaGenteExiste)
-import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
+import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0, startingOnOff)
+import SambaDeUmaNotaSo.Transitions.Instrumental1 (doInstrumental1)
 import SambaDeUmaNotaSo.Transitions.PreFirstVideo (doPreFirstVideo)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
@@ -68,6 +71,7 @@ data StartAt
   | EighthVideo
   | ToInstrumental
   | Instrumental0
+  | Instrumental1
 
 startAt :: StartAt
 startAt = if config.env == "production" then PreFirstVideo else Instrumental0
@@ -264,3 +268,15 @@ piece = case startAt of
             , instruments: instrumental0Painting 0.0
             }
         @|> doInstrumental0
+  Instrumental1 ->
+    let
+      videoSpan = { start: 0.0, end: eightMeasures }
+    in
+      WAGS.do
+        startWithBlackBackground
+        instrumental1Create
+          $> { videoSpan
+            , onOff: startingOnOff
+            , instruments: instrumental1Painting 0.0
+            }
+        @|> doInstrumental1

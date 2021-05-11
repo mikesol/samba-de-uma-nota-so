@@ -15,12 +15,16 @@ import Data.Vec as V
 import Graphics.Painting (Point)
 import Math (pi)
 import SambaDeUmaNotaSo.Chemin (Instrumental0Universe)
+import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Instrumental0 (Instrumental0)
 import SambaDeUmaNotaSo.IO.Instrumental0 as IO
+import SambaDeUmaNotaSo.IO.Instrumental1 (Instrumental1)
 import SambaDeUmaNotaSo.Instrumental0Paintings (circleConst, ring0ConstHi, ring0ConstLo, ring1ConstHi, ring1ConstLo, someTranslations, wedgeConst)
-import SambaDeUmaNotaSo.Transitions.End (doEnd)
+import SambaDeUmaNotaSo.Instrumental1Paintings (instrumental1Painting)
+import SambaDeUmaNotaSo.Loops.Instrumental1 (instrumental1Patch)
+import SambaDeUmaNotaSo.Transitions.Instrumental1 (doInstrumental1)
 import SambaDeUmaNotaSo.Util (calcSlope, distance)
 import Type.Proxy (Proxy(..))
 import WAGS.Change (changes)
@@ -124,6 +128,12 @@ asdr n
   | n < 1.5 = calcSlope 0.4 0.2 1.5 0.0 n
   | otherwise = 0.0
 
+startingOnOff :: Instrumental1 Boolean
+startingOnOff =
+  { boxes: V.fill (const true)
+  , ball: true
+  }
+
 doInstrumental0 ::
   forall proof iu cb.
   StepSig (Instrumental0Universe cb) proof iu IO.Accumulator
@@ -179,5 +189,12 @@ doInstrumental0 =
                       }
         else
           Left
-            $ inSitu doEnd WAGS.do
-                withProof pr unit
+            $ inSitu doInstrumental1 WAGS.do
+                let
+                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
+                instrumental1Patch pr
+                withProof pr
+                  { videoSpan
+                  , onOff: startingOnOff
+                  , instruments: instrumental1Painting videoSpan.start
+                  }

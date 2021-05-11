@@ -1,31 +1,44 @@
 module SambaDeUmaNotaSo.IO.Instrumental1 where
 
 import Prelude
-import Data.List (List)
-import Data.Typelevel.Num (D7)
+import Data.Typelevel.Num (D5)
 import Data.Vec as V
-import Graphics.Painting (Painting, Point)
+import Graphics.Painting (Painting)
+import SambaDeUmaNotaSo.IO.InstrumentalShared as IS
 import SambaDeUmaNotaSo.Types (VideoSpan)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree)
 import Web.HTML.HTMLElement (DOMRect)
-import SambaDeUmaNotaSo.IO.InstrumentalShared as IS
 
 type Ctxt'
-  = IS.Ctxt' Instrumental1
+  = ( canvas :: DOMRect
+    , eighthW :: Number
+    , eighthH :: Number
+    , boxY :: Number
+    , mwh :: Number
+    , onOff :: Instrumental1 Boolean
+    )
 
 type Ctxt
-  = IS.Ctxt Instrumental1
+  = { time :: Number
+    , startsAt :: Number
+    , colors :: Instrumental1 FauxColor
+    , ballPos :: Number
+    | Ctxt'
+    }
 
 type FauxColor
   = IS.FauxColor
 
 type Instrumental1 a
-  = { boxes :: V.Vec D7 a
+  = { boxes :: V.Vec D5 a
     , ball :: a
     }
 
+mapInstrumental1 :: forall a b. (a -> b) -> Instrumental1 a -> Instrumental1 b
+mapInstrumental1 f { boxes, ball } = { boxes: map f boxes, ball: f ball }
+
 type Accumulator
   = { videoSpan :: VideoSpan
-    , activeZones :: Instrumental1 (List Number)
+    , onOff :: Instrumental1 Boolean
     , instruments :: NonEmptyToCofree { | Ctxt' } Painting
     }

@@ -11,10 +11,24 @@ import Web.HTML.HTMLElement (DOMRect)
 import SambaDeUmaNotaSo.IO.InstrumentalShared as IS
 
 type Ctxt'
-  = IS.Ctxt' Instrumental0
+  = ( canvas :: DOMRect
+    , halfW :: Number
+    , halfH :: Number
+    , mwh :: Number
+    , startsAt :: Number
+    , asdr :: Number -> Number
+    , translations :: Instrumental0 Point
+    , activeZones :: Instrumental0 (List Number)
+    )
 
 type Ctxt
-  = IS.Ctxt Instrumental0
+  = { time :: Number
+    , timeDiff :: Number
+    , timeDiffQuantizedToHalfBeat :: Number
+    , colors :: Instrumental0 FauxColor
+    , startsAt :: Number
+    | Ctxt'
+    }
 
 type FauxColor
   = IS.FauxColor
