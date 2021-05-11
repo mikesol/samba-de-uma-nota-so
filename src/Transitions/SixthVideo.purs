@@ -137,7 +137,7 @@ dotMover startsAt =
     DOMRect ->
     Maybe Point -> { isTouched :: Boolean, dot :: Painting, touchedDot :: TouchedDot }
   go i td dr pt =
-    { isTouched: maybe false (\p -> sqrt (((xp - p.x) `pow` 2.0) + ((yp - p.y) `pow` 2.0)) < (crad * 1.4)) pt
+    { isTouched: maybe false (\p -> sqrt (((xp - p.x) `pow` 2.0) + ((yp - p.y) `pow` 2.0)) < (mindim / 2.0)) pt -- generous margin of error (half the screen) as the dot is quite fast
     , dot:
         filled
           (fillColor (i2c i))

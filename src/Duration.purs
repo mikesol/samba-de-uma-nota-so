@@ -39,4 +39,4 @@ postBridgeEnds t = sectionLength
   adjustmentIfTooClose = if sectionLengthWithoutAdjustment < (2.0 * beat) then fourMeasures else 0.0
 
   -- Full section length
-  sectionLength = sectionLengthWithoutAdjustment + adjustmentIfTooClose
+  sectionLength = endsAtWithoutAdjustment + adjustmentIfTooClose

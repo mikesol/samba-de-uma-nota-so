@@ -9,7 +9,7 @@ import Data.Functor.Indexed (ivoid)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Vec as V
-import Graphics.Painting (Painting, circle, fillColor, filled, rectangle)
+import Graphics.Painting (Painting, circle, fillColor, filled)
 import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
@@ -20,8 +20,8 @@ import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
 import SambaDeUmaNotaSo.IO.ToInstrumental as IO
 import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
 import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Patch)
+import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)
 import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
-import SambaDeUmaNotaSo.Util (scaleUnitPoint)
 import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
@@ -40,13 +40,6 @@ makeDot dr td =
   { x, y } = td2pt td
 
   mwh = min dr.width dr.height
-
-eighthVideoFrame :: TouchedDot -> DOMRect -> Painting
-eighthVideoFrame td dr = filled (fillColor (rgb 255 255 255)) (rectangle pt.x pt.y (dr.width * 0.25) (dr.height * 0.25))
-  where
-  ptShifted = (td2pt td)
-
-  pt = scaleUnitPoint { x: ptShifted.x - 0.125, y: ptShifted.y - 0.125 } dr
 
 frameToPainting :: DOMRect -> (forall n. V.Vec n HarmonyInfo -> Painting)
 frameToPainting canvas = fold <<< map (flip eighthVideoFrame canvas <<< _.td)
@@ -100,8 +93,8 @@ doToInstrumental =
                   $ const
                       { painting:
                           ctxt.background
-                            <> eighthVideoFrame acc.mainVideo e.world.canvas
                             <> fold visualCtxt.windowsOnScreen
+                            <> eighthVideoFrame acc.mainVideo e.world.canvas
                             <> (foldMap (makeDot e.world.canvas) (harmonyToNext hdi))
                             <> (harmonyToVec (frameToPainting e.world.canvas) hdi)
                             <> head instrumentalAnimation'
