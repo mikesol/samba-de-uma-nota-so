@@ -80,7 +80,7 @@ data StartAt
   | Coda1
 
 startAt :: StartAt
-startAt = if config.env == "production" then PreFirstVideo else SixthVideo
+startAt = if config.env == "production" then PreFirstVideo else PreFirstVideo
 
 startWithBlackBackground ::
   forall audio engine m.
