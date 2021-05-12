@@ -2,7 +2,7 @@ module SambaDeUmaNotaSo.Constants where
 
 import Prelude
 
-bpm = 160.0 :: Number
+bpm = 144.0 :: Number
 
 beat = 60.0 / bpm :: Number
 
