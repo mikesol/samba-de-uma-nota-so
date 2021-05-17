@@ -12,7 +12,7 @@ import Data.Tuple.Nested ((/\))
 import Data.Typelevel.Num (class Lt, class Nat, D16, d0, d1, d10, d11, d12, d13, d14, d15, d2, d3, d4, d5, d6, d7, d8, d9)
 import Data.Vec as V
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (FifthVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (FifthVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen)
 import SambaDeUmaNotaSo.IO.FifthVideo as IO
@@ -20,7 +20,6 @@ import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoPatch)
 import SambaDeUmaNotaSo.SixthVideoTiles (tilesForPiece)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -68,8 +67,8 @@ quaseNada startsAt =
           (V.index tilesForPiece d)
 
 doFifthVideo ::
-  forall proof iu cb.
-  StepSig (FifthVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig FifthVideoGraph proof { | iu } IO.Accumulator
 doFifthVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -98,8 +97,8 @@ doFifthVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> videoAndWindows }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { quantaGenteExiste = tail rs
                       }
         else

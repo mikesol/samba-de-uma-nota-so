@@ -9,13 +9,12 @@ import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Graphics.Painting (Painting, circle, fillColor, filled)
-import SambaDeUmaNotaSo.Chemin (Coda1Universe)
+import SambaDeUmaNotaSo.Chemin (Coda1Graph)
 import SambaDeUmaNotaSo.Constants (elevenAndAHalfBeats)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Coda1 as IO
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import Web.HTML.HTMLElement (DOMRect)
@@ -26,8 +25,8 @@ finalDot canvas = dot
   dot = filled (fillColor (rgb 255 255 255)) (circle (canvas.width / 2.0) (canvas.height / 2.0) ((min canvas.width canvas.height) * 0.1))
 
 doCoda1 ::
-  forall proof iu cb.
-  StepSig (Coda1Universe cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig Coda1Graph proof { | iu } IO.Accumulator
 doCoda1 =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -55,8 +54,8 @@ doCoda1 =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> videoAndWindows }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , codaSamba = tail rs
                       }

@@ -6,21 +6,20 @@ import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Graphics.Canvas (Rectangle)
-import SambaDeUmaNotaSo.Chemin (SecondVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (SecondVideoGraph)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.SecondVideo as IO
 import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | We play the first video and then move onto the pre-second video.
 doSecondVideo ::
-  forall proof iu cb.
-  StepSig (SecondVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig SecondVideoGraph proof { | iu } IO.Accumulator
 doSecondVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -40,8 +39,8 @@ doSecondVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

@@ -15,9 +15,10 @@ import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, Point, circle, fillColor, filled, rectangle)
 import Math (pow, sqrt, (%))
-import SambaDeUmaNotaSo.Chemin (SixthVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (SixthVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..), td2pt)
 import SambaDeUmaNotaSo.IO.SixthVideo as IO
 import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoPatch)
@@ -26,10 +27,8 @@ import SambaDeUmaNotaSo.TileTypes (TileBuilder2)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
 
 deTodaAEscala :: Number -> NonEmptyToCofree DOMRect Painting
@@ -185,8 +184,8 @@ seventhVideoLoop startsAt =
         (rectangle rct.x rct.y rct.width rct.height)
 
 doSixthVideo ::
-  forall proof iu cb.
-  StepSig (SixthVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig SixthVideoGraph proof { | iu } IO.Accumulator
 doSixthVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -220,8 +219,8 @@ doSixthVideo =
                             <> tiles
                             <> middleFrame
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { quaseNada = tail rs
                       }
         else

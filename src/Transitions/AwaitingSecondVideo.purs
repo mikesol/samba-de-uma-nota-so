@@ -5,21 +5,20 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (AwaitingSecondVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (AwaitingSecondVideoGraph)
 import SambaDeUmaNotaSo.Duration (secondVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | We wait until there's an interaction with the second video's rectangle.
 doAwaitingSecondVideo ::
-  forall proof iu cb.
-  StepSig (AwaitingSecondVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig AwaitingSecondVideoGraph proof { | iu } IO.Accumulator
 doAwaitingSecondVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -39,8 +38,8 @@ doAwaitingSecondVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (withWindowOnScreen ctxt).windowsOnScreen) }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

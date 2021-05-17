@@ -13,7 +13,7 @@ import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (Coda0Universe)
+import SambaDeUmaNotaSo.Chemin (Coda0Graph)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -22,7 +22,6 @@ import SambaDeUmaNotaSo.Loops.Coda1 (coda1Patch)
 import SambaDeUmaNotaSo.Transitions.Coda1 (doCoda1)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
@@ -61,8 +60,8 @@ codaSamba startsAt =
       windowsOnScreen
 
 doCoda0 ::
-  forall proof iu cb.
-  StepSig (Coda0Universe cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig Coda0Graph proof { | iu } IO.Accumulator
 doCoda0 =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -82,8 +81,8 @@ doCoda0 =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

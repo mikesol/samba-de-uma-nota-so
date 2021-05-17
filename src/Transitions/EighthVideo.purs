@@ -5,7 +5,7 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (EighthVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (EighthVideoGraph)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -14,13 +14,12 @@ import SambaDeUmaNotaSo.Loops.ToInstrumental (toInstrumentalPatch)
 import SambaDeUmaNotaSo.ToInstrumentalWedges (instrumentalAnimation)
 import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)
 import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
 doEighthVideo ::
-  forall proof iu cb.
-  StepSig (EighthVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig EighthVideoGraph proof { | iu } IO.Accumulator
 doEighthVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -47,8 +46,8 @@ doEighthVideo =
                             <> fold visualCtxt.windowsOnScreen
                             <> eighthVideoFrame acc.mainVideo e.world.canvas
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
         else

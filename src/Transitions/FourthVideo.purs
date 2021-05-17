@@ -15,7 +15,7 @@ import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (FourthVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (FourthVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
@@ -24,7 +24,6 @@ import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -129,8 +128,8 @@ boomBoom time startsAt canvas = go
     | otherwise = mempty
 
 doFourthVideo ::
-  forall proof iu cb.
-  StepSig (FourthVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig FourthVideoGraph proof { | iu } IO.Accumulator
 doFourthVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -165,8 +164,8 @@ doFourthVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> videoAndWindows <> dotNow }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd
                       , rectangleSamba = tail rs

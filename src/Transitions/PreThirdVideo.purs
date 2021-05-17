@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (PreThirdVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (PreThirdVideoGraph)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Duration (thirdVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
@@ -15,14 +15,13 @@ import SambaDeUmaNotaSo.IO.PreThirdVideo as IO
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 doPreThirdVideo ::
-  forall proof iu cb.
-  StepSig (PreThirdVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig PreThirdVideoGraph proof { | iu } IO.Accumulator
 doPreThirdVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -57,8 +56,8 @@ doPreThirdVideo =
                             <> (fold visualCtxt.windowsOnScreen)
                             <> dotNow
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7IsWindowTouched = tail iwt
                       , b7WindowDims = tail wd

@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Typelevel.Num (class Lt, class Nat, D5, d0, d1, d2, d3, d4)
 import Data.Vec as V
 import Graphics.Painting (Point)
-import SambaDeUmaNotaSo.Chemin (Instrumental1Universe)
+import SambaDeUmaNotaSo.Chemin (Instrumental1Graph)
 import SambaDeUmaNotaSo.Constants (fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -24,7 +24,6 @@ import SambaDeUmaNotaSo.Loops.Coda0 (coda0Patch)
 import SambaDeUmaNotaSo.Transitions.Coda0 (doCoda0)
 import SambaDeUmaNotaSo.Util (isRectangleTouched)
 import Type.Proxy (Proxy(..))
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import Web.HTML.HTMLElement (DOMRect)
@@ -87,8 +86,8 @@ touchMap pt dr ln = go
   go = touching pt (sensor dr) ln lenses
 
 doInstrumental1 ::
-  forall proof iu cb.
-  StepSig (Instrumental1Universe cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig Instrumental1Graph proof {|iu} IO.Accumulator
 doInstrumental1 =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -138,8 +137,8 @@ doInstrumental1 =
                             <> fold visualCtxt.windowsOnScreen
                             <> head instruments'
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { instruments = tail instruments'
                       , onOff = onOff
                       , mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction

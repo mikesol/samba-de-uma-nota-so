@@ -3,15 +3,15 @@ module SambaDeUmaNotaSo.Transitions.End where
 import Prelude
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (EndUniverse)
+import SambaDeUmaNotaSo.Chemin (EndGraph)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import WAGS.Control.Functions (modifyRes, (@|>))
 import WAGS.Control.Qualified as WAGS
 
 doEnd ::
-  forall proof iu cb.
-  StepSig (EndUniverse cb) proof iu Unit
+  forall proof iu.
+  StepSig EndGraph proof { | iu } Unit
 doEnd s =
   ( WAGS.do
       s

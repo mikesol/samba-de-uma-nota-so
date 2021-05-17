@@ -14,19 +14,18 @@ import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (ThirdVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (ThirdVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.ThirdVideo as IO
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 rectangleSamba startsAt =
@@ -63,8 +62,8 @@ rectangleSamba startsAt =
       windowsOnScreen
 
 doThirdVideo ::
-  forall proof iu cb.
-  StepSig (ThirdVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig ThirdVideoGraph proof { | iu } IO.Accumulator
 doThirdVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -93,8 +92,8 @@ doThirdVideo =
                 ivoid
                   $ modifyRes
                   $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) <> dotNow }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd
                       }

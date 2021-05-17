@@ -14,7 +14,7 @@ import Data.Typelevel.Num (class Lt, class Nat, D12, d0, d1, d10, d11, d2, d3, d
 import Data.Vec as V
 import Graphics.Painting (Point)
 import Math (pi)
-import SambaDeUmaNotaSo.Chemin (Instrumental0Universe)
+import SambaDeUmaNotaSo.Chemin (Instrumental0Graph)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -27,7 +27,6 @@ import SambaDeUmaNotaSo.Loops.Instrumental1 (instrumental1Patch)
 import SambaDeUmaNotaSo.Transitions.Instrumental1 (doInstrumental1)
 import SambaDeUmaNotaSo.Util (calcSlope, distance)
 import Type.Proxy (Proxy(..))
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import Web.HTML.HTMLElement (DOMRect)
@@ -135,8 +134,8 @@ startingOnOff =
   }
 
 doInstrumental0 ::
-  forall proof iu cb.
-  StepSig (Instrumental0Universe cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig Instrumental0Graph proof { | iu } IO.Accumulator
 doInstrumental0 =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -182,8 +181,8 @@ doInstrumental0 =
                           ctxt.background
                             <> head instruments'
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { instruments = tail instruments'
                       , activeZones = activeZones
                       }

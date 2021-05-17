@@ -7,20 +7,19 @@ import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Graphics.Painting (fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (SeventhVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (SeventhVideoGraph)
 import SambaDeUmaNotaSo.Constants (twoMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withWindowDims)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.SeventhVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 doSeventhVideo ::
-  forall proof iu cb.
-  StepSig (SeventhVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig SeventhVideoGraph proof { | iu } IO.Accumulator
 doSeventhVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -73,8 +72,8 @@ doSeventhVideo =
                             <> (if halfway then mempty else dot)
                             <> tiles
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { deTodaAEscala = tail deTodaAEscala'
                       , dotMover = tail dotMover'
                       , seventhVideoLoop = tail seventhVideoLoop'

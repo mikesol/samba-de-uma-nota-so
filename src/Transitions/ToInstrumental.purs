@@ -10,7 +10,7 @@ import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Vec as V
 import Graphics.Painting (Painting, circle, fillColor, filled)
-import SambaDeUmaNotaSo.Chemin (ToInstrumentalUniverse)
+import SambaDeUmaNotaSo.Chemin (ToInstrumentalGraph)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -22,7 +22,6 @@ import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
 import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Patch)
 import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)
 import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import Web.HTML.HTMLElement (DOMRect)
@@ -54,8 +53,8 @@ startingActiveZones =
   }
 
 doToInstrumental ::
-  forall proof iu cb.
-  StepSig (ToInstrumentalUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig ToInstrumentalGraph proof {|iu} IO.Accumulator
 doToInstrumental =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -99,8 +98,8 @@ doToInstrumental =
                             <> (harmonyToVec (frameToPainting e.world.canvas) hdi)
                             <> head instrumentalAnimation'
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , instrumentalAnimation = tail instrumentalAnimation'
                       , dotInteractions = tail dotInteractions'

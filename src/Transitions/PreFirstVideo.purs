@@ -8,14 +8,13 @@ import Data.Int (floor)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Record as R
-import SambaDeUmaNotaSo.Chemin (PreFirstVideoUniverse)
+import SambaDeUmaNotaSo.Chemin (PreFirstVideoGraph)
 import SambaDeUmaNotaSo.Constants (jitterForMod)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreFirstVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoPatch)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
-import WAGS.Change (changes)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -23,8 +22,8 @@ import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 -- | For the first video, we wait for three interactions and then choose a random
 -- | rectangle that will house the first video.
 doPreFirstVideo ::
-  forall proof iu cb.
-  StepSig (PreFirstVideoUniverse cb) proof iu IO.Accumulator
+  forall proof iu.
+  StepSig PreFirstVideoGraph proof { | iu } IO.Accumulator
 doPreFirstVideo =
   branch \acc -> WAGS.do
     e <- modEnv
@@ -50,8 +49,8 @@ doPreFirstVideo =
                   $ const
                       { painting: visualCtxt.background <> fold visualCtxt.windowsOnScreen
                       }
-                changes unit
-                  $> acc
+                withProof pr
+                  $ acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0
                       , mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       }
