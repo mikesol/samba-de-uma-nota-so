@@ -1,17 +1,22 @@
 module Main where
 
 import Prelude
+
 import Color (rgb)
 import Control.Alt ((<|>))
 import Control.Comonad.Cofree (Cofree, mkCofree)
+import Control.Parallel (parallel, sequential)
 import Data.Compactable (compact)
 import Data.Foldable (for_, traverse_)
 import Data.Int (toNumber)
 import Data.List (List(..))
-import Data.Maybe (Maybe(..), isNothing)
+import Data.Maybe (Maybe(..), isJust, isNothing, maybe)
+import Data.Traversable (sequence)
+import Data.Tuple (Tuple(..), snd)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
+import Effect.Exception (throw)
 import Effect.Ref as Ref
 import FRP.Behavior (behavior)
 import FRP.Event (makeEvent, subscribe)
@@ -26,12 +31,16 @@ import Halogen.Aff (awaitBody, runHalogenAff)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.VDom.Driver (runUI)
+import Heterogeneous.Folding (hfoldlWithIndex)
 import Heterogeneous.Mapping (hmap)
 import SambaDeUmaNotaSo.Action (Action(..))
 import SambaDeUmaNotaSo.ClickPlayModal (clickPlay)
-import SambaDeUmaNotaSo.Piece (piece)
+import SambaDeUmaNotaSo.Config (config)
 import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..))
-import WAGS.Interpret (AudioContext, FFIAudio(..), close, context, defaultFFIAudio, makeUnitCache)
+import SambaDeUmaNotaSo.GetBuffers (GetBuffersFoldingWithIndex(..), GetBuffersFoldingWithIndexAcc)
+import SambaDeUmaNotaSo.LoadingModal (loading)
+import SambaDeUmaNotaSo.Piece (piece)
+import WAGS.Interpret (AudioContext, BrowserAudioBuffer, FFIAudio(..), context, defaultFFIAudio, makeUnitCache)
 import WAGS.Run (run)
 import Web.HTML as HTML
 import Web.HTML.HTMLElement (HTMLElement, getBoundingClientRect)
@@ -49,6 +58,8 @@ main =
 type State
   = { unsubscribeFromWAGS :: Effect Unit
     , audioCtx :: Maybe AudioContext
+    , playing :: Boolean
+    , buffers :: O.Object BrowserAudioBuffer
     , mouse :: Maybe Mouse
     , graph :: Maybe String
     , audioSrc :: Maybe String
@@ -71,13 +82,15 @@ initialState :: forall input. input -> State
 initialState _ =
   { unsubscribeFromWAGS: pure unit
   , audioCtx: Nothing
+  , buffers: O.empty
+  , playing: false
   , graph: Nothing
   , audioSrc: Nothing
   , mouse: Nothing
   }
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render { audioCtx } =
+render { audioCtx, playing } =
   HH.div [ HP.classes $ map ClassName [ "h-screen", "w-screen" ] ]
     [ HH.div
         [ HP.classes $ map ClassName [ "h-full", "w-full", "flex", "flex-col" ] ]
@@ -88,7 +101,8 @@ render { audioCtx } =
                 ]
             ]
         ]
-    , clickPlay { open: isNothing audioCtx }
+    , clickPlay { open: isJust audioCtx && not playing }
+    , loading { open: isNothing audioCtx }
     ]
 
 imageSources :: ImageSources
@@ -117,10 +131,16 @@ handleAction = case _ of
                   ctx2d <- getContext2D asCanvas'
                   bb <- getBoundingClientRect element
                   Painting.render ctx2d imageSources (filled (fillColor (rgb 0 0 0)) (rectangle 0.0 0.0 bb.width bb.height))
-    H.modify_ _ { mouse = Just mouse }
+    -- get the context
+    audioCtx <- H.liftEffect context
+    -- get the buffers
+    buffers <- H.liftAff $ map O.fromFoldable $ sequential $ sequence $ map parallel $ snd (hfoldlWithIndex GetBuffersFoldingWithIndex ((Tuple audioCtx []) :: GetBuffersFoldingWithIndexAcc) config.audioBuffers)
+    H.modify_ _ { mouse = Just mouse, audioCtx = Just audioCtx, buffers = buffers }
   StartAudio -> do
     handleAction StopAudio
-    { mouse } <- H.get
+    H.modify_   _   { playing = true  }
+    { mouse, audioCtx: audioCtx', buffers } <- H.get
+    audioCtx <- H.liftEffect $ maybe (throw "Audio context not set") pure audioCtx'
     H.getHTMLElementRef (H.RefLabel "myCanvas")
       >>= traverse_ \element -> do
           let
@@ -131,7 +151,7 @@ handleAction = case _ of
                     canvas <- getBoundingClientRect element
                     k $ aToB $ { canvas }
           for_ mouse \mouse' -> do
-            { unsubscribeFromWAGS, audioCtx } <-
+            { unsubscribeFromWAGS } <- do
               H.liftEffect do
                 let
                   mouseEvent =
@@ -139,10 +159,12 @@ handleAction = case _ of
                       ( map (hmap toNumber)
                           (compact (map _.pos $ withPosition mouse' down))
                       )
-                audioCtx <- H.liftEffect context
                 unitCache <- H.liftEffect makeUnitCache
                 let
-                  ffiAudio = defaultFFIAudio audioCtx unitCache
+                  ffiAudio =
+                    (defaultFFIAudio audioCtx unitCache)
+                      { buffers = buffers
+                      }
                 refId <- Ref.new Nothing
                 refPainting <- Ref.new Nothing
                 let
@@ -173,15 +195,14 @@ handleAction = case _ of
                         id <- Ref.read refId
                         w <- HTML.window
                         for_ id $ flip Window.cancelAnimationFrame w
-                  , audioCtx
                   }
             H.modify_
               _
                 { unsubscribeFromWAGS = unsubscribeFromWAGS
-                , audioCtx = Just audioCtx
                 }
   StopAudio -> do
-    { unsubscribeFromWAGS, audioCtx } <- H.get
-    H.liftEffect unsubscribeFromWAGS
-    for_ audioCtx (H.liftEffect <<< close)
-    H.modify_ _ { unsubscribeFromWAGS = pure unit, audioCtx = Nothing }
+    --{ unsubscribeFromWAGS, audioCtx } <- H.get
+    --H.liftEffect unsubscribeFromWAGS
+    --for_ audioCtx (H.liftEffect <<< close)
+    --H.modify_ _ { unsubscribeFromWAGS = pure unit, audioCtx = Nothing, playing = false }
+    pure unit

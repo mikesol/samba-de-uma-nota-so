@@ -1,3 +1,8 @@
 module SambaDeUmaNotaSo.Config where
 
-foreign import config :: { env :: String }
+import SambaDeUmaNotaSo.Buffers (Buffers)
+
+foreign import config ::
+  { env :: String
+  , audioBuffers :: Buffers String
+  }
