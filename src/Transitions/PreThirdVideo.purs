@@ -1,23 +1,24 @@
 module SambaDeUmaNotaSo.Transitions.PreThirdVideo where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (PreThirdVideoGraph)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Duration (thirdVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideoAsWindows)
 import SambaDeUmaNotaSo.IO.PreThirdVideo as IO
+import SambaDeUmaNotaSo.Loops.PreThirdVideo (PreThirdVideoGraph)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 doPreThirdVideo ::
   forall proof iu.

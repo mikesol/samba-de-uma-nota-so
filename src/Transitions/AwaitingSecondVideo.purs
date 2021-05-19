@@ -1,15 +1,16 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (AwaitingSecondVideoGraph)
 import SambaDeUmaNotaSo.Duration (secondVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
+import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (AwaitingSecondVideoGraph)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)

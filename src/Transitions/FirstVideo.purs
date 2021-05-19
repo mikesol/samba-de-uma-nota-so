@@ -1,18 +1,19 @@
 module SambaDeUmaNotaSo.Transitions.FirstVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (FirstVideoGraph)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.FirstVideo as IO
+import SambaDeUmaNotaSo.Loops.FirstVideo (FirstVideoGraph)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | We play the first video and then move onto the pre-second video.
 doFirstVideo ::

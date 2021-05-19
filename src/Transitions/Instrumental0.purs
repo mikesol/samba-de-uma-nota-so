@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.Instrumental0 where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Complex (Cartesian(..), angle)
 import Data.Either (Either(..))
@@ -14,7 +15,6 @@ import Data.Typelevel.Num (class Lt, class Nat, D12, d0, d1, d10, d11, d2, d3, d
 import Data.Vec as V
 import Graphics.Painting (Point)
 import Math (pi)
-import SambaDeUmaNotaSo.Chemin (Instrumental0Graph)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -23,6 +23,7 @@ import SambaDeUmaNotaSo.IO.Instrumental0 as IO
 import SambaDeUmaNotaSo.IO.Instrumental1 (Instrumental1)
 import SambaDeUmaNotaSo.Instrumental0Paintings (circleConst, ring0ConstHi, ring0ConstLo, ring1ConstHi, ring1ConstLo, someTranslations, wedgeConst)
 import SambaDeUmaNotaSo.Instrumental1Paintings (instrumental1Painting)
+import SambaDeUmaNotaSo.Loops.Instrumental0 (Instrumental0Graph)
 import SambaDeUmaNotaSo.Loops.Instrumental1 (instrumental1Patch)
 import SambaDeUmaNotaSo.Transitions.Instrumental1 (doInstrumental1)
 import SambaDeUmaNotaSo.Util (calcSlope, distance)

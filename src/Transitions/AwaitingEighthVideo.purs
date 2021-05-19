@@ -1,20 +1,19 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo where
 
 import Prelude
-
 import Control.Comonad.Cofree (head, tail, (:<))
 import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Typelevel.Num (d0)
 import Data.Vec as V
-import SambaDeUmaNotaSo.Chemin (AwaitingEighthVideoGraph)
 import SambaDeUmaNotaSo.Duration (postBridgeEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withWindowDims)
 import SambaDeUmaNotaSo.FrameSig (SambaTrigger(..), StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.AwaitingEighthVideo as IO
 import SambaDeUmaNotaSo.IO.EighthVideo (EighthVideoHarmony(..), DotInteractions, nextEVH)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2harmChain)
+import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (AwaitingEighthVideoGraph)
 import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -31,7 +30,7 @@ dotInteractions touchedDot = tail $ f (NoSingers (V.index hc d0))
 
 doAwaitingEighthVideo ::
   forall proof iu.
-  StepSig AwaitingEighthVideoGraph proof {|iu} IO.Accumulator
+  StepSig AwaitingEighthVideoGraph proof { | iu } IO.Accumulator
 doAwaitingEighthVideo =
   branch \acc -> WAGS.do
     e <- modEnv

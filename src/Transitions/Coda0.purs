@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.Coda0 where
 
 import Prelude
+
 import Color (rgb)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -13,11 +14,11 @@ import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (Coda0Graph)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Coda0 as IO
+import SambaDeUmaNotaSo.Loops.Coda0 (Coda0Graph)
 import SambaDeUmaNotaSo.Loops.Coda1 (coda1Patch)
 import SambaDeUmaNotaSo.Transitions.Coda1 (doCoda1)
 import SambaDeUmaNotaSo.Types (Windows)

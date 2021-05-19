@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.FifthVideo where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -12,17 +13,17 @@ import Data.Tuple.Nested ((/\))
 import Data.Typelevel.Num (class Lt, class Nat, D16, d0, d1, d10, d11, d12, d13, d14, d15, d2, d3, d4, d5, d6, d7, d8, d9)
 import Data.Vec as V
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (FifthVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.FifthVideo as IO
+import SambaDeUmaNotaSo.Loops.FifthVideo (FifthVideoGraph)
 import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoPatch)
 import SambaDeUmaNotaSo.SixthVideoTiles (tilesForPiece)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
 
 quaseNada :: Number -> NonEmptyToCofree DOMRect Painting

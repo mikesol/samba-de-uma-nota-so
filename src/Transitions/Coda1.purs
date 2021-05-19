@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.Coda1 where
 
 import Prelude
+
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
@@ -9,11 +10,11 @@ import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Graphics.Painting (Painting, circle, fillColor, filled)
-import SambaDeUmaNotaSo.Chemin (Coda1Graph)
 import SambaDeUmaNotaSo.Constants (elevenAndAHalfBeats)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Coda1 as IO
+import SambaDeUmaNotaSo.Loops.Coda1 (Coda1Graph)
 import SambaDeUmaNotaSo.Transitions.End (doEnd)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS

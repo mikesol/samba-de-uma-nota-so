@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.SixthVideo where
 
 import Prelude
+
 import Color (Color, rgb, rgba)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
@@ -15,13 +16,13 @@ import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, Point, circle, fillColor, filled, rectangle)
 import Math (pow, sqrt, (%))
-import SambaDeUmaNotaSo.Chemin (SixthVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..), td2pt)
 import SambaDeUmaNotaSo.IO.SixthVideo as IO
 import SambaDeUmaNotaSo.Loops.SeventhVideo (seventhVideoPatch)
+import SambaDeUmaNotaSo.Loops.SixthVideo (SixthVideoGraph)
 import SambaDeUmaNotaSo.SeventhVideoTiles (tiles7)
 import SambaDeUmaNotaSo.TileTypes (TileBuilder2)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)

@@ -1,11 +1,12 @@
 module SambaDeUmaNotaSo.Transitions.End where
 
 import Prelude
+
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (EndGraph)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
+import SambaDeUmaNotaSo.Loops.End (EndGraph)
 import WAGS.Control.Functions (modifyRes, (@|>))
 import WAGS.Control.Qualified as WAGS
 

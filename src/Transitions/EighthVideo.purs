@@ -1,15 +1,16 @@
 module SambaDeUmaNotaSo.Transitions.EighthVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (EighthVideoGraph)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.EighthVideo as IO
+import SambaDeUmaNotaSo.Loops.EighthVideo (EighthVideoGraph)
 import SambaDeUmaNotaSo.Loops.ToInstrumental (toInstrumentalPatch)
 import SambaDeUmaNotaSo.ToInstrumentalWedges (instrumentalAnimation)
 import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)

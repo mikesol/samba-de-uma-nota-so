@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.FourthVideo where
 
 import Prelude
+
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
@@ -15,18 +16,18 @@ import Data.Vec ((+>))
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (FourthVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
 import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoPatch)
+import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoGraph)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import Web.HTML.HTMLElement (DOMRect)
 
 colorPalette :: V.Vec D10 RGB

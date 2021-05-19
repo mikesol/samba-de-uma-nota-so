@@ -1,10 +1,13 @@
 module SambaDeUmaNotaSo.Loops.PreSecondVideo where
 
-import Prelude (unit)
 import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoCreate)
+import Prelude (unit)
+import SambaDeUmaNotaSo.Loops.FirstVideo (FirstVideoGraph, firstVideoCreate)
 import WAGS.Control.Functions (proof, withProof)
 import WAGS.Control.Qualified (bind)
+
+type PreSecondVideoGraph
+  = FirstVideoGraph
 
 preSecondVideoPatch pr = withProof pr unit
 

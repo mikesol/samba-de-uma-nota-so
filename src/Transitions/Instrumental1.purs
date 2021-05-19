@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.Instrumental1 where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -13,7 +14,6 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Typelevel.Num (class Lt, class Nat, D5, d0, d1, d2, d3, d4)
 import Data.Vec as V
 import Graphics.Painting (Point)
-import SambaDeUmaNotaSo.Chemin (Instrumental1Graph)
 import SambaDeUmaNotaSo.Constants (fourMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -21,6 +21,7 @@ import SambaDeUmaNotaSo.IO.Instrumental1 (Instrumental1)
 import SambaDeUmaNotaSo.IO.Instrumental1 as IO
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideoNoDim)
 import SambaDeUmaNotaSo.Loops.Coda0 (coda0Patch)
+import SambaDeUmaNotaSo.Loops.Instrumental1 (Instrumental1Graph)
 import SambaDeUmaNotaSo.Transitions.Coda0 (doCoda0)
 import SambaDeUmaNotaSo.Util (isRectangleTouched)
 import Type.Proxy (Proxy(..))

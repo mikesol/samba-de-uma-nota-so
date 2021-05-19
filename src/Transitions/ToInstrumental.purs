@@ -10,7 +10,6 @@ import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Vec as V
 import Graphics.Painting (Painting, circle, fillColor, filled)
-import SambaDeUmaNotaSo.Chemin (ToInstrumentalGraph)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -20,6 +19,7 @@ import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2pt)
 import SambaDeUmaNotaSo.IO.ToInstrumental as IO
 import SambaDeUmaNotaSo.Instrumental0Paintings (instrumental0Painting)
 import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Patch)
+import SambaDeUmaNotaSo.Loops.ToInstrumental (ToInstrumentalGraph)
 import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)
 import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
@@ -54,7 +54,7 @@ startingActiveZones =
 
 doToInstrumental ::
   forall proof iu.
-  StepSig ToInstrumentalGraph proof {|iu} IO.Accumulator
+  StepSig ToInstrumentalGraph proof { | iu } IO.Accumulator
 doToInstrumental =
   branch \acc -> WAGS.do
     e <- modEnv

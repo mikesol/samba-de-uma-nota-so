@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.PreFirstVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -8,16 +9,16 @@ import Data.Int (floor)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Record as R
-import SambaDeUmaNotaSo.Chemin (PreFirstVideoGraph)
 import SambaDeUmaNotaSo.Constants (jitterForMod)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.PreFirstVideo (interpretVideo, isVideoWindowTouched)
 import SambaDeUmaNotaSo.IO.PreFirstVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoPatch)
+import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoGraph)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | For the first video, we wait for three interactions and then choose a random
 -- | rectangle that will house the first video.

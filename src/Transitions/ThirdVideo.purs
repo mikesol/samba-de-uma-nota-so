@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.ThirdVideo where
 
 import Prelude
+
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
@@ -14,13 +15,13 @@ import Data.Typelevel.Num (class Lt, class Nat, D7, d0, d1, d2, d3, d4, d5, d6)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (ThirdVideoGraph)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.ThirdVideo as IO
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoPatch)
+import SambaDeUmaNotaSo.Loops.ThirdVideo (ThirdVideoGraph)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)

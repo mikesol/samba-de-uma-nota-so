@@ -1,18 +1,19 @@
 module SambaDeUmaNotaSo.Transitions.SeventhVideo where
 
 import Prelude
+
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
 import Graphics.Painting (fillColor, filled, rectangle)
-import SambaDeUmaNotaSo.Chemin (SeventhVideoGraph)
 import SambaDeUmaNotaSo.Constants (twoMeasures)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withWindowDims)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.SeventhVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoPatch)
+import SambaDeUmaNotaSo.Loops.SeventhVideo (SeventhVideoGraph)
 import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS

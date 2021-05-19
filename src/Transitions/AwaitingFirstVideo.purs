@@ -1,19 +1,20 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
 import Data.Maybe (Maybe(..))
-import SambaDeUmaNotaSo.Chemin (AwaitingFirstVideoGraph)
 import SambaDeUmaNotaSo.Duration (firstVocalEnds)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.AwaitingFirstVideo as IO
+import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (AwaitingFirstVideoGraph)
 import SambaDeUmaNotaSo.Loops.FirstVideo (firstVideoPatch)
 import SambaDeUmaNotaSo.Transitions.FirstVideo (doFirstVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
-import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 
 -- | We wait until there's an interaction with the first video's rectangle.
 doAwaitingFirstVideo ::
