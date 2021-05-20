@@ -19,6 +19,7 @@ import Graphics.Painting (Point)
 import Math (floor, pow, sqrt, (%))
 import SambaDeUmaNotaSo.Constants (beat, end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, sevenBeats, start, fiveBeats, fourBeats, oneBeat, sixBeats, threeBeats, twoBeats)
 import SambaDeUmaNotaSo.Types (RGB, Windows)
+import WAGS.Graph.Parameter (AudioParameter(..))
 import Web.HTML.HTMLElement (DOMRect)
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
@@ -193,3 +194,17 @@ distance p0 p1 = sqrt (((p0.x - p1.x) `pow` 2.0) + ((p0.y - p1.y) `pow` 2.0))
 
 scaleUnitPoint :: Point -> DOMRect -> Point
 scaleUnitPoint { x, y } { width, height } = { x: x * width, y: y * height }
+
+class MulAN a b where
+  mulAN :: a -> b -> AudioParameter
+
+instance mulANRAN :: MulAN AudioParameter Number where
+  mulAN (AudioParameter x@{ param }) n = AudioParameter (x { param = param * n })
+
+instance mulANRNA :: MulAN Number AudioParameter where
+  mulAN n (AudioParameter x@{ param }) = AudioParameter (x { param = param * n })
+
+infixr 5 mulAN as *!
+
+mm01 :: Number -> Number
+mm01 = min 1.0 <<< max 0.0

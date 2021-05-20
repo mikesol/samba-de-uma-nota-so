@@ -9,6 +9,7 @@ import Data.Int (floor)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Typelevel.Num (d0, d1, d2, d3, d4, d5, d6)
 import Record as R
+import SambaDeUmaNotaSo.Changes.PreFirstVideo (changesPreFirstVideo)
 import SambaDeUmaNotaSo.Constants (jitterForMod)
 import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
@@ -50,6 +51,7 @@ doPreFirstVideo =
                   $ const
                       { painting: visualCtxt.background <> fold visualCtxt.windowsOnScreen
                       }
+                changesPreFirstVideo
                 withProof pr
                   $ acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0
