@@ -11,8 +11,8 @@ quaverASR0Decay = 0.14 :: Number
 
 quaverASR0Low = 0.27 :: Number
 
-quaverASR0 :: Number -> Number -> AudioParameter
-quaverASR0 time headroom
+quaverASR0 :: { headroom :: Number, time :: Number } -> AudioParameter
+quaverASR0 { headroom, time }
   | time < quaverASR0Attack =
     if time + headroom >= quaverASR0Attack then
       AudioParameter
