@@ -35,7 +35,7 @@ type SceneSig proof
       Thunkable
       SambaRes
 
-type StepSig step proof iu a
+type FrameSig step proof iu a
   = FrameT
       (SceneI SambaTrigger SambaWorld)
       FFIAudio
@@ -45,5 +45,7 @@ type StepSig step proof iu a
       SambaRes
       iu
       step
-      a ->
-    SceneSig proof
+      a
+
+type StepSig step proof iu a
+  = FrameSig step proof iu a -> SceneSig proof

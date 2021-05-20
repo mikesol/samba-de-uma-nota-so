@@ -4,8 +4,9 @@ import Prelude
 import Data.Tuple.Nested (type (/\))
 import Type.Row (type (+))
 import WAGS.Create (create)
-import WAGS.Graph.AudioUnit (TConstant, TGain, THighpass, TLoopBuf, TSpeaker, TStereoPanner)
-import WAGS.Graph.Optionals (constant, gain, highpass, loopBuf, pan, speaker)
+import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import WAGS.Graph.AudioUnit (TGain, THighpass, TLoopBuf, TSpeaker, TStereoPanner)
+import WAGS.Graph.Optionals (gain, highpass, loopBuf, pan, speaker)
 
 -- chiffyE1, chiffyE2, chiffyE3, chiffyE4, chiffyE5 all pure sounding
 -- digistensuE2, digistensuE3, digistensuE4, digistensuE5 all morph. interesting to interrupt them.
@@ -258,8 +259,8 @@ type PreFirstVideoGraph
     | AllBuffers ()
     }
 
-  
 
+preFirstVideoCreate :: forall proof. FrameSig PreFirstVideoGraph proof {} Unit
 preFirstVideoCreate = create $ speaker
     { mix:
         gain 1.0
