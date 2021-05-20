@@ -47,7 +47,7 @@ import Web.HTML.HTMLElement (HTMLElement, getBoundingClientRect)
 import Web.HTML.Window as Window
 
 easingAlgorithm :: Cofree ((->) Int) Int
-easingAlgorithm = let fOf initialTime = mkCofree initialTime \adj -> fOf $ max 10 (initialTime - adj) in fOf 20
+easingAlgorithm = let fOf initialTime = mkCofree initialTime \adj -> fOf $ max 20 (initialTime - adj) in fOf 20
 
 main :: Effect Unit
 main =

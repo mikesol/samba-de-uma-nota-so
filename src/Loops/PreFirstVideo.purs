@@ -248,10 +248,10 @@ type VsMagicE4 r
     )
 
 type AllBuffers r
-  = ChiffyE1 + r --ChiffyE5 + DigistensuE5 + MtDillJabsE4 + ShamisenE5 + TinefullE2 + VsMagicE1 + VsMagicE5 + ChiffyE2 + DigistensuE2 + DigistensuE6 + MtDillJabsE5 + ShamisenE6 + TinefullE3 + VsMagicE2 + ChiffyE3 + DigistensuE3 + JarbleIctusE3 + ShamisenE3 + TinefullE0 + TinefullE4 + VsMagicE3 + ChiffyE4 + DigistensuE4 + MtDillJabsE3 + ShamisenE4 + TinefullE1 + TinefullE5 + VsMagicE4 + r
+  = ChiffyE1 + ChiffyE5 + DigistensuE5 + MtDillJabsE4 + ShamisenE5 + TinefullE2 + VsMagicE1 + VsMagicE5 + ChiffyE2 + DigistensuE2 + DigistensuE6 + MtDillJabsE5 + ShamisenE6 + TinefullE3 + VsMagicE2 + ChiffyE3 + DigistensuE3 + JarbleIctusE3 + ShamisenE3 + TinefullE0 + TinefullE4 + VsMagicE3 + ChiffyE4 + DigistensuE4 + MtDillJabsE3 + ShamisenE4 + TinefullE1 + TinefullE5 + VsMagicE4 + r
 
 type GainBus
-  = { chiffyE1Gain :: Unit}--, chiffyE5Gain :: Unit, digistensuE5Gain :: Unit, mtDillJabsE4Gain :: Unit, shamisenE5Gain :: Unit, tinefullE2Gain :: Unit, vsMagicE1Gain :: Unit, vsMagicE5Gain :: Unit, chiffyE2Gain :: Unit, digistensuE2Gain :: Unit, digistensuE6Gain :: Unit, mtDillJabsE5Gain :: Unit, shamisenE6Gain :: Unit, tinefullE3Gain :: Unit, vsMagicE2Gain :: Unit, chiffyE3Gain :: Unit, digistensuE3Gain :: Unit, jarbleIctusE3Gain :: Unit, shamisenE3Gain :: Unit, tinefullE0Gain :: Unit, tinefullE4Gain :: Unit, vsMagicE3Gain :: Unit, chiffyE4Gain :: Unit, digistensuE4Gain :: Unit, mtDillJabsE3Gain :: Unit, shamisenE4Gain :: Unit, tinefullE1Gain :: Unit, tinefullE5Gain :: Unit, vsMagicE4Gain :: Unit }
+  = { chiffyE1Gain :: Unit, chiffyE5Gain :: Unit, digistensuE5Gain :: Unit, mtDillJabsE4Gain :: Unit, shamisenE5Gain :: Unit, tinefullE2Gain :: Unit, vsMagicE1Gain :: Unit, vsMagicE5Gain :: Unit, chiffyE2Gain :: Unit, digistensuE2Gain :: Unit, digistensuE6Gain :: Unit, mtDillJabsE5Gain :: Unit, shamisenE6Gain :: Unit, tinefullE3Gain :: Unit, vsMagicE2Gain :: Unit, chiffyE3Gain :: Unit, digistensuE3Gain :: Unit, jarbleIctusE3Gain :: Unit, shamisenE3Gain :: Unit, tinefullE0Gain :: Unit, tinefullE4Gain :: Unit, vsMagicE3Gain :: Unit, chiffyE4Gain :: Unit, digistensuE4Gain :: Unit, mtDillJabsE3Gain :: Unit, shamisenE4Gain :: Unit, tinefullE1Gain :: Unit, tinefullE5Gain :: Unit, vsMagicE4Gain :: Unit }
 
 type PreFirstVideoGraph
   = { speaker :: TSpeaker /\ { mix :: Unit }
@@ -265,7 +265,7 @@ preFirstVideoCreate = create $ speaker
     { mix:
         gain 1.0
           { chiffyE1Gain: gain 0.0 { chiffyE1Pan: pan 0.0 { chiffyE1HPF: highpass 20.0 { chiffyE1Buf: loopBuf { playbackRate: 1.0 } "chiffyE1" } } }
-          {-, chiffyE5Gain: gain 0.0 { chiffyE5Pan: pan 0.0 { chiffyE5HPF: highpass 20.0 { chiffyE5Buf: loopBuf { playbackRate: 1.0 } "chiffyE5" } } }
+          , chiffyE5Gain: gain 0.0 { chiffyE5Pan: pan 0.0 { chiffyE5HPF: highpass 20.0 { chiffyE5Buf: loopBuf { playbackRate: 1.0 } "chiffyE5" } } }
           , digistensuE5Gain: gain 0.0 { digistensuE5Pan: pan 0.0 { digistensuE5HPF: highpass 20.0 { digistensuE5Buf: loopBuf { playbackRate: 1.0 } "digistensuE5" } } }
           , mtDillJabsE4Gain: gain 0.0 { mtDillJabsE4Pan: pan 0.0 { mtDillJabsE4HPF: highpass 20.0 { mtDillJabsE4Buf: loopBuf { playbackRate: 1.0 } "mtDillJabsE4" } } }
           , shamisenE5Gain: gain 0.0 { shamisenE5Pan: pan 0.0 { shamisenE5HPF: highpass 20.0 { shamisenE5Buf: loopBuf { playbackRate: 1.0 } "shamisenE5" } } }
@@ -292,6 +292,6 @@ preFirstVideoCreate = create $ speaker
           , shamisenE4Gain: gain 0.0 { shamisenE4Pan: pan 0.0 { shamisenE4HPF: highpass 20.0 { shamisenE4Buf: loopBuf { playbackRate: 1.0 } "shamisenE4" } } }
           , tinefullE1Gain: gain 0.0 { tinefullE1Pan: pan 0.0 { tinefullE1HPF: highpass 20.0 { tinefullE1Buf: loopBuf { playbackRate: 1.0 } "tinefullE1" } } }
           , tinefullE5Gain: gain 0.0 { tinefullE5Pan: pan 0.0 { tinefullE5HPF: highpass 20.0 { tinefullE5Buf: loopBuf { playbackRate: 1.0 } "tinefullE5" } } }
-          , vsMagicE4Gain: gain 0.0 { vsMagicE4Pan: pan 0.0 { vsMagicE4HPF: highpass 20.0 { vsMagicE4Buf: loopBuf { playbackRate: 1.0 } "vsMagicE4" } } }-}
+          , vsMagicE4Gain: gain 0.0 { vsMagicE4Pan: pan 0.0 { vsMagicE4HPF: highpass 20.0 { vsMagicE4Buf: loopBuf { playbackRate: 1.0 } "vsMagicE4" } } }
           }
     }

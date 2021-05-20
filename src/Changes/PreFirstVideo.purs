@@ -28,7 +28,7 @@ changesPreFirstVideo = WAGS.do
       | otherwise ->
         ivoid
           $ change
-              { chiffyE1Gain:
+              { chiffyE3Gain:
                   gain_
                     ( quaverASR0 { headroom: toNumber e.headroom / 1000.0, time: modHalf }
                         *! (mm01 $ calcSlopeExp fourBeats 1.0 (fourBeats * 4.0) 0.0 3.0 e.time)
