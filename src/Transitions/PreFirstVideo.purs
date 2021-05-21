@@ -50,7 +50,7 @@ doPreFirstVideo =
                   $ const
                       { painting: visualCtxt.background <> fold visualCtxt.windowsOnScreen
                       }
-                if (not acc.didGestureTest) then changesPreFirstVideo else ( withProof pr unit)
+                if (not acc.didGestureTest) then changesPreFirstVideo else (withProof pr unit)
                 withProof pr
                   $ acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0
