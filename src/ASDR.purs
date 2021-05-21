@@ -5,11 +5,11 @@ import SambaDeUmaNotaSo.Instrumental0Paintings (halfBeat)
 import SambaDeUmaNotaSo.Util (calcSlope)
 import WAGS.Graph.Parameter (AudioParameter(..), defaultParam, param)
 
-quaverASR0Attack = 0.07 :: Number
+quaverASR0Attack = 0.05 :: Number
 
-quaverASR0Decay = 0.14 :: Number
+quaverASR0Decay = 0.10 :: Number
 
-quaverASR0Low = 0.27 :: Number
+quaverASR0Low = 0.17 :: Number
 
 quaverASR0 :: { headroom :: Number, time :: Number } -> AudioParameter
 quaverASR0 { headroom, time }
