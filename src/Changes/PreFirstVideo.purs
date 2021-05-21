@@ -16,6 +16,8 @@ import WAGS.Control.Functions (proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Graph.Optionals (gain_)
 
+beatMap = [ 0.0, 0.0 ]
+
 changesPreFirstVideo :: forall proof. FrameSig PreFirstVideoGraph proof PreFirstVideoGraph Unit
 changesPreFirstVideo = WAGS.do
   e <- modEnv
