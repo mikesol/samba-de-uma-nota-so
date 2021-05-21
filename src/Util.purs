@@ -19,7 +19,7 @@ import Graphics.Painting (Point)
 import Math (floor, pow, sqrt, (%))
 import SambaDeUmaNotaSo.Constants (beat, end, ptBottom0, ptLeft0, ptLeft1, ptRight0, ptTop0, ptTop1, sevenBeats, start, fiveBeats, fourBeats, oneBeat, sixBeats, threeBeats, twoBeats)
 import SambaDeUmaNotaSo.Types (RGB, Windows)
-import WAGS.Graph.Parameter (AudioParameter(..))
+import WAGS.Graph.Parameter (AudioParameter_(..), AudioParameter)
 import Web.HTML.HTMLElement (DOMRect)
 
 calcSlope :: Number -> Number -> Number -> Number -> Number -> Number
@@ -199,10 +199,10 @@ class MulAN a b where
   mulAN :: a -> b -> AudioParameter
 
 instance mulANRAN :: MulAN AudioParameter Number where
-  mulAN (AudioParameter x@{ param }) n = AudioParameter (x { param = param * n })
+  mulAN (AudioParameter x@{ param }) n = AudioParameter (x { param = mul n <$> param  })
 
 instance mulANRNA :: MulAN Number AudioParameter where
-  mulAN n (AudioParameter x@{ param }) = AudioParameter (x { param = param * n })
+  mulAN n (AudioParameter x@{ param }) = AudioParameter (x { param = mul n <$> param })
 
 infixr 5 mulAN as *!
 
