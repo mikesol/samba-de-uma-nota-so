@@ -71,4 +71,5 @@ type InterpretVideoSig
 type Accumulator
   = { nTouchesSoFar :: Int
     , mostRecentWindowInteraction :: Windows (Maybe Number)
+    , didGestureTest :: Boolean
     }
