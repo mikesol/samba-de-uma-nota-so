@@ -54,6 +54,6 @@ addBeats (L.Cons a b) = WAGS.do
 
 changesPreFirstVideo :: forall proof. FrameSig PreFirstVideoGraph proof PreFirstVideoGraph Unit
 changesPreFirstVideo = WAGS.do
-  changeGain (0.0 /\ 0.0)
+  --changeGain (0.0 /\ 0.0)
   changeGain (fourBeats /\ 0.0)
   addBeats beats
