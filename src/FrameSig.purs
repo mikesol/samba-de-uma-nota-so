@@ -47,5 +47,5 @@ type FrameSig step proof iu a
       step
       a
 
-type StepSig step proof iu a
-  = FrameSig step proof iu a -> SceneSig proof
+type StepSig step proof a
+  = FrameSig step proof {} a -> SceneSig proof

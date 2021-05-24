@@ -17,8 +17,8 @@ import WAGS.Control.Qualified as WAGS
 
 -- | We play the first video and then move onto the pre-second video.
 doFirstVideo ::
-  forall proof iu.
-  StepSig FirstVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig FirstVideoGraph proof IO.Accumulator
 doFirstVideo =
   branch \acc -> WAGS.do
     e <- modEnv

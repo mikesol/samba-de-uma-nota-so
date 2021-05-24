@@ -68,8 +68,8 @@ quaseNada startsAt =
           (V.index tilesForPiece d)
 
 doFifthVideo ::
-  forall proof iu.
-  StepSig FifthVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig FifthVideoGraph proof IO.Accumulator
 doFifthVideo =
   branch \acc -> WAGS.do
     e <- modEnv

@@ -11,8 +11,8 @@ import WAGS.Control.Functions (modifyRes, (@|>))
 import WAGS.Control.Qualified as WAGS
 
 doEnd ::
-  forall proof iu.
-  StepSig EndGraph proof { | iu } Unit
+  forall proof.
+  StepSig EndGraph proof Unit
 doEnd s =
   ( WAGS.do
       s

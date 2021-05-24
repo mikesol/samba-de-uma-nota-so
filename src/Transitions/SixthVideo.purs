@@ -185,8 +185,8 @@ seventhVideoLoop startsAt =
         (rectangle rct.x rct.y rct.width rct.height)
 
 doSixthVideo ::
-  forall proof iu.
-  StepSig SixthVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig SixthVideoGraph proof IO.Accumulator
 doSixthVideo =
   branch \acc -> WAGS.do
     e <- modEnv

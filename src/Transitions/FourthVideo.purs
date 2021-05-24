@@ -129,8 +129,8 @@ boomBoom time startsAt canvas = go
     | otherwise = mempty
 
 doFourthVideo ::
-  forall proof iu.
-  StepSig FourthVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig FourthVideoGraph proof IO.Accumulator
 doFourthVideo =
   branch \acc -> WAGS.do
     e <- modEnv

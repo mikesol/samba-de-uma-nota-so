@@ -3,7 +3,7 @@ module SambaDeUmaNotaSo.ASDR where
 import Prelude
 import SambaDeUmaNotaSo.Instrumental0Paintings (halfBeat)
 import SambaDeUmaNotaSo.Util (calcSlope)
-import WAGS.Graph.Parameter (AudioParameter(..), defaultParam, param)
+import WAGS.Graph.Parameter (AudioParameter_(..), AudioParameter, defaultParam, param)
 
 quaverASR0Attack = 0.05 :: Number
 
@@ -17,7 +17,7 @@ quaverASR0 { headroom, time }
     if time + headroom >= quaverASR0Attack then
       AudioParameter
         ( defaultParam
-            { param = 1.0
+            { param = pure 1.0
             , timeOffset = quaverASR0Attack - time
             }
         )

@@ -23,8 +23,8 @@ import WAGS.Control.Qualified as WAGS
 -- | For the first video, we wait for three interactions and then choose a random
 -- | rectangle that will house the first video.
 doPreFirstVideo ::
-  forall proof iu.
-  StepSig PreFirstVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig PreFirstVideoGraph proof IO.Accumulator
 doPreFirstVideo =
   branch \acc -> WAGS.do
     e <- modEnv

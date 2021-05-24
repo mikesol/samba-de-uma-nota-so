@@ -21,7 +21,7 @@ import WAGS.Change (change)
 import WAGS.Control.Functions (proof, withProof)
 import WAGS.Control.Qualified as WAGS
 import WAGS.Graph.Optionals (gain_)
-import WAGS.Graph.Parameter (AudioParameter(..), AudioParameterTransition(..), defaultParam)
+import WAGS.Graph.Parameter (AudioParameter_(..), AudioParameterTransition(..), defaultParam)
 
 beatMap :: Array (Tuple Number Number)
 beatMap = [ 0.0 /\ 0.0, 0.07 /\ 1.0, 0.1 /\ 0.3, 0.19 /\ 0.0 ]
@@ -36,7 +36,7 @@ changeGain (t /\ v) =
         { chiffyE3Gain:
             gain_
               ( AudioParameter
-                  { param: v * mm01 (calcSlope fourBeats 1.0 (fourBeats * 4.0) 0.0 t)
+                  { param: pure $ v * mm01 (calcSlope fourBeats 1.0 (fourBeats * 4.0) 0.0 t)
                   , timeOffset: t
                   , transition: LinearRamp
                   }
@@ -54,6 +54,5 @@ addBeats (L.Cons a b) = WAGS.do
 
 changesPreFirstVideo :: forall proof. FrameSig PreFirstVideoGraph proof PreFirstVideoGraph Unit
 changesPreFirstVideo = WAGS.do
-  --changeGain (0.0 /\ 0.0)
-  changeGain (fourBeats /\ 0.0)
+  changeGain (fourBeats /\ 0.0000000001)
   addBeats beats

@@ -21,8 +21,8 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
 doPreThirdVideo ::
-  forall proof iu.
-  StepSig PreThirdVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig PreThirdVideoGraph proof IO.Accumulator
 doPreThirdVideo =
   branch \acc -> WAGS.do
     e <- modEnv

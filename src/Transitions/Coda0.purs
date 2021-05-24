@@ -61,8 +61,8 @@ codaSamba startsAt =
       windowsOnScreen
 
 doCoda0 ::
-  forall proof iu.
-  StepSig Coda0Graph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig Coda0Graph proof IO.Accumulator
 doCoda0 =
   branch \acc -> WAGS.do
     e <- modEnv

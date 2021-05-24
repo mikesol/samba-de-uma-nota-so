@@ -18,8 +18,8 @@ import WAGS.Control.Qualified as WAGS
 
 -- | We wait until there's an interaction with the second video's rectangle.
 doAwaitingSecondVideo ::
-  forall proof iu.
-  StepSig AwaitingSecondVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig AwaitingSecondVideoGraph proof IO.Accumulator
 doAwaitingSecondVideo =
   branch \acc -> WAGS.do
     e <- modEnv

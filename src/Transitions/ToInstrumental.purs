@@ -53,8 +53,8 @@ startingActiveZones =
   }
 
 doToInstrumental ::
-  forall proof iu.
-  StepSig ToInstrumentalGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig ToInstrumentalGraph proof IO.Accumulator
 doToInstrumental =
   branch \acc -> WAGS.do
     e <- modEnv

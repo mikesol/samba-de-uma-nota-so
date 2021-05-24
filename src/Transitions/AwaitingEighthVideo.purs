@@ -29,8 +29,8 @@ dotInteractions touchedDot = tail $ f (NoSingers (V.index hc d0))
   f evh = evh :< (f <<< curriedEvh evh)
 
 doAwaitingEighthVideo ::
-  forall proof iu.
-  StepSig AwaitingEighthVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig AwaitingEighthVideoGraph proof IO.Accumulator
 doAwaitingEighthVideo =
   branch \acc -> WAGS.do
     e <- modEnv

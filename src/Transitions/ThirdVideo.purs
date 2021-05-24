@@ -63,8 +63,8 @@ rectangleSamba startsAt =
       windowsOnScreen
 
 doThirdVideo ::
-  forall proof iu.
-  StepSig ThirdVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig ThirdVideoGraph proof IO.Accumulator
 doThirdVideo =
   branch \acc -> WAGS.do
     e <- modEnv

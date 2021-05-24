@@ -135,8 +135,8 @@ startingOnOff =
   }
 
 doInstrumental0 ::
-  forall proof iu.
-  StepSig Instrumental0Graph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig Instrumental0Graph proof IO.Accumulator
 doInstrumental0 =
   branch \acc -> WAGS.do
     e <- modEnv

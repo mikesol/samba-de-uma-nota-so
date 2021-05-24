@@ -26,8 +26,8 @@ finalDot canvas = dot
   dot = filled (fillColor (rgb 255 255 255)) (circle (canvas.width / 2.0) (canvas.height / 2.0) ((min canvas.width canvas.height) * 0.1))
 
 doCoda1 ::
-  forall proof iu.
-  StepSig Coda1Graph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig Coda1Graph proof IO.Accumulator
 doCoda1 =
   branch \acc -> WAGS.do
     e <- modEnv

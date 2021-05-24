@@ -19,8 +19,8 @@ import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
 import WAGS.Control.Qualified as WAGS
 
 doEighthVideo ::
-  forall proof iu.
-  StepSig EighthVideoGraph proof { | iu } IO.Accumulator
+  forall proof.
+  StepSig EighthVideoGraph proof IO.Accumulator
 doEighthVideo =
   branch \acc -> WAGS.do
     e <- modEnv

@@ -87,8 +87,8 @@ touchMap pt dr ln = go
   go = touching pt (sensor dr) ln lenses
 
 doInstrumental1 ::
-  forall proof iu.
-  StepSig Instrumental1Graph proof {|iu} IO.Accumulator
+  forall proof.
+  StepSig Instrumental1Graph proof IO.Accumulator
 doInstrumental1 =
   branch \acc -> WAGS.do
     e <- modEnv
