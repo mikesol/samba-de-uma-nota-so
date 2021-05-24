@@ -199,7 +199,7 @@ class MulAN a b where
   mulAN :: a -> b -> AudioParameter
 
 instance mulANRAN :: MulAN AudioParameter Number where
-  mulAN (AudioParameter x@{ param }) n = AudioParameter (x { param = mul n <$> param  })
+  mulAN (AudioParameter x@{ param }) n = AudioParameter (x { param = mul n <$> param })
 
 instance mulANRNA :: MulAN Number AudioParameter where
   mulAN n (AudioParameter x@{ param }) = AudioParameter (x { param = mul n <$> param })
@@ -208,3 +208,10 @@ infixr 5 mulAN as *!
 
 mm01 :: Number -> Number
 mm01 = min 1.0 <<< max 0.0
+
+shiftInTime :: forall a. Semiring a => Number -> AudioParameter_ a -> AudioParameter_ a
+shiftInTime a (AudioParameter i) =
+  AudioParameter
+    $ i
+        { timeOffset = i.timeOffset + a
+        }

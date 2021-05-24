@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.PreFirstVideo where
 
 import Prelude
+
 import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.Functor.Indexed (ivoid)
@@ -50,7 +51,7 @@ doPreFirstVideo =
                   $ const
                       { painting: visualCtxt.background <> fold visualCtxt.windowsOnScreen
                       }
-                if (not acc.didGestureTest) then changesPreFirstVideo else (withProof pr unit)
+                changesPreFirstVideo 0.06
                 withProof pr
                   $ acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0
