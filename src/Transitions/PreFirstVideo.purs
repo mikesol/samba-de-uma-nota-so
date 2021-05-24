@@ -56,7 +56,6 @@ doPreFirstVideo =
                   $ acc
                       { nTouchesSoFar = acc.nTouchesSoFar + if isTouched then 1 else 0
                       , mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
-                      , didGestureTest = true
                       }
         else
           Left

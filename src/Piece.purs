@@ -107,7 +107,6 @@ piece = case startAt of
       preFirstVideoCreate
         $> { nTouchesSoFar: 0
           , mostRecentWindowInteraction: V.fill (const Nothing)
-          , didGestureTest: false
           }
       @|> doPreFirstVideo
   AwaitingFirstVideo ->
