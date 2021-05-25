@@ -1,7 +1,6 @@
 module SambaDeUmaNotaSo.Transitions.FifthVideo where
 
 import Prelude
-
 import Control.Comonad.Cofree (head, tail)
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -56,14 +55,19 @@ quaseNada startsAt =
     fold
       $ map
           ( \{ x, y, width, height, color } ->
-              filled
-                (fillColor color)
-                ( rectangle
-                    (x * dr.width)
-                    (y * dr.height)
-                    (width * dr.width)
-                    (height * dr.height)
-                )
+              let
+                nwidth = width * dr.width
+
+                nheight = height * dr.height
+              in
+                filled
+                  (fillColor color)
+                  ( rectangle
+                      ((x * dr.width) + (nwidth * 0.1))
+                      ((y * dr.height) + (nheight * 0.1))
+                      (nwidth * 0.8)
+                      (nheight * 0.8)
+                  )
           )
           (V.index tilesForPiece d)
 
