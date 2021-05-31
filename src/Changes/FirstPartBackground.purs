@@ -4,87 +4,95 @@ import Data.Typelevel.Num (D5, D80)
 import Data.Vec ((+>))
 import Data.Vec as V
 
-data Sounds = NoS | MainS | AltS
+data Sounds
+  = NotS
+  | FstS
+  | SndS
 
+-- each cell is a group of 2 beats
+-- 10 measures total
 soundMap :: V.Vec D80 (V.Vec D5 Sounds)
-soundMap = (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> NoS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> NoS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> NoS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> NoS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> AltS +> MainS +> NoS +> MainS +> V.empty) +>
-    (NoS +> NoS +> MainS +> AltS +> MainS +> V.empty) +>
-    (NoS +> NoS +> MainS +> AltS +> MainS +> V.empty) +>
-    (NoS +> NoS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> NoS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> NoS +> AltS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> MainS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> AltS +> V.empty) +>
-    (NoS +> NoS +> MainS +> MainS +> AltS +> V.empty) +>
-    (NoS +> NoS +> NoS +> MainS +> AltS +> V.empty) +>
-    (NoS +> NoS +> NoS +> MainS +> AltS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> AltS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> AltS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> AltS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> AltS +> V.empty) +>
-    (MainS +> NoS +> MainS +> NoS +> AltS +> V.empty) +>
-    (MainS +> NoS +> MainS +> NoS +> AltS +> V.empty) +>
-    (MainS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (MainS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (MainS +> NoS +> MainS +> AltS +> NoS +> V.empty) +>
-    (MainS +> NoS +> MainS +> AltS +> NoS +> V.empty) +>
-    (MainS +> NoS +> MainS +> AltS +> NoS +> V.empty) +>
-    (MainS +> NoS +> MainS +> AltS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> NoS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> NoS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> AltS +> MainS +> MainS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    (NoS +> NoS +> MainS +> NoS +> NoS +> V.empty) +>
-    V.empty
+soundMap =
+  (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> NotS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> NotS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> NotS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> NotS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> SndS +> FstS +> NotS +> FstS +> V.empty)
+    +> (NotS +> NotS +> FstS +> SndS +> FstS +> V.empty)
+    +> (NotS +> NotS +> FstS +> SndS +> FstS +> V.empty)
+    +> (NotS +> NotS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> NotS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> NotS +> SndS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> FstS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> SndS +> V.empty)
+    +> (NotS +> NotS +> FstS +> FstS +> SndS +> V.empty)
+    +> (NotS +> NotS +> NotS +> FstS +> SndS +> V.empty)
+    +> (NotS +> NotS +> NotS +> FstS +> SndS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> SndS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> SndS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> SndS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> SndS +> V.empty)
+    +> (FstS +> NotS +> FstS +> NotS +> SndS +> V.empty)
+    +> (FstS +> NotS +> FstS +> NotS +> SndS +> V.empty)
+    +> (FstS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (FstS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (FstS +> NotS +> FstS +> SndS +> NotS +> V.empty)
+    +> (FstS +> NotS +> FstS +> SndS +> NotS +> V.empty)
+    +> (FstS +> NotS +> FstS +> SndS +> NotS +> V.empty)
+    +> (FstS +> NotS +> FstS +> SndS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> NotS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> NotS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> SndS +> FstS +> FstS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> (NotS +> NotS +> FstS +> NotS +> NotS +> V.empty)
+    +> V.empty
+
+-- vec to range
