@@ -1,7 +1,9 @@
 module SambaDeUmaNotaSo.Transitions.FourthVideo where
 
 import Prelude
+
 import Color (rgb)
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -25,8 +27,7 @@ import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoGraph)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 import Web.HTML.HTMLElement (DOMRect)
 
 colorPalette :: V.Vec D10 RGB
@@ -169,12 +170,11 @@ doFourthVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doFifthVideo Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
                   fifthVideoPatch
-                  doFifthVideo
-                    <$> wag
+                  ipure
                         { videoSpan
                         , quantaGenteExiste: quantaGenteExiste videoSpan.start
                         }

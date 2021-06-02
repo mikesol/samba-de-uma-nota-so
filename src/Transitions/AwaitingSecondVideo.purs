@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo where
 
 import Prelude
+import Control.Applicative.Indexed (ipure)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -12,8 +13,7 @@ import SambaDeUmaNotaSo.IO.AwaitingSecondVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (AwaitingSecondVideoGraph)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 
 -- | We wait until there's an interaction with the second video's rectangle.
 doAwaitingSecondVideo ::
@@ -40,14 +40,13 @@ doAwaitingSecondVideo =
                   }
           else
             Left
-              $ iwag Ix.do
+              $ icont doSecondVideo Ix.do
                   let
                     videoSpan = { start: e.time, end: secondVocalEnds e.time }
                   secondVideoPatch
-                  doSecondVideo
-                    <$> wag
-                        { interpretVideo: acc.interpretVideo videoSpan
-                        , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                        , videoSpan
-                        }
+                  ipure
+                    { interpretVideo: acc.interpretVideo videoSpan
+                    , mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                    , videoSpan
+                    }
     )

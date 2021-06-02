@@ -2,6 +2,7 @@ module SambaDeUmaNotaSo.Transitions.Coda0 where
 
 import Prelude
 import Color (rgb)
+import Control.Applicative.Indexed (ipure)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -22,8 +23,7 @@ import SambaDeUmaNotaSo.Loops.Coda1 (coda1Patch)
 import SambaDeUmaNotaSo.Transitions.Coda1 (doCoda1)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 
 codaSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 codaSamba startsAt =
@@ -84,14 +84,13 @@ doCoda0 =
                         }
           else
             Left
-              $ iwag Ix.do
+              $ icont doCoda1 Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
                   coda1Patch
-                  doCoda1
-                    <$> wag
-                        { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                        , videoSpan: videoSpan
-                        , codaSamba: codaSamba videoSpan.start
-                        }
+                  ipure
+                    { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                    , videoSpan: videoSpan
+                    , codaSamba: codaSamba videoSpan.start
+                    }
     )

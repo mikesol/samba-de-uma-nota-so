@@ -1,7 +1,9 @@
 module SambaDeUmaNotaSo.Transitions.ToInstrumental where
 
 import Prelude
+
 import Color (rgb)
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -22,8 +24,7 @@ import SambaDeUmaNotaSo.Loops.Instrumental0 (instrumental0Patch)
 import SambaDeUmaNotaSo.Loops.ToInstrumental (ToInstrumentalGraph)
 import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)
 import SambaDeUmaNotaSo.Transitions.Instrumental0 (doInstrumental0)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 import Web.HTML.HTMLElement (DOMRect)
 
 makeDot :: DOMRect -> TouchedDot -> Painting
@@ -104,12 +105,11 @@ doToInstrumental =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doInstrumental0 Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
                   instrumental0Patch
-                  doInstrumental0
-                    <$> wag
+                  ipure
                         { videoSpan
                         , activeZones: startingActiveZones
                         , instruments: instrumental0Painting videoSpan.start

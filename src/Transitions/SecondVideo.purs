@@ -1,6 +1,8 @@
 module SambaDeUmaNotaSo.Transitions.SecondVideo where
 
 import Prelude
+
+import Control.Applicative.Indexed (ipure)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -13,8 +15,7 @@ import SambaDeUmaNotaSo.Loops.PreThirdVideo (preThirdVideoPatch)
 import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoGraph)
 import SambaDeUmaNotaSo.Transitions.PreThirdVideo (doPreThirdVideo)
 import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, imodifyRes, icont)
 
 -- | We play the first video and then move onto the pre-second video.
 doSecondVideo ::
@@ -41,12 +42,11 @@ doSecondVideo =
                   }
           else
             Left
-              $ iwag Ix.do
+              $ icont doPreThirdVideo Ix.do
                   preThirdVideoPatch
-                  doPreThirdVideo
-                    <$> wag
-                        { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                        , b7IsWindowTouched: beatModSeven e.time :: BeatMod7' Boolean
-                        , b7WindowDims: beatModSeven e.time :: BeatMod7' Rectangle
-                        }
+                  ipure
+                    { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                    , b7IsWindowTouched: beatModSeven e.time :: BeatMod7' Boolean
+                    , b7WindowDims: beatModSeven e.time :: BeatMod7' Rectangle
+                    }
     )

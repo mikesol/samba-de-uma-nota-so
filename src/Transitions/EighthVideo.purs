@@ -1,6 +1,8 @@
 module SambaDeUmaNotaSo.Transitions.EighthVideo where
 
 import Prelude
+
+import Control.Applicative.Indexed (ipure)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
@@ -14,8 +16,7 @@ import SambaDeUmaNotaSo.Loops.ToInstrumental (toInstrumentalPatch)
 import SambaDeUmaNotaSo.ToInstrumentalWedges (instrumentalAnimation)
 import SambaDeUmaNotaSo.Transitions.EighthVideoPainting (eighthVideoFrame)
 import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 
 doEighthVideo ::
   forall proof.
@@ -50,13 +51,11 @@ doEighthVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doToInstrumental Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
                   toInstrumentalPatch
-                  doToInstrumental
-                    <$> wag
-                        { videoSpan
+                  ipure { videoSpan
                         , mostRecentWindowInteraction: acc.mostRecentWindowInteraction
                         , dotInteractions: acc.dotInteractions
                         , mainVideo: acc.mainVideo

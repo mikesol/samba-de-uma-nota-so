@@ -1,7 +1,9 @@
 module SambaDeUmaNotaSo.Transitions.SixthVideo where
 
 import Prelude
+
 import Color (Color, rgb, rgba)
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -27,8 +29,7 @@ import SambaDeUmaNotaSo.TileTypes (TileBuilder2)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 import Web.HTML.HTMLElement (DOMRect)
 
 deTodaAEscala :: Number -> NonEmptyToCofree DOMRect Painting
@@ -223,12 +224,11 @@ doSixthVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doSeventhVideo Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
                   seventhVideoPatch
-                  doSeventhVideo
-                    <$> wag
+                  ipure
                         { videoSpan
                         , deTodaAEscala: deTodaAEscala videoSpan.start
                         , seventhVideoLoop: seventhVideoLoop videoSpan.start

@@ -1,6 +1,8 @@
 module SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo where
 
 import Prelude
+
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail, (:<))
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -16,8 +18,7 @@ import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot, td2harmChain)
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (AwaitingEighthVideoGraph)
 import SambaDeUmaNotaSo.Loops.EighthVideo (eighthVideoPatch)
 import SambaDeUmaNotaSo.Transitions.EighthVideo (doEighthVideo)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, imodifyRes, icont)
 
 dotInteractions :: TouchedDot -> DotInteractions
 dotInteractions touchedDot = tail $ f (NoSingers (V.index hc d0))
@@ -70,15 +71,14 @@ doAwaitingEighthVideo =
                   }
           else
             Left
-              $ iwag Ix.do
+              $ icont doEighthVideo Ix.do
                   let
                     videoSpan = { start: e.time, end: postBridgeEnds e.time }
                   eighthVideoPatch
-                  doEighthVideo
-                    <$> wag
-                        { videoSpan
-                        , mostRecentWindowInteraction: V.fill $ const Nothing
-                        , dotInteractions: dotInteractions touchedDot
-                        , mainVideo: touchedDot
-                        }
+                  ipure
+                    { videoSpan
+                    , mostRecentWindowInteraction: V.fill $ const Nothing
+                    , dotInteractions: dotInteractions touchedDot
+                    , mainVideo: touchedDot
+                    }
     )

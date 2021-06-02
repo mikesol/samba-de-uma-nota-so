@@ -1,6 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.PreThirdVideo where
 
 import Prelude
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -16,8 +17,7 @@ import SambaDeUmaNotaSo.Loops.PreThirdVideo (PreThirdVideoGraph)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, imodifyRes, icont)
 
 doPreThirdVideo ::
   forall proof.
@@ -62,22 +62,21 @@ doPreThirdVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doThirdVideo Ix.do
                   let
                     videoSpan = { start: e.time, end: thirdVocalEnds e.time }
                   thirdVideoPatch
-                  doThirdVideo
-                    <$> wag
-                        { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                        , interpretVideo:
-                            ( head
-                                $ beatModSeven e.time
-                                    { time: e.time
-                                    , value: interpretVideoAsWindows
-                                    }
-                            )
-                              videoSpan
-                        , videoSpan: videoSpan
-                        , b7WindowDims: acc.b7WindowDims
-                        }
+                  ipure
+                    { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                    , interpretVideo:
+                        ( head
+                            $ beatModSeven e.time
+                                { time: e.time
+                                , value: interpretVideoAsWindows
+                                }
+                        )
+                          videoSpan
+                    , videoSpan: videoSpan
+                    , b7WindowDims: acc.b7WindowDims
+                    }
     )

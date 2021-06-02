@@ -1,6 +1,8 @@
 module SambaDeUmaNotaSo.Transitions.Instrumental0 where
 
 import Prelude
+
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Complex (Cartesian(..), angle)
@@ -27,8 +29,7 @@ import SambaDeUmaNotaSo.Loops.Instrumental1 (instrumental1Patch)
 import SambaDeUmaNotaSo.Transitions.Instrumental1 (doInstrumental1)
 import SambaDeUmaNotaSo.Util (calcSlope, distance)
 import Type.Proxy (Proxy(..))
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 import Web.HTML.HTMLElement (DOMRect)
 
 type CartesianRep
@@ -186,12 +187,11 @@ doInstrumental0 =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doInstrumental1 Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
                   instrumental1Patch
-                  doInstrumental1
-                    <$> wag
+                  ipure
                         { videoSpan
                         , onOff: startingOnOff
                         , mostRecentWindowInteraction: V.fill (const Nothing)

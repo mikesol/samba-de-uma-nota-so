@@ -1,6 +1,8 @@
 module SambaDeUmaNotaSo.Transitions.Instrumental1 where
 
 import Prelude
+
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -24,8 +26,7 @@ import SambaDeUmaNotaSo.Loops.Instrumental1 (Instrumental1Graph)
 import SambaDeUmaNotaSo.Transitions.Coda0 (doCoda0)
 import SambaDeUmaNotaSo.Util (isRectangleTouched)
 import Type.Proxy (Proxy(..))
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 import Web.HTML.HTMLElement (DOMRect)
 
 touching ::
@@ -143,7 +144,7 @@ doInstrumental1 =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doCoda0 Ix.do
                   let
                     videoSpan = { start: e.time, end: e.time + fourMeasures }
 
@@ -155,8 +156,7 @@ doInstrumental1 =
                             , time: e.time
                             }
                   coda0Patch
-                  doCoda0
-                    <$> wag
+                  ipure
                         { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                         , interpretVideo: interpretVideoNoDim d4 videoSpan -- d4 choisi au pif...
                         , videoSpan: videoSpan

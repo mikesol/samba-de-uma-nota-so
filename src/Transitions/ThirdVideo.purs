@@ -1,7 +1,9 @@
 module SambaDeUmaNotaSo.Transitions.ThirdVideo where
 
 import Prelude
+
 import Color (rgb)
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -24,8 +26,7 @@ import SambaDeUmaNotaSo.Loops.ThirdVideo (ThirdVideoGraph)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 
 rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 rectangleSamba startsAt =
@@ -96,12 +97,11 @@ doThirdVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doFourthVideo Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
                   fourthVideoPatch
-                  doFourthVideo
-                    <$> wag
+                  ipure
                         { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                         , videoSpan: videoSpan
                         , b7WindowDims: acc.b7WindowDims

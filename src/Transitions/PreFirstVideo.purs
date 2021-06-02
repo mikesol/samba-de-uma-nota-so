@@ -19,8 +19,7 @@ import SambaDeUmaNotaSo.IO.PreFirstVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (awaitingFirstVideoPatch)
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoGraph)
 import SambaDeUmaNotaSo.Transitions.AwaitingFirstVideo (doAwaitingFirstVideo)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 
 -- | For the first video, we wait for three interactions and then choose a random
 -- | rectangle that will house the first video.
@@ -58,45 +57,44 @@ doPreFirstVideo =
                         }
           else
             Left
-              $ iwag Ix.do
+              $ icont doAwaitingFirstVideo Ix.do
                   let
                     fixed =
                       { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
                       }
                   awaitingFirstVideoPatch
-                  doAwaitingFirstVideo
-                    <$> ( wag
-                          $ R.union
-                              ( case (floor (e.time * jitterForMod)) `mod` 7 of
-                                  0 ->
-                                    { interpretVideo: interpretVideo d0
-                                    , isVideoWindowTouched: isVideoWindowTouched d0
-                                    }
-                                  1 ->
-                                    { interpretVideo: interpretVideo d1
-                                    , isVideoWindowTouched: isVideoWindowTouched d1
-                                    }
-                                  2 ->
-                                    { interpretVideo: interpretVideo d2
-                                    , isVideoWindowTouched: isVideoWindowTouched d2
-                                    }
-                                  3 ->
-                                    { interpretVideo: interpretVideo d3
-                                    , isVideoWindowTouched: isVideoWindowTouched d3
-                                    }
-                                  4 ->
-                                    { interpretVideo: interpretVideo d4
-                                    , isVideoWindowTouched: isVideoWindowTouched d4
-                                    }
-                                  5 ->
-                                    { interpretVideo: interpretVideo d5
-                                    , isVideoWindowTouched: isVideoWindowTouched d5
-                                    }
-                                  _ ->
-                                    { interpretVideo: interpretVideo d6
-                                    , isVideoWindowTouched: isVideoWindowTouched d6
-                                    }
-                              )
-                              fixed
-                      )
+                  ipure
+                    ( R.union
+                        ( case (floor (e.time * jitterForMod)) `mod` 7 of
+                            0 ->
+                              { interpretVideo: interpretVideo d0
+                              , isVideoWindowTouched: isVideoWindowTouched d0
+                              }
+                            1 ->
+                              { interpretVideo: interpretVideo d1
+                              , isVideoWindowTouched: isVideoWindowTouched d1
+                              }
+                            2 ->
+                              { interpretVideo: interpretVideo d2
+                              , isVideoWindowTouched: isVideoWindowTouched d2
+                              }
+                            3 ->
+                              { interpretVideo: interpretVideo d3
+                              , isVideoWindowTouched: isVideoWindowTouched d3
+                              }
+                            4 ->
+                              { interpretVideo: interpretVideo d4
+                              , isVideoWindowTouched: isVideoWindowTouched d4
+                              }
+                            5 ->
+                              { interpretVideo: interpretVideo d5
+                              , isVideoWindowTouched: isVideoWindowTouched d5
+                              }
+                            _ ->
+                              { interpretVideo: interpretVideo d6
+                              , isVideoWindowTouched: isVideoWindowTouched d6
+                              }
+                        )
+                        fixed
+                    )
     )

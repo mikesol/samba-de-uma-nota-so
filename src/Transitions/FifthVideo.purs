@@ -1,7 +1,7 @@
 module SambaDeUmaNotaSo.Transitions.FifthVideo where
 
 import Prelude
-
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -22,8 +22,7 @@ import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoPatch)
 import SambaDeUmaNotaSo.SixthVideoTiles (tilesForPiece)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 import Web.HTML.HTMLElement (DOMRect)
 
 quaseNada :: Number -> NonEmptyToCofree DOMRect Painting
@@ -106,13 +105,12 @@ doFifthVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doSixthVideo Ix.do
                   let
                     videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
                   sixthVideoPatch
-                  doSixthVideo
-                    <$> wag
-                        { videoSpan
-                        , quaseNada: quaseNada videoSpan.start
-                        }
+                  ipure
+                    { videoSpan
+                    , quaseNada: quaseNada videoSpan.start
+                    }
     )

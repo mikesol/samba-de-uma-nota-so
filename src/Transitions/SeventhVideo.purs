@@ -1,7 +1,9 @@
 module SambaDeUmaNotaSo.Transitions.SeventhVideo where
 
 import Prelude
+
 import Color (rgb)
+import Control.Applicative.Indexed (ipure)
 import Control.Comonad.Cofree (head, tail)
 import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
@@ -14,8 +16,7 @@ import SambaDeUmaNotaSo.IO.SeventhVideo as IO
 import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoPatch)
 import SambaDeUmaNotaSo.Loops.SeventhVideo (SeventhVideoGraph)
 import SambaDeUmaNotaSo.Transitions.AwaitingEighthVideo (doAwaitingEighthVideo)
-import WAGS.Control.Functions (ibranch, iwag, imodifyRes)
-import WAGS.Control.Indexed (wag)
+import WAGS.Control.Functions (ibranch, icont, imodifyRes)
 
 doSeventhVideo ::
   forall proof.
@@ -78,9 +79,7 @@ doSeventhVideo =
                       }
           else
             Left
-              $ iwag Ix.do
+              $ icont doAwaitingEighthVideo Ix.do
                   awaitingEighthVideoPatch
-                  doAwaitingEighthVideo
-                    <$> wag
-                        { dotMover: acc.dotMover }
+                  ipure { dotMover: acc.dotMover }
     )
