@@ -29,7 +29,7 @@ import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 import Web.HTML.HTMLElement (DOMRect)
 
 deTodaAEscala :: Number -> NonEmptyToCofree DOMRect Painting

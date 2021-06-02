@@ -13,7 +13,7 @@ import SambaDeUmaNotaSo.Loops.FirstVideo (FirstVideoGraph)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (preSecondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.PreSecondVideo (doPreSecondVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 
 -- | We play the first video and then move onto the pre-second video.
 doFirstVideo ::

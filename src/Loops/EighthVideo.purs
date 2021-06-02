@@ -1,19 +1,20 @@
 module SambaDeUmaNotaSo.Loops.EighthVideo where
 
 import Prelude
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
-import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (AwaitingEighthVideoGraph, awaitingEighthVideoCreate)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
+
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
+import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (AwaitingFirstVideoGraph)
+import SambaDeUmaNotaSo.Loops.AwaitingEighthVideo (awaitingEighthVideoCreate)
 
 type EighthVideoGraph
-  = AwaitingEighthVideoGraph
+  = AwaitingFirstVideoGraph
 
-eighthVideoPatch :: forall proof. proof -> FrameSig EighthVideoGraph proof EighthVideoGraph Unit
-eighthVideoPatch pr = withProof pr unit
+eighthVideoPatch :: forall proof. IxWAGSig AwaitingFirstVideoGraph EighthVideoGraph proof Unit
+eighthVideoPatch = ipure unit
 
-eighthVideoCreate :: forall proof. FrameSig EighthVideoGraph proof {} Unit
-eighthVideoCreate =
+eighthVideoCreate :: forall proof. IxWAGSig {} EighthVideoGraph proof  Unit
+eighthVideoCreate = Ix.do
   awaitingEighthVideoCreate
-    :*> proof `WAGS.bind` eighthVideoPatch
+  eighthVideoPatch

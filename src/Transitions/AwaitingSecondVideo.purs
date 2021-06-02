@@ -14,7 +14,7 @@ import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (AwaitingSecondVideoGraph)
 import SambaDeUmaNotaSo.Loops.SecondVideo (secondVideoPatch)
 import SambaDeUmaNotaSo.Transitions.SecondVideo (doSecondVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 
 -- | We wait until there's an interaction with the second video's rectangle.
 doAwaitingSecondVideo ::

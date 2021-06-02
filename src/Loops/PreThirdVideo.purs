@@ -2,19 +2,18 @@ module SambaDeUmaNotaSo.Loops.PreThirdVideo where
 
 import Prelude
 
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.SecondVideo (SecondVideoGraph, secondVideoCreate)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type PreThirdVideoGraph
   = SecondVideoGraph
 
-preThirdVideoPatch :: forall proof. proof -> FrameSig PreThirdVideoGraph proof PreThirdVideoGraph Unit
-preThirdVideoPatch pr = withProof pr unit
+preThirdVideoPatch :: forall proof. IxWAGSig SecondVideoGraph PreThirdVideoGraph proof Unit
+preThirdVideoPatch = ipure unit
 
-preThirdVideoCreate :: forall proof. FrameSig PreThirdVideoGraph proof {} Unit
-preThirdVideoCreate =
+preThirdVideoCreate :: forall proof. IxWAGSig {} PreThirdVideoGraph proof  Unit
+preThirdVideoCreate = Ix.do
   secondVideoCreate
-    :*> proof `WAGS.bind` preThirdVideoPatch
+  preThirdVideoPatch

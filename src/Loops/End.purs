@@ -1,19 +1,18 @@
 module SambaDeUmaNotaSo.Loops.End where
 
 import Prelude
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.Coda1 (Coda1Graph, coda1Create)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type EndGraph
   = Coda1Graph
 
-endPatch :: forall proof. proof -> FrameSig EndGraph proof EndGraph Unit
-endPatch pr = withProof pr unit
+endPatch :: forall proof. IxWAGSig Coda1Graph EndGraph proof Unit
+endPatch = ipure unit
 
-endCreate :: forall proof. FrameSig EndGraph proof {} Unit
-endCreate =
+endCreate :: forall proof. IxWAGSig {} EndGraph proof Unit
+endCreate = Ix.do
   coda1Create
-    :*> proof `WAGS.bind` endPatch
+  endPatch

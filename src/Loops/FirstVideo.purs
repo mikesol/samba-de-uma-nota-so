@@ -1,19 +1,19 @@
 module SambaDeUmaNotaSo.Loops.FirstVideo where
 
 import Prelude
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.AwaitingFirstVideo (AwaitingFirstVideoGraph, awaitingFirstVideoCreate)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type FirstVideoGraph
   = AwaitingFirstVideoGraph
 
-firstVideoPatch :: forall proof. proof -> FrameSig FirstVideoGraph proof FirstVideoGraph Unit
-firstVideoPatch pr = withProof pr unit
+firstVideoPatch :: forall proof. IxWAGSig AwaitingFirstVideoGraph FirstVideoGraph proof Unit
+firstVideoPatch = ipure unit
 
-firstVideoCreate :: forall proof. FrameSig FirstVideoGraph proof {} Unit
-firstVideoCreate =
+firstVideoCreate :: forall proof. IxWAGSig {} FirstVideoGraph proof  Unit
+firstVideoCreate = Ix.do
   awaitingFirstVideoCreate
-    :*> proof `WAGS.bind` firstVideoPatch
+  firstVideoPatch

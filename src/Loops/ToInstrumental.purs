@@ -2,19 +2,18 @@ module SambaDeUmaNotaSo.Loops.ToInstrumental where
 
 import Prelude
 
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.EighthVideo (EighthVideoGraph, eighthVideoCreate)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type ToInstrumentalGraph
   = EighthVideoGraph
 
-toInstrumentalPatch :: forall proof. proof -> FrameSig ToInstrumentalGraph proof ToInstrumentalGraph Unit
-toInstrumentalPatch pr = withProof pr unit
+toInstrumentalPatch :: forall proof. IxWAGSig EighthVideoGraph ToInstrumentalGraph proof Unit
+toInstrumentalPatch = ipure unit
 
-toInstrumentalCreate :: forall proof. FrameSig ToInstrumentalGraph proof {} Unit
-toInstrumentalCreate =
+toInstrumentalCreate :: forall proof. IxWAGSig {} ToInstrumentalGraph proof  Unit
+toInstrumentalCreate = Ix.do
   eighthVideoCreate
-    :*> proof `WAGS.bind` toInstrumentalPatch
+  toInstrumentalPatch

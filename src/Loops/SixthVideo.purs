@@ -2,19 +2,18 @@ module SambaDeUmaNotaSo.Loops.SixthVideo where
 
 import Prelude
 
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.FifthVideo (FifthVideoGraph, fifthVideoCreate)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type SixthVideoGraph
   = FifthVideoGraph
 
-sixthVideoPatch :: forall proof. proof -> FrameSig SixthVideoGraph proof SixthVideoGraph Unit
-sixthVideoPatch pr = withProof pr unit
+sixthVideoPatch :: forall proof. IxWAGSig FifthVideoGraph SixthVideoGraph proof Unit
+sixthVideoPatch = ipure unit
 
-sixthVideoCreate :: forall proof. FrameSig SixthVideoGraph proof {} Unit
-sixthVideoCreate =
+sixthVideoCreate :: forall proof. IxWAGSig {} SixthVideoGraph proof Unit
+sixthVideoCreate = Ix.do
   fifthVideoCreate
-    :*> proof `WAGS.bind` sixthVideoPatch
+  sixthVideoPatch

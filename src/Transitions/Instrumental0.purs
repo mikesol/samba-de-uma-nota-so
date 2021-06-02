@@ -1,11 +1,10 @@
 module SambaDeUmaNotaSo.Transitions.Instrumental0 where
 
 import Prelude
-
 import Control.Comonad.Cofree (head, tail)
+import Control.Monad.Indexed.Qualified as Ix
 import Data.Complex (Cartesian(..), angle)
 import Data.Either (Either(..))
-import Data.Functor.Indexed (ivoid)
 import Data.Int (toNumber)
 import Data.Lens (ALens', Lens', cloneLens, lens, over, view)
 import Data.Lens.Record (prop)
@@ -16,7 +15,7 @@ import Data.Vec as V
 import Graphics.Painting (Point)
 import Math (pi)
 import SambaDeUmaNotaSo.Constants (eightMeasures)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withModEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Instrumental0 (Instrumental0)
 import SambaDeUmaNotaSo.IO.Instrumental0 as IO
@@ -28,8 +27,8 @@ import SambaDeUmaNotaSo.Loops.Instrumental1 (instrumental1Patch)
 import SambaDeUmaNotaSo.Transitions.Instrumental1 (doInstrumental1)
 import SambaDeUmaNotaSo.Util (calcSlope, distance)
 import Type.Proxy (Proxy(..))
-import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
+import WAGS.Control.Indexed (wag)
 import Web.HTML.HTMLElement (DOMRect)
 
 type CartesianRep
@@ -138,64 +137,64 @@ doInstrumental0 ::
   forall proof.
   StepSig Instrumental0Graph proof IO.Accumulator
 doInstrumental0 =
-  branch \acc -> WAGS.do
-    e <- modEnv
-    pr <- proof
-    let
-      interaction = if e.active then asTouch e.trigger else Nothing
+  ibranch
+    ( withModEnv \e acc ->
+        let
+          interaction = if e.active then asTouch e.trigger else Nothing
 
-      ctxt =
-        withAugmentedEnv
-          { canvas: e.world.canvas
-          , interaction
-          , time: e.time
-          }
-    withProof pr
-      $ if (acc.videoSpan.end > e.time) then
-          Right
-            $ WAGS.do
-                let
-                  activeZones =
-                    maybe
-                      acc.activeZones
-                      (\pt -> touchMap pt e.world.canvas e.time acc.activeZones)
-                      interaction
+          ctxt =
+            withAugmentedEnv
+              { canvas: e.world.canvas
+              , interaction
+              , time: e.time
+              }
+        in
+          if (acc.videoSpan.end > e.time) then
+            Right
+              let
+                activeZones =
+                  maybe
+                    acc.activeZones
+                    (\pt -> touchMap pt e.world.canvas e.time acc.activeZones)
+                    interaction
 
-                  instruments' =
-                    acc.instruments
-                      { time: e.time
-                      , value:
-                          { canvas: e.world.canvas
-                          , halfW: e.world.canvas.width / 2.0
-                          , halfH: e.world.canvas.height / 2.0
-                          , mwh: min e.world.canvas.width e.world.canvas.height
-                          , asdr
-                          , startsAt: acc.videoSpan.start
-                          , translations: someTranslations
-                          , activeZones
-                          }
-                      }
-                ivoid
-                  $ modifyRes
-                  $ const
+                instruments' =
+                  acc.instruments
+                    { time: e.time
+                    , value:
+                        { canvas: e.world.canvas
+                        , halfW: e.world.canvas.width / 2.0
+                        , halfH: e.world.canvas.height / 2.0
+                        , mwh: min e.world.canvas.width e.world.canvas.height
+                        , asdr
+                        , startsAt: acc.videoSpan.start
+                        , translations: someTranslations
+                        , activeZones
+                        }
+                    }
+              in
+                imodifyRes
+                  ( const
                       { painting:
                           ctxt.background
                             <> head instruments'
                       }
-                withProof pr
-                  $ acc
+                  )
+                  $> acc
                       { instruments = tail instruments'
                       , activeZones = activeZones
                       }
-        else
-          Left
-            $ inSitu doInstrumental1 WAGS.do
-                let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
-                instrumental1Patch pr
-                withProof pr
-                  { videoSpan
-                  , onOff: startingOnOff
-                  , mostRecentWindowInteraction: V.fill (const Nothing)
-                  , instruments: instrumental1Painting videoSpan.start
-                  }
+          else
+            Left
+              $ iwag Ix.do
+                  let
+                    videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + eightMeasures }
+                  instrumental1Patch
+                  doInstrumental1
+                    <$> wag
+                        { videoSpan
+                        , onOff: startingOnOff
+                        , mostRecentWindowInteraction: V.fill (const Nothing)
+                        , instruments: instrumental1Painting videoSpan.start
+                        }
+    )

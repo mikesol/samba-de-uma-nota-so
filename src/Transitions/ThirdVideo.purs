@@ -26,7 +26,7 @@ import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 
 rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 rectangleSamba startsAt =

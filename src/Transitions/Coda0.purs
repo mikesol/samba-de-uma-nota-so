@@ -1,11 +1,10 @@
 module SambaDeUmaNotaSo.Transitions.Coda0 where
 
 import Prelude
-
 import Color (rgb)
+import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
@@ -15,7 +14,7 @@ import Data.Vec as V
 import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withModEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.Coda0 as IO
 import SambaDeUmaNotaSo.Loops.Coda0 (Coda0Graph)
@@ -23,8 +22,8 @@ import SambaDeUmaNotaSo.Loops.Coda1 (coda1Patch)
 import SambaDeUmaNotaSo.Transitions.Coda1 (doCoda1)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
+import WAGS.Control.Indexed (wag)
 
 codaSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 codaSamba startsAt =
@@ -64,36 +63,35 @@ doCoda0 ::
   forall proof.
   StepSig Coda0Graph proof IO.Accumulator
 doCoda0 =
-  branch \acc -> WAGS.do
-    e <- modEnv
-    pr <- proof
-    let
-      ctxt =
-        withFirstPartEnv acc.mostRecentWindowInteraction
-          $ withAugmentedEnv
-              { canvas: e.world.canvas
-              , interaction: if e.active then asTouch e.trigger else Nothing
-              , time: e.time
-              }
-    withProof pr
-      $ if acc.videoSpan.end > e.time then
-          Right
-            $ WAGS.do
-                ivoid
-                  $ modifyRes
-                  $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) }
-                withProof pr
-                  $ acc
-                      { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
-                      }
-        else
-          Left
-            $ inSitu doCoda1 WAGS.do
-                let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
-                coda1Patch pr
-                withProof pr
-                  { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , videoSpan: videoSpan
-                  , codaSamba: codaSamba videoSpan.start
+  ibranch
+    ( withModEnv \e acc ->
+        let
+          ctxt =
+            withFirstPartEnv acc.mostRecentWindowInteraction
+              $ withAugmentedEnv
+                  { canvas: e.world.canvas
+                  , interaction: if e.active then asTouch e.trigger else Nothing
+                  , time: e.time
                   }
+        in
+          if acc.videoSpan.end > e.time then
+            Right
+              $ Ix.do
+                  imodifyRes
+                    (const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) })
+                    $> acc
+                        { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
+                        }
+          else
+            Left
+              $ iwag Ix.do
+                  let
+                    videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                  coda1Patch
+                  doCoda1
+                    <$> wag
+                        { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                        , videoSpan: videoSpan
+                        , codaSamba: codaSamba videoSpan.start
+                        }
+    )

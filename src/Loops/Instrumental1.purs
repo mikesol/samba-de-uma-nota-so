@@ -1,19 +1,19 @@
 module SambaDeUmaNotaSo.Loops.Instrumental1 where
 
 import Prelude
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.Instrumental0 (Instrumental0Graph, instrumental0Create)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type Instrumental1Graph
   = Instrumental0Graph
 
-instrumental1Patch :: forall proof. proof -> FrameSig Instrumental1Graph proof Instrumental1Graph Unit
-instrumental1Patch pr = withProof pr unit
+instrumental1Patch :: forall proof. IxWAGSig Instrumental0Graph Instrumental1Graph proof Unit
+instrumental1Patch = ipure unit
 
-instrumental1Create :: forall proof. FrameSig Instrumental1Graph proof {} Unit
-instrumental1Create =
+instrumental1Create :: forall proof. IxWAGSig {} Instrumental1Graph proof  Unit
+instrumental1Create = Ix.do
   instrumental0Create
-    :*> proof `WAGS.bind` instrumental1Patch
+  instrumental1Patch

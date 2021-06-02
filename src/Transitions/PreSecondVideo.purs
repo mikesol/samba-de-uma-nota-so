@@ -18,7 +18,7 @@ import SambaDeUmaNotaSo.Loops.AwaitingSecondVideo (awaitingSecondVideoPatch)
 import SambaDeUmaNotaSo.Loops.PreSecondVideo (PreSecondVideoGraph)
 import SambaDeUmaNotaSo.Transitions.AwaitingSecondVideo (doAwaitingSecondVideo)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 
 -- | For the first video, we wait for three interactions and then choose a random
 -- | rectangle that will house the first video.

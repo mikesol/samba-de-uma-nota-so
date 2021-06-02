@@ -18,7 +18,7 @@ import SambaDeUmaNotaSo.Loops.ThirdVideo (thirdVideoPatch)
 import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo)
 import SambaDeUmaNotaSo.Util (beatModSeven, rectCenter)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 
 doPreThirdVideo ::
   forall proof.

@@ -13,7 +13,8 @@ import SambaDeUmaNotaSo.Instrumental0Paintings (halfBeat)
 import SambaDeUmaNotaSo.Loops.PreFirstVideo (PreFirstVideoGraph)
 import SambaDeUmaNotaSo.Util (calcSlopeExp, mm01, shiftInTime, (*!))
 import WAGS.Change (change)
-import WAGS.Control.Qualified as WAGS
+--import Control.Monad.Indexed.Qualified as Ix
+import Control.Monad.Indexed.Qualified as Ix
 import WAGS.Graph.Optionals (gain_)
 
 changesPreFirstVideo :: forall proof. Number -> FrameSig PreFirstVideoGraph proof PreFirstVideoGraph Unit

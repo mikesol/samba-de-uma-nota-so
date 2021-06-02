@@ -1,8 +1,10 @@
 module SambaDeUmaNotaSo.Env where
 
 import Prelude
+
 import Color (rgb, rgba)
 import Data.Maybe (Maybe(..))
+import Data.Profunctor (lcmap)
 import Data.Typelevel.Num (class Lt, class Nat, D7)
 import Data.Vec as V
 import Graphics.Canvas (Rectangle)
@@ -11,37 +13,29 @@ import Prim.Row (class Lacks)
 import Record as R
 import SambaDeUmaNotaSo.Constants (windowLength)
 import SambaDeUmaNotaSo.Drawing (blackBackground)
+import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SambaTrigger(..))
 import SambaDeUmaNotaSo.Types (AugmentedEnv, BaseEnv, FirstPartEnv, RGB, Windows, VideoSpan)
 import SambaDeUmaNotaSo.Util (argb, bindBetween, calcSlope, isRectangleTouched, rgbx, windowColors, windowToRect, xrgb)
 import Type.Proxy (Proxy(..))
-import WAGS.Control.Functions (env)
-import WAGS.Control.Types (FrameT)
-import SambaDeUmaNotaSo.FrameSig (SambaSceneI, SambaTrigger(..))
-import WAGS.Interpret (class AudioInterpret)
 import Web.HTML.HTMLElement (DOMRect)
 
-modEnv ::
-  forall audio engine proof m res i.
-  Monad m =>
-  AudioInterpret audio engine =>
-  FrameT SambaSceneI audio engine proof m res i i SambaSceneI
-modEnv =
-  map
-    ( \i@{ trigger, world } ->
-        i
-          { trigger =
-            case trigger of
-              Interaction { touch: { x, y } } ->
-                Interaction
-                  { touch:
-                      { x: x - world.canvas.left
-                      , y: y - world.canvas.top
-                      }
-                  }
-              x -> x
-          }
-    )
-    env
+modEnv :: SambaSceneI -> SambaSceneI
+modEnv i@{ trigger, world } =
+  i
+    { trigger =
+      case trigger of
+        Interaction { touch: { x, y } } ->
+          Interaction
+            { touch:
+                { x: x - world.canvas.left
+                , y: y - world.canvas.top
+                }
+            }
+        x -> x
+    }
+
+withModEnv :: Function SambaSceneI ~> Function SambaSceneI
+withModEnv = lcmap modEnv
 
 withAugmentedEnv :: BaseEnv -> AugmentedEnv
 withAugmentedEnv i =

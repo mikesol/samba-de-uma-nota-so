@@ -2,19 +2,20 @@ module SambaDeUmaNotaSo.Loops.FourthVideo where
 
 import Prelude
 
-import Control.Apply.Indexed ((:*>))
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import Control.Applicative.Indexed (ipure)
+import Control.Monad.Indexed.Qualified as Ix
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import SambaDeUmaNotaSo.Loops.ThirdVideo (ThirdVideoGraph, thirdVideoCreate)
-import WAGS.Control.Functions (proof, withProof)
-import WAGS.Control.Qualified as WAGS
 
 type FourthVideoGraph
   = ThirdVideoGraph
 
-fourthVideoPatch :: forall proof. proof -> FrameSig FourthVideoGraph proof FourthVideoGraph Unit
-fourthVideoPatch pr = withProof pr unit
 
-fourthVideoCreate :: forall proof. FrameSig FourthVideoGraph proof {} Unit
-fourthVideoCreate =
+fourthVideoPatch :: forall proof. IxWAGSig ThirdVideoGraph FourthVideoGraph proof Unit
+fourthVideoPatch = ipure unit
+
+fourthVideoCreate :: forall proof. IxWAGSig {} FourthVideoGraph proof Unit
+fourthVideoCreate = Ix.do
   thirdVideoCreate
-    :*> proof `WAGS.bind` fourthVideoPatch
+  fourthVideoPatch
+

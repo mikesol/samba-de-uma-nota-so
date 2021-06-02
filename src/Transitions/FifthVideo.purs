@@ -22,7 +22,7 @@ import SambaDeUmaNotaSo.SixthVideoTiles (tilesForPiece)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 import Web.HTML.HTMLElement (DOMRect)
 
 quaseNada :: Number -> NonEmptyToCofree DOMRect Painting

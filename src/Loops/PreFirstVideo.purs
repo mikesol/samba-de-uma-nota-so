@@ -1,10 +1,11 @@
 module SambaDeUmaNotaSo.Loops.PreFirstVideo where
 
 import Prelude
+
 import Data.Tuple.Nested (type (/\))
+import SambaDeUmaNotaSo.FrameSig (IxWAGSig)
 import Type.Row (type (+))
-import WAGS.Create (create)
-import SambaDeUmaNotaSo.FrameSig (FrameSig)
+import WAGS.Create (icreate)
 import WAGS.Graph.AudioUnit (TGain, THighpass, TLoopBuf, TSpeaker, TStereoPanner)
 import WAGS.Graph.Optionals (gain, highpass, loopBuf, pan, speaker)
 
@@ -260,8 +261,8 @@ type PreFirstVideoGraph
     }
 
 
-preFirstVideoCreate :: forall proof. FrameSig PreFirstVideoGraph proof {} Unit
-preFirstVideoCreate = create $ speaker
+preFirstVideoCreate :: forall proof. IxWAGSig {} PreFirstVideoGraph proof Unit
+preFirstVideoCreate = icreate $ speaker
     { mix:
         gain 1.0
           { chiffyE1Gain: gain 0.0 { chiffyE1Pan: pan 0.0 { chiffyE1HPF: highpass 20.0 { chiffyE1Buf: loopBuf { playbackRate: 1.0 } "chiffyE1" } } }

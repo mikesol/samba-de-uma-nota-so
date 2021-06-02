@@ -27,7 +27,7 @@ import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
 import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 import Web.HTML.HTMLElement (DOMRect)
 
 colorPalette :: V.Vec D10 RGB

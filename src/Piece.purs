@@ -54,7 +54,7 @@ import SambaDeUmaNotaSo.Transitions.ThirdVideo (doThirdVideo, rectangleSamba)
 import SambaDeUmaNotaSo.Transitions.ToInstrumental (doToInstrumental, startingActiveZones)
 import SambaDeUmaNotaSo.Util (BeatMod7', beatModSeven)
 import WAGS.Control.Functions (env, modifyRes, start, (@|>))
-import WAGS.Control.Qualified as WAGS
+import Control.Monad.Indexed.Qualified as Ix
 import WAGS.Control.Types (Frame0, InitialFrameT)
 import WAGS.Interpret (class AudioInterpret)
 
