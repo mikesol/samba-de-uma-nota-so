@@ -1,12 +1,11 @@
 module SambaDeUmaNotaSo.Transitions.FourthVideo where
 
 import Prelude
-
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
+import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.Functor.Indexed (ivoid)
 import Data.List ((:), List(..))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
@@ -18,7 +17,7 @@ import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Constants (beats, elevenAndAHalfBeats, fifteenBeats, fourteenBeats, thirteenAndAHalfBeats, twoMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withModEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.FourthVideo as IO
 import SambaDeUmaNotaSo.Loops.FifthVideo (fifthVideoPatch)
@@ -26,8 +25,8 @@ import SambaDeUmaNotaSo.Loops.FourthVideo (FourthVideoGraph)
 import SambaDeUmaNotaSo.Transitions.FifthVideo (doFifthVideo)
 import SambaDeUmaNotaSo.Types (Windows, RGB)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import Control.Monad.Indexed.Qualified as Ix
+import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
+import WAGS.Control.Indexed (wag)
 import Web.HTML.HTMLElement (DOMRect)
 
 colorPalette :: V.Vec D10 RGB
@@ -132,52 +131,51 @@ doFourthVideo ::
   forall proof.
   StepSig FourthVideoGraph proof IO.Accumulator
 doFourthVideo =
-  branch \acc -> WAGS.do
-    e <- modEnv
-    pr <- proof
-    let
-      ctxt =
-        withFirstPartEnv acc.mostRecentWindowInteraction
-          $ withAugmentedEnv
-              { canvas: e.world.canvas
-              , interaction: if e.active then asTouch e.trigger else Nothing
-              , time: e.time
-              }
-    withProof pr
-      $ if acc.videoSpan.end > e.time then
-          Right
-            $ WAGS.do
-                let
-                  visualCtxt = withWindowOnScreen ctxt
+  ibranch
+    ( withModEnv \e acc ->
+        let
+          ctxt =
+            withFirstPartEnv acc.mostRecentWindowInteraction
+              $ withAugmentedEnv
+                  { canvas: e.world.canvas
+                  , interaction: if e.active then asTouch e.trigger else Nothing
+                  , time: e.time
+                  }
+        in
+          if acc.videoSpan.end > e.time then
+            Right
+              let
+                visualCtxt = withWindowOnScreen ctxt
 
-                  wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
+                wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
 
-                  ctr = rectCenter (head wd)
+                ctr = rectCenter (head wd)
 
-                  beforeTag = e.time - acc.videoSpan.start < elevenAndAHalfBeats
+                beforeTag = e.time - acc.videoSpan.start < elevenAndAHalfBeats
 
-                  rs = acc.rectangleSamba { time: e.time, value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen }
+                rs = acc.rectangleSamba { time: e.time, value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen }
 
-                  videoAndWindows = if beforeTag then fold (head rs) else boomBoom e.time acc.videoSpan.start e.world.canvas
+                videoAndWindows = if beforeTag then fold (head rs) else boomBoom e.time acc.videoSpan.start e.world.canvas
 
-                  -- todo: we draw over. maybe hide?
-                  dotNow = if beforeTag then firstPartDot e ctr else mempty
-                ivoid
-                  $ modifyRes
-                  $ const { painting: ctxt.background <> videoAndWindows <> dotNow }
-                withProof pr
-                  $ acc
+                -- todo: we draw over. maybe hide?
+                dotNow = if beforeTag then firstPartDot e ctr else mempty
+              in
+                imodifyRes
+                  (const { painting: ctxt.background <> videoAndWindows <> dotNow })
+                  $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd
                       , rectangleSamba = tail rs
                       }
-        else
-          Left
-            $ inSitu doFifthVideo WAGS.do
-                let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
-                fifthVideoPatch pr
-                withProof pr
-                  { videoSpan
-                  , quantaGenteExiste: quantaGenteExiste videoSpan.start
-                  }
+          else
+            Left
+              $ iwag Ix.do
+                  let
+                    videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
+                  fifthVideoPatch
+                  doFifthVideo
+                    <$> wag
+                        { videoSpan
+                        , quantaGenteExiste: quantaGenteExiste videoSpan.start
+                        }
+    )

@@ -1,10 +1,11 @@
 module SambaDeUmaNotaSo.Transitions.FifthVideo where
 
 import Prelude
+
 import Control.Comonad.Cofree (head, tail)
+import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
@@ -13,7 +14,7 @@ import Data.Typelevel.Num (class Lt, class Nat, D16, d0, d1, d10, d11, d12, d13,
 import Data.Vec as V
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Constants (beats, twoMeasures)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withBridgeWindowOnScreen)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withBridgeWindowOnScreen, withModEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.FifthVideo as IO
 import SambaDeUmaNotaSo.Loops.FifthVideo (FifthVideoGraph)
@@ -21,8 +22,8 @@ import SambaDeUmaNotaSo.Loops.SixthVideo (sixthVideoPatch)
 import SambaDeUmaNotaSo.SixthVideoTiles (tilesForPiece)
 import SambaDeUmaNotaSo.Transitions.SixthVideo (doSixthVideo)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import Control.Monad.Indexed.Qualified as Ix
+import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
+import WAGS.Control.Indexed (wag)
 import Web.HTML.HTMLElement (DOMRect)
 
 quaseNada :: Number -> NonEmptyToCofree DOMRect Painting
@@ -75,44 +76,43 @@ doFifthVideo ::
   forall proof.
   StepSig FifthVideoGraph proof IO.Accumulator
 doFifthVideo =
-  branch \acc -> WAGS.do
-    e <- modEnv
-    pr <- proof
-    let
-      ctxt =
-        withAugmentedEnv
-          { canvas: e.world.canvas
-          , interaction: if e.active then asTouch e.trigger else Nothing
-          , time: e.time
-          }
-    withProof pr
-      $ if acc.videoSpan.end > e.time then
-          Right
-            $ WAGS.do
-                let
-                  visualCtxt = withBridgeWindowOnScreen ctxt
+  ibranch
+    ( withModEnv \e acc ->
+        let
+          ctxt =
+            withAugmentedEnv
+              { canvas: e.world.canvas
+              , interaction: if e.active then asTouch e.trigger else Nothing
+              , time: e.time
+              }
+        in
+          if acc.videoSpan.end > e.time then
+            Right
+              let
+                visualCtxt = withBridgeWindowOnScreen ctxt
 
-                  rs =
-                    acc.quantaGenteExiste
-                      { time: e.time
-                      , value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen
-                      }
+                rs =
+                  acc.quantaGenteExiste
+                    { time: e.time
+                    , value: visualCtxt.windowDims /\ visualCtxt.windowsOnScreen
+                    }
 
-                  videoAndWindows = fold (head rs)
-                ivoid
-                  $ modifyRes
-                  $ const { painting: ctxt.background <> videoAndWindows }
-                withProof pr
-                  $ acc
+                videoAndWindows = fold (head rs)
+              in
+                imodifyRes
+                  (const { painting: ctxt.background <> videoAndWindows })
+                  $> acc
                       { quantaGenteExiste = tail rs
                       }
-        else
-          Left
-            $ inSitu doSixthVideo WAGS.do
-                let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
-                sixthVideoPatch pr
-                withProof pr
-                  { videoSpan
-                  , quaseNada: quaseNada videoSpan.start
-                  }
+          else
+            Left
+              $ iwag Ix.do
+                  let
+                    videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + twoMeasures }
+                  sixthVideoPatch
+                  doSixthVideo
+                    <$> wag
+                        { videoSpan
+                        , quaseNada: quaseNada videoSpan.start
+                        }
+    )

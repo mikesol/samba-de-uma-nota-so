@@ -1,12 +1,11 @@
 module SambaDeUmaNotaSo.Transitions.ThirdVideo where
 
 import Prelude
-
 import Color (rgb)
 import Control.Comonad.Cofree (head, tail)
+import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
@@ -17,7 +16,7 @@ import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, fillColor, filled, rectangle)
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
 import SambaDeUmaNotaSo.Drawing (firstPartDot)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv, withFirstPartEnv, withWindowOnScreen)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withFirstPartEnv, withModEnv, withWindowOnScreen)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.ThirdVideo as IO
 import SambaDeUmaNotaSo.Loops.FourthVideo (fourthVideoPatch)
@@ -25,8 +24,8 @@ import SambaDeUmaNotaSo.Loops.ThirdVideo (ThirdVideoGraph)
 import SambaDeUmaNotaSo.Transitions.FourthVideo (doFourthVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree, rectCenter)
-import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import Control.Monad.Indexed.Qualified as Ix
+import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
+import WAGS.Control.Indexed (wag)
 
 rectangleSamba :: Number -> NonEmptyToCofree (Windows Rectangle /\ Windows Painting) (Windows Painting)
 rectangleSamba startsAt =
@@ -66,47 +65,46 @@ doThirdVideo ::
   forall proof.
   StepSig ThirdVideoGraph proof IO.Accumulator
 doThirdVideo =
-  branch \acc -> WAGS.do
-    e <- modEnv
-    pr <- proof
-    let
-      ctxt =
-        withFirstPartEnv acc.mostRecentWindowInteraction
-          $ withAugmentedEnv
-              { canvas: e.world.canvas
-              , interaction: if e.active then asTouch e.trigger else Nothing
-              , time: e.time
-              }
-    withProof pr
-      $ if acc.videoSpan.end > e.time then
-          Right
-            $ WAGS.do
-                let
-                  visualCtxt = withWindowOnScreen ctxt
+  ibranch
+    ( withModEnv \e acc ->
+        let
+          ctxt =
+            withFirstPartEnv acc.mostRecentWindowInteraction
+              $ withAugmentedEnv
+                  { canvas: e.world.canvas
+                  , interaction: if e.active then asTouch e.trigger else Nothing
+                  , time: e.time
+                  }
+        in
+          if acc.videoSpan.end > e.time then
+            Right
+              let
+                visualCtxt = withWindowOnScreen ctxt
 
-                  wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
+                wd = acc.b7WindowDims { time: e.time, value: visualCtxt.windowDims }
 
-                  ctr = rectCenter (head wd)
+                ctr = rectCenter (head wd)
 
-                  -- todo: we draw over. maybe hide?
-                  dotNow = firstPartDot e ctr
-                ivoid
-                  $ modifyRes
-                  $ const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) <> dotNow }
-                withProof pr
-                  $ acc
+                -- todo: we draw over. maybe hide?
+                dotNow = firstPartDot e ctr
+              in
+                imodifyRes
+                  (const { painting: ctxt.background <> (fold (acc.interpretVideo ctxt)) <> dotNow })
+                  $> acc
                       { mostRecentWindowInteraction = ctxt.mostRecentWindowInteraction
                       , b7WindowDims = tail wd
                       }
-        else
-          Left
-            $ inSitu doFourthVideo WAGS.do
-                let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
-                fourthVideoPatch pr
-                withProof pr
-                  { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
-                  , videoSpan: videoSpan
-                  , b7WindowDims: acc.b7WindowDims
-                  , rectangleSamba: rectangleSamba videoSpan.start
-                  }
+          else
+            Left
+              $ iwag Ix.do
+                  let
+                    videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                  fourthVideoPatch
+                  doFourthVideo
+                    <$> wag
+                        { mostRecentWindowInteraction: ctxt.mostRecentWindowInteraction
+                        , videoSpan: videoSpan
+                        , b7WindowDims: acc.b7WindowDims
+                        , rectangleSamba: rectangleSamba videoSpan.start
+                        }
+    )

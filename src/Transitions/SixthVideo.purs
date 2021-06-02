@@ -1,12 +1,11 @@
 module SambaDeUmaNotaSo.Transitions.SixthVideo where
 
 import Prelude
-
 import Color (Color, rgb, rgba)
 import Control.Comonad.Cofree (head, tail)
+import Control.Monad.Indexed.Qualified as Ix
 import Data.Either (Either(..))
 import Data.Foldable (fold)
-import Data.Functor.Indexed (ivoid)
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..), maybe)
 import Data.NonEmpty ((:|))
@@ -17,7 +16,7 @@ import Graphics.Canvas (Rectangle)
 import Graphics.Painting (Painting, Point, circle, fillColor, filled, rectangle)
 import Math (pow, sqrt, (%))
 import SambaDeUmaNotaSo.Constants (beats, fourMeasures)
-import SambaDeUmaNotaSo.Env (modEnv, withAugmentedEnv)
+import SambaDeUmaNotaSo.Env (withAugmentedEnv, withModEnv)
 import SambaDeUmaNotaSo.FrameSig (StepSig, asTouch)
 import SambaDeUmaNotaSo.IO.SeventhVideo (TouchedDot(..), td2pt)
 import SambaDeUmaNotaSo.IO.SixthVideo as IO
@@ -28,8 +27,8 @@ import SambaDeUmaNotaSo.TileTypes (TileBuilder2)
 import SambaDeUmaNotaSo.Transitions.SeventhVideo (doSeventhVideo)
 import SambaDeUmaNotaSo.Types (Windows)
 import SambaDeUmaNotaSo.Util (NonEmptyToCofree, nonEmptyToCofree)
-import WAGS.Control.Functions (branch, inSitu, modifyRes, proof, withProof)
-import Control.Monad.Indexed.Qualified as Ix
+import WAGS.Control.Functions (ibranch, imodifyRes, iwag)
+import WAGS.Control.Indexed (wag)
 import Web.HTML.HTMLElement (DOMRect)
 
 deTodaAEscala :: Number -> NonEmptyToCofree DOMRect Painting
@@ -188,51 +187,51 @@ doSixthVideo ::
   forall proof.
   StepSig SixthVideoGraph proof IO.Accumulator
 doSixthVideo =
-  branch \acc -> WAGS.do
-    e <- modEnv
-    pr <- proof
-    let
-      ctxt =
-        withAugmentedEnv
-          { canvas: e.world.canvas
-          , interaction: if e.active then asTouch e.trigger else Nothing
-          , time: e.time
-          }
-    withProof pr
-      $ if acc.videoSpan.end > e.time then
-          Right
-            $ WAGS.do
-                let
-                  rs =
-                    acc.quaseNada
-                      { time: e.time
-                      , value: e.world.canvas
-                      }
+  ibranch
+    ( withModEnv \e acc ->
+        let
+          ctxt =
+            withAugmentedEnv
+              { canvas: e.world.canvas
+              , interaction: if e.active then asTouch e.trigger else Nothing
+              , time: e.time
+              }
+        in
+          if acc.videoSpan.end > e.time then
+            Right
+              let
+                rs =
+                  acc.quaseNada
+                    { time: e.time
+                    , value: e.world.canvas
+                    }
 
-                  tiles = head rs
+                tiles = head rs
 
-                  middleFrame = filled (fillColor (rgb 255 255 255)) (rectangle (e.world.canvas.width / 3.0) (e.world.canvas.height / 3.0) (1.0 * e.world.canvas.width / 3.0) (1.0 * e.world.canvas.height / 3.0))
-                ivoid
-                  $ modifyRes
-                  $ const
+                middleFrame = filled (fillColor (rgb 255 255 255)) (rectangle (e.world.canvas.width / 3.0) (e.world.canvas.height / 3.0) (1.0 * e.world.canvas.width / 3.0) (1.0 * e.world.canvas.height / 3.0))
+              in
+                imodifyRes
+                  ( const
                       { painting:
                           ctxt.background
                             <> tiles
                             <> middleFrame
                       }
-                withProof pr
-                  $ acc
+                  )
+                  $> acc
                       { quaseNada = tail rs
                       }
-        else
-          Left
-            $ inSitu doSeventhVideo WAGS.do
-                let
-                  videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
-                seventhVideoPatch pr
-                withProof pr
-                  { videoSpan
-                  , deTodaAEscala: deTodaAEscala videoSpan.start
-                  , seventhVideoLoop: seventhVideoLoop videoSpan.start
-                  , dotMover: dotMover videoSpan.start
-                  }
+          else
+            Left
+              $ iwag Ix.do
+                  let
+                    videoSpan = { start: acc.videoSpan.end, end: acc.videoSpan.end + fourMeasures }
+                  seventhVideoPatch
+                  doSeventhVideo
+                    <$> wag
+                        { videoSpan
+                        , deTodaAEscala: deTodaAEscala videoSpan.start
+                        , seventhVideoLoop: seventhVideoLoop videoSpan.start
+                        , dotMover: dotMover videoSpan.start
+                        }
+    )
